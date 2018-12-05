@@ -200,6 +200,8 @@
           // y: 'RbTotal',
           y: firstMetricName,
           color: 'Peid',
+          orderBy: '+avg',
+          limit: 3,
           size: 3
         })
 
@@ -209,17 +211,19 @@
           $collect: collection
         })
 
-        metrics.forEach((metric, mi) =>{
-          this.vis.visualize({
-            id: 'view' + mi,
-            mark: 'spline',
-            x: this.selectedTimeDomain,
-            y:   'avg' + metric,
-            color: 'steelblue',
-            size: 3,
-            // opacity: 'auto'
+        this.vis.visualize(
+          metrics.map((metric, mi) =>{
+            return {
+              id: 'view' + mi,
+              mark: 'spline',
+              x: this.selectedTimeDomain,
+              y:   'avg' + metric,
+              color: 'steelblue',
+              size: 3,
+              // opacity: 'auto'
+            }
           })
-        })
+        )
       }
     }
   }

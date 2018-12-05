@@ -70,17 +70,19 @@ export default function({container, width, height}) {
       $collect: collection
     })
 
-    metrics.forEach(function(metric, mi){
-      pipeline.visualize({
-      id: 'view' + mi,
-      mark: 'spline',
-      x: 'RealTs',
-      y:   'avg' + metric,
-      color: 'steelblue',
-      size: 3,
-      // opacity: 'auto'
-      })
+    let visSpec = metrics.map((metric, mi) =>{
+      return {
+        id: 'view' + mi,
+        mark: 'spline',
+        x: 'RealTs',
+        y:   'avg' + metric,
+        color: 'steelblue',
+        size: 3,
+        // opacity: 'auto'
+      }
     })
+    console.log(visSpec)
+    // pipeline.visualize(visSpec)
     
     pipeline.head()
     .aggregate({
