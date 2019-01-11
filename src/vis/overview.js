@@ -81,8 +81,8 @@ export default function({container, width, height}) {
         // opacity: 'auto'
       }
     })
-    console.log(visSpec)
-    // pipeline.visualize(visSpec)
+
+    pipeline.visualize(visSpec)
     
     pipeline.head()
     .aggregate({

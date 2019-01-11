@@ -8,15 +8,15 @@ Vue.use(Vuetify)
 import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
-import Dashboard from '@/components/Dashboard'
-import MonitorTS from '@/components/MonitorTS'
+import Dashboard from './components/Dashboard'
+
 
 export default new Router({
   routes: [
     {
       path: '/',
-      name: 'MonitorTS',
-      component: MonitorTS
+      name: 'Dashboard',
+      component: Dashboard
     }
   ]
 })

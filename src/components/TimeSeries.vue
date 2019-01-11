@@ -138,17 +138,26 @@
         socket.send(JSON.stringify({data: 'KpData', method: 'get'}));
       }
       let self = this
-      socket.onmessage = function(event) {
+      socket.onmessage = (event) => {
         let data = JSON.parse(event.data)
+
+        let commData = data.data.map(d => d.CommData)
+        console.log(commData)
+        for (let row of data.data) {
+          row.CommData = row.CommData.reduce((a, b) => a + b)
+        }
+        if (data.schema.hasOwnProperty('CommData')) {
+          data.schema.CommData = 'int'
+        }
         let cache = p4.cstore({})
-        self.metrics =  Object.keys(data.schema)
-        // self.checkboxs = self.metrics.map(m => self.selectedMetrics.indexOf(m) != -1)
-        // console.log(self.checkboxs)
+        this.metrics =  Object.keys(data.schema)
+        // this.checkboxs = this.metrics.map(m => this.selectedMetrics.indexOf(m) != -1)
+        // console.log(this.checkboxs)
         cache.import(data)
         cache.index('RealTs')
         cache.index('LastGvt')
-        self.vis = p4(config).data(cache.data()).view(self.views)
-        self.reset()
+        this.vis = p4(config).data(cache.data()).view(this.views)
+        this.reset()
       }
     },
     methods: {
