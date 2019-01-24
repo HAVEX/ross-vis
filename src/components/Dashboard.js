@@ -1,9 +1,10 @@
 import tpl from '../html/Dashboard.html'
+import '../css/app.css'
 import p5 from 'p5'
 import p4 from 'p4'
 import p3 from 'p3'
 import picos from 'picos'
-
+import pplot from 'p.plot'
 export default {
   name: 'Dashboard',
   template: tpl,
@@ -41,9 +42,12 @@ export default {
       // 'NetworkRecv', 'NetworkSend'
     ],
     selectedMetrics: [],
+    analyses: ['graph', 'PCA'],
+    selectedAnalysis: 'graph',
     commData: null,
     metricData: null,
-    showIntraComm: false
+    showIntraComm: false,
+    showGraph: false,
   }),
   props: {
     source: String
@@ -52,7 +56,32 @@ export default {
     let visContainer = document.getElementById('vis-overview')
     this.width = visContainer.clientWidth
     this.height = visContainer.clientHeight * 0.9
-    this.selectedMetrics = this.defaultMetrics.slice()    
+    this.selectedMetrics = this.defaultMetrics.slice()
+    p4.ajax.get({
+      url: 'http://localhost:8888/pca',
+      dataType: 'json'
+    }).then(result => {
+      let data = {
+        json: result.data,
+        vmap: {
+            x: 'PC0',
+            y: 'PC1',
+            color: 'steelblue',
+            size: 6
+        }
+      }
+      let container = document.getElementById('stats-view')
+
+      let view = {
+          container: '#stats-view',
+          width: container.parentElement.clientWidth,
+          height: container.parentElement.clientHeight * 0.9,
+          padding: {left: 50, right: 30, top: 30, bottom: 60},
+          axes: true
+      }
+
+      new pplot.ScatterPlot(data, view).render()
+    })
   },
   methods: {
     start() {
@@ -64,40 +93,40 @@ export default {
         viewport: [this.width, this.height]
       }
 
-      if(this.numKP && this.numPE) {
-        let socket = new WebSocket('ws://' + this.server + '/websocket')
-        socket.onopen = () => {
-          this.dialog = !this.dialog
-          this.socketError = false
-          socket.send(JSON.stringify({data: 'KpData', method: 'get'}));
 
-        }
-
-        socket.onerror = (error) => {
-          this.socketError = true
-          console.log(error)
-        }
-    
-        socket.onmessage = (event) => {
-          let data = JSON.parse(event.data)
-          this.data = data.data
-          this.transpiler = new p5.Transpiler(this.metrics);
-          if (data.schema.hasOwnProperty('CommData')) {
-            data.schema.CommData = 'int'
-          }
-          let cache = p4.cstore({})
-          this.metrics =  Object.keys(data.schema)
-          cache.import(data)
-          cache.index('RealTs')
-          cache.index('LastGvt')
-          let gpuData = cache.data()
-          // console.log(gpuData.stats)
-          this.timeIndexes = gpuData.uniqueValues
-          this.vis = p4(config).data(gpuData).view(this.views)
-          this.reset()
-        }
+      let socket = new WebSocket('ws://' + this.server + '/websocket')
+      socket.onopen = () => {
+        this.dialog = !this.dialog
+        this.socketError = false
+        socket.send(JSON.stringify({data: 'KpData', method: 'get'}))
       }
-      
+
+      socket.onerror = (error) => {
+        this.socketError = true
+        console.log(error)
+      }
+  
+      socket.onmessage = (event) => {
+        let data = JSON.parse(event.data)
+        this.data = data.data
+        this.numPE = Math.max(...this.data.map(d => d.Peid)) + 1
+        this.numKP = Math.max(...this.data.map(d => d.Kpid)) + 1
+        console.log(this.numPE, this.numKP)
+        this.transpiler = new p5.Transpiler(this.metrics);
+        if (data.schema.hasOwnProperty('CommData')) {
+          data.schema.CommData = 'int'
+        }
+        let cache = p4.cstore({})
+        this.metrics = Object.keys(data.schema)
+        cache.import(data)
+        cache.index('RealTs')
+        cache.index('LastGvt')
+        let gpuData = cache.data()
+        // console.log(gpuData.stats)
+        this.timeIndexes = gpuData.uniqueValues
+        this.vis = p4(config).data(gpuData).view(this.views)
+        this.reset()
+      }
 
     },
     reset() {
@@ -149,14 +178,14 @@ export default {
         })
       }
       accCommData = accCommData.map(rows => {
-        let newRows = new Array(3)
+        let newRows = new Array(this.numPE)
         for(var i = 0; i< this.numPE; i++) {
           newRows[i] = rows.slice(i * this.numKP, (i+1) * this.numKP).reduce((a,b) => a+b)
         }
         return newRows
       })
   
-      this.commData = accCommData[0].map((a, i) => p3.vector.sum(accCommData.slice(i*16, (i+1)*16)))
+      this.commData = accCommData[0].map((a, i) => p3.vector.sum(accCommData.slice(i*this.numKP, (i+1)*this.numKP)))
 
       let aggrSpec = this.transpiler.transpile([{
         $aggregate: {

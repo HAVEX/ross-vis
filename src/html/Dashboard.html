@@ -34,7 +34,7 @@
     <v-flex xs2>
       <v-select
         :items="modes"
-        label="Mode"
+        label="App Mode"
         v-model="defaultMode"
         box
       ></v-select>
@@ -46,7 +46,6 @@
     fixed
   >
   </v-navigation-drawer>
-
   <v-dialog v-model="dialog" persistent max-width="600px">
     <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn>
     <v-card>
@@ -136,15 +135,23 @@
         </v-flex>
         <v-flex xs5 fill-height class="pa-2">
           <v-toolbar dense>
-              <v-switch
+              <v-switch  v-bind:class="{hidden: selectedAnalysis != 'graph'}"
               label="Intra-Comm"
               v-model="showIntraComm"
               v-on:change="visualizeComm(data)"
             ></v-switch>
             <v-spacer></v-spacer>
+            <v-overflow-btn
+              dense
+              style="max-width: 180px;"
+              label="Analysis Mode"
+              :items="analyses"
+              v-model="selectedAnalysis"
+            ></v-overflow-btn>
           </v-toolbar>
-          <v-card>
-            <div id="graph-view"></div>
+          <v-card class="fill-height">
+            <div v-bind:class="{hidden: selectedAnalysis != 'graph'}" id="graph-view"></div>
+            <div v-bind:class="{hidden: selectedAnalysis != 'PCA'}" id="stats-view"></div>
           </v-card>
         </v-flex>
       </v-layout>
