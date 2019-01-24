@@ -2513,6 +2513,10 @@ var assign_default = /*#__PURE__*/__webpack_require__.n(object_assign);
 var keys = __webpack_require__("fZjL");
 var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
 
+// EXTERNAL MODULE: ./node_modules/babel-runtime/helpers/toConsumableArray.js
+var toConsumableArray = __webpack_require__("Gu7T");
+var toConsumableArray_default = /*#__PURE__*/__webpack_require__.n(toConsumableArray);
+
 // EXTERNAL MODULE: ./node_modules/babel-runtime/core-js/json/stringify.js
 var stringify = __webpack_require__("mvHQ");
 var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
@@ -2520,6 +2524,10 @@ var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
 // EXTERNAL MODULE: ./src/html/Dashboard.html
 var Dashboard = __webpack_require__("NVFP");
 var Dashboard_default = /*#__PURE__*/__webpack_require__.n(Dashboard);
+
+// EXTERNAL MODULE: ./src/css/app.css
+var app = __webpack_require__("VXnA");
+var app_default = /*#__PURE__*/__webpack_require__.n(app);
 
 // EXTERNAL MODULE: /home/kelvin/Dropbox/workspace/p.pack/p5/index.js
 var p5 = __webpack_require__("qI3u");
@@ -2534,7 +2542,12 @@ var p3_default = /*#__PURE__*/__webpack_require__.n(p3);
 // EXTERNAL MODULE: /home/kelvin/Dropbox/workspace/p.pack/picos/index.js
 var picos = __webpack_require__("U7xf");
 
+// EXTERNAL MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/index.js + 4 modules
+var p_plot = __webpack_require__("g2B4");
+
 // CONCATENATED MODULE: ./src/components/Dashboard.js
+
+
 
 
 
@@ -2577,9 +2590,12 @@ var picos = __webpack_require__("U7xf");
       checkboxs: [],
       defaultMetrics: ['NeventProcessed', 'RbTotal', 'VirtualTimeDiff'],
       selectedMetrics: [],
+      analyses: ['graph', 'PCA'],
+      selectedAnalysis: 'graph',
       commData: null,
       metricData: null,
-      showIntraComm: false
+      showIntraComm: false,
+      showGraph: false
     };
   },
   props: {
@@ -2590,6 +2606,31 @@ var picos = __webpack_require__("U7xf");
     this.width = visContainer.clientWidth;
     this.height = visContainer.clientHeight * 0.9;
     this.selectedMetrics = this.defaultMetrics.slice();
+    p4["a" /* default */].ajax.get({
+      url: 'http://localhost:8888/pca',
+      dataType: 'json'
+    }).then(function (result) {
+      var data = {
+        json: result.data,
+        vmap: {
+          x: 'PC0',
+          y: 'PC1',
+          color: 'steelblue',
+          size: 6
+        }
+      };
+      var container = document.getElementById('stats-view');
+
+      var view = {
+        container: '#stats-view',
+        width: container.parentElement.clientWidth,
+        height: container.parentElement.clientHeight * 0.9,
+        padding: { left: 50, right: 30, top: 30, bottom: 60 },
+        axes: true
+      };
+
+      new p_plot["a" /* default */].ScatterPlot(data, view).render();
+    });
   },
   methods: {
     start: function start() {},
@@ -2601,38 +2642,43 @@ var picos = __webpack_require__("U7xf");
         viewport: [this.width, this.height]
       };
 
-      if (this.numKP && this.numPE) {
-        var socket = new WebSocket('ws://' + this.server + '/websocket');
-        socket.onopen = function () {
-          _this.dialog = !_this.dialog;
-          _this.socketError = false;
-          socket.send(stringify_default()({ data: 'KpData', method: 'get' }));
-        };
+      var socket = new WebSocket('ws://' + this.server + '/websocket');
+      socket.onopen = function () {
+        _this.dialog = !_this.dialog;
+        _this.socketError = false;
+        socket.send(stringify_default()({ data: 'KpData', method: 'get' }));
+      };
 
-        socket.onerror = function (error) {
-          _this.socketError = true;
-          console.log(error);
-        };
+      socket.onerror = function (error) {
+        _this.socketError = true;
+        console.log(error);
+      };
 
-        socket.onmessage = function (event) {
-          var data = JSON.parse(event.data);
-          _this.data = data.data;
-          _this.transpiler = new p5["a" /* default */].Transpiler(_this.metrics);
-          if (data.schema.hasOwnProperty('CommData')) {
-            data.schema.CommData = 'int';
-          }
-          var cache = p4["a" /* default */].cstore({});
-          _this.metrics = keys_default()(data.schema);
-          cache.import(data);
-          cache.index('RealTs');
-          cache.index('LastGvt');
-          var gpuData = cache.data();
-          // console.log(gpuData.stats)
-          _this.timeIndexes = gpuData.uniqueValues;
-          _this.vis = Object(p4["a" /* default */])(config).data(gpuData).view(_this.views);
-          _this.reset();
-        };
-      }
+      socket.onmessage = function (event) {
+        var data = JSON.parse(event.data);
+        _this.data = data.data;
+        _this.numPE = Math.max.apply(Math, toConsumableArray_default()(_this.data.map(function (d) {
+          return d.Peid;
+        }))) + 1;
+        _this.numKP = Math.max.apply(Math, toConsumableArray_default()(_this.data.map(function (d) {
+          return d.Kpid;
+        }))) + 1;
+        console.log(_this.numPE, _this.numKP);
+        _this.transpiler = new p5["a" /* default */].Transpiler(_this.metrics);
+        if (data.schema.hasOwnProperty('CommData')) {
+          data.schema.CommData = 'int';
+        }
+        var cache = p4["a" /* default */].cstore({});
+        _this.metrics = keys_default()(data.schema);
+        cache.import(data);
+        cache.index('RealTs');
+        cache.index('LastGvt');
+        var gpuData = cache.data();
+        // console.log(gpuData.stats)
+        _this.timeIndexes = gpuData.uniqueValues;
+        _this.vis = Object(p4["a" /* default */])(config).data(gpuData).view(_this.views);
+        _this.reset();
+      };
     },
     reset: function reset() {
       this.selectedMetrics = this.defaultMetrics.slice();
@@ -2687,7 +2733,7 @@ var picos = __webpack_require__("U7xf");
         });
       }
       accCommData = accCommData.map(function (rows) {
-        var newRows = new Array(3);
+        var newRows = new Array(_this2.numPE);
         for (var i = 0; i < _this2.numPE; i++) {
           newRows[i] = rows.slice(i * _this2.numKP, (i + 1) * _this2.numKP).reduce(function (a, b) {
             return a + b;
@@ -2697,7 +2743,7 @@ var picos = __webpack_require__("U7xf");
       });
 
       this.commData = accCommData[0].map(function (a, i) {
-        return p3_default.a.vector.sum(accCommData.slice(i * 16, (i + 1) * 16));
+        return p3_default.a.vector.sum(accCommData.slice(i * _this2.numKP, (i + 1) * _this2.numKP));
       });
 
       var aggrSpec = this.transpiler.transpile([{
@@ -2875,7 +2921,7 @@ new vue_esm["default"]({
 /***/ "NVFP":
 /***/ (function(module, exports) {
 
-module.exports = "<v-app id=\"inspire\">\n  <v-toolbar\n    color=\"blue-grey\"\n    dark\n    fixed\n    app\n    clipped-right\n  >\n    <v-toolbar-side-icon @click.stop=\"left = !left\"></v-toolbar-side-icon>\n    <v-toolbar-title style=\"margin-right: 3em;\">{{ appName }}</v-toolbar-title>\n    <v-flex xs2 class=\"ma-2\">\n      <v-select \n        label=\"TimeMode\"\n        :items=\"timeDomains\"\n        v-model=\"selectedTimeDomain\"\n        :menu-props=\"{ maxHeight: '400' }\"\n        box\n        v-on:change=\"visualize()\"\n      >\n      </v-select>\n    </v-flex>\n    <v-flex xs2 class=\"ma-2\">\n        <v-select \n          label=\"Granularity\"\n          :items=\"granularity\"\n          v-model=\"selectedGran\"\n          :menu-props=\"{ maxHeight: '400' }\"\n          box\n          v-on:change=\"visualize()\"\n        >\n        </v-select>\n      </v-flex>\n    <v-spacer></v-spacer>\n    <v-flex xs2>\n      <v-select\n        :items=\"modes\"\n        label=\"Mode\"\n        v-model=\"defaultMode\"\n        box\n      ></v-select>\n    </v-flex>\n  </v-toolbar>\n  <v-navigation-drawer\n    v-model=\"left\"\n    temporary\n    fixed\n  >\n  </v-navigation-drawer>\n\n  <v-dialog v-model=\"dialog\" persistent max-width=\"600px\">\n    <v-btn slot=\"activator\" color=\"primary\" dark>Open Dialog</v-btn>\n    <v-card>\n      <v-card-title>\n        <span class=\"headline\">Server and Data Settings</span>\n      </v-card-title>\n      <v-card-text>\n        <v-container grid-list-md>\n          <v-layout wrap>\n            <v-alert\n              :value=\"socketError\"\n              color=\"error\"\n            >\n              Cannot connect to server!\n            </v-alert>\n            <v-flex xs12>\n              <v-text-field box label=\"Server Address\"  v-model=\"server\" required></v-text-field>\n            </v-flex>\n            <v-flex xs12 sm6>\n              <v-text-field box label=\"Number of PEs\" v-model=\"numPE\" required></v-text-field>\n            </v-flex>\n            <v-flex xs12 sm6>\n              <v-text-field box label=\"Number of KPs per PE\" v-model=\"numKP\" required></v-text-field>\n            </v-flex>\n          </v-layout>\n        </v-container>\n      </v-card-text>\n      <v-card-actions>\n        <v-spacer></v-spacer>\n        <v-flex justify-cente>\n          <v-btn\n            color=\"primary\"\n            @click=\"init()\"\n          >\n          Start\n          </v-btn>\n        </v-flex>\n      </v-card-actions>\n    </v-card>\n  </v-dialog>\n\n  <v-content class=\"pa-2\">\n    <v-container fluid fill-height class=\"pa-1\">\n      <v-layout justify-center align-center>\n        <v-flex xs7 fill-height class=\"pa-2\">\n          <v-toolbar dense>\n            <v-flex xs9 class=\"ma-2\">\n              <v-select \n                label=\"Metric\"\n                :items=\"metrics\"\n                multiple\n                v-model=\"selectedMetrics\"\n                :menu-props=\"{ maxHeight: '400' }\"\n                persistent-hint\n                v-on:change=\"visualize()\"\n              >\n              </v-select>\n            </v-flex>\n            <v-flex xs2 class=\"ma-2\">\n                <v-select \n                  label=\"Measure\"\n                  :items=\"measures\"\n                  v-model=\"selectedMeasure\"\n                  v-on:change=\"visualize()\"\n                >\n                </v-select>\n              </v-flex>\n            <!-- <v-btn icon>\n              <v-icon>search</v-icon>\n            </v-btn> -->\n            <v-spacer></v-spacer>\n            <!-- <v-btn icon>\n              <v-icon>apps</v-icon>\n            </v-btn> -->\n            <v-switch\n              :label=\"`Aggr`\"\n              v-model=\"isAggregated\"\n              v-on:change=\"visualize()\"\n            ></v-switch>\n            <v-btn icon>\n              <v-icon v-on:click=\"reset()\">refresh</v-icon>\n            </v-btn>\n\n          </v-toolbar>\n          <v-card height=\"100%\" id=\"vis-overview\">\n          </v-card>\n        </v-flex>\n        <v-flex xs5 fill-height class=\"pa-2\">\n          <v-toolbar dense>\n              <v-switch\n              label=\"Intra-Comm\"\n              v-model=\"showIntraComm\"\n              v-on:change=\"visualizeComm(data)\"\n            ></v-switch>\n            <v-spacer></v-spacer>\n          </v-toolbar>\n          <v-card>\n            <div id=\"graph-view\"></div>\n          </v-card>\n        </v-flex>\n      </v-layout>\n    </v-container>\n  </v-content>\n  <v-footer color=\"blue-grey\" class=\"white--text\" app>\n    <!-- <span> VIDi Labs, University of California, Davis </span>\n    <v-spacer></v-spacer>\n    <span>&copy; 2018</span> -->\n  </v-footer>\n</v-app>\n";
+module.exports = "<v-app id=\"inspire\">\n  <v-toolbar\n    color=\"blue-grey\"\n    dark\n    fixed\n    app\n    clipped-right\n  >\n    <v-toolbar-side-icon @click.stop=\"left = !left\"></v-toolbar-side-icon>\n    <v-toolbar-title style=\"margin-right: 3em;\">{{ appName }}</v-toolbar-title>\n    <v-flex xs2 class=\"ma-2\">\n      <v-select \n        label=\"TimeMode\"\n        :items=\"timeDomains\"\n        v-model=\"selectedTimeDomain\"\n        :menu-props=\"{ maxHeight: '400' }\"\n        box\n        v-on:change=\"visualize()\"\n      >\n      </v-select>\n    </v-flex>\n    <v-flex xs2 class=\"ma-2\">\n        <v-select \n          label=\"Granularity\"\n          :items=\"granularity\"\n          v-model=\"selectedGran\"\n          :menu-props=\"{ maxHeight: '400' }\"\n          box\n          v-on:change=\"visualize()\"\n        >\n        </v-select>\n      </v-flex>\n    <v-spacer></v-spacer>\n    <v-flex xs2>\n      <v-select\n        :items=\"modes\"\n        label=\"App Mode\"\n        v-model=\"defaultMode\"\n        box\n      ></v-select>\n    </v-flex>\n  </v-toolbar>\n  <v-navigation-drawer\n    v-model=\"left\"\n    temporary\n    fixed\n  >\n  </v-navigation-drawer>\n  <v-dialog v-model=\"dialog\" persistent max-width=\"600px\">\n    <v-btn slot=\"activator\" color=\"primary\" dark>Open Dialog</v-btn>\n    <v-card>\n      <v-card-title>\n        <span class=\"headline\">Server and Data Settings</span>\n      </v-card-title>\n      <v-card-text>\n        <v-container grid-list-md>\n          <v-layout wrap>\n            <v-alert\n              :value=\"socketError\"\n              color=\"error\"\n            >\n              Cannot connect to server!\n            </v-alert>\n            <v-flex xs12>\n              <v-text-field box label=\"Server Address\"  v-model=\"server\" required></v-text-field>\n            </v-flex>\n            <v-flex xs12 sm6>\n              <v-text-field box label=\"Number of PEs\" v-model=\"numPE\" required></v-text-field>\n            </v-flex>\n            <v-flex xs12 sm6>\n              <v-text-field box label=\"Number of KPs per PE\" v-model=\"numKP\" required></v-text-field>\n            </v-flex>\n          </v-layout>\n        </v-container>\n      </v-card-text>\n      <v-card-actions>\n        <v-spacer></v-spacer>\n        <v-flex justify-cente>\n          <v-btn\n            color=\"primary\"\n            @click=\"init()\"\n          >\n          Start\n          </v-btn>\n        </v-flex>\n      </v-card-actions>\n    </v-card>\n  </v-dialog>\n\n  <v-content class=\"pa-2\">\n    <v-container fluid fill-height class=\"pa-1\">\n      <v-layout justify-center align-center>\n        <v-flex xs7 fill-height class=\"pa-2\">\n          <v-toolbar dense>\n            <v-flex xs9 class=\"ma-2\">\n              <v-select \n                label=\"Metric\"\n                :items=\"metrics\"\n                multiple\n                v-model=\"selectedMetrics\"\n                :menu-props=\"{ maxHeight: '400' }\"\n                persistent-hint\n                v-on:change=\"visualize()\"\n              >\n              </v-select>\n            </v-flex>\n            <v-flex xs2 class=\"ma-2\">\n                <v-select \n                  label=\"Measure\"\n                  :items=\"measures\"\n                  v-model=\"selectedMeasure\"\n                  v-on:change=\"visualize()\"\n                >\n                </v-select>\n              </v-flex>\n            <!-- <v-btn icon>\n              <v-icon>search</v-icon>\n            </v-btn> -->\n            <v-spacer></v-spacer>\n            <!-- <v-btn icon>\n              <v-icon>apps</v-icon>\n            </v-btn> -->\n            <v-switch\n              :label=\"`Aggr`\"\n              v-model=\"isAggregated\"\n              v-on:change=\"visualize()\"\n            ></v-switch>\n            <v-btn icon>\n              <v-icon v-on:click=\"reset()\">refresh</v-icon>\n            </v-btn>\n\n          </v-toolbar>\n          <v-card height=\"100%\" id=\"vis-overview\">\n          </v-card>\n        </v-flex>\n        <v-flex xs5 fill-height class=\"pa-2\">\n          <v-toolbar dense>\n              <v-switch  v-bind:class=\"{hidden: selectedAnalysis != 'graph'}\"\n              label=\"Intra-Comm\"\n              v-model=\"showIntraComm\"\n              v-on:change=\"visualizeComm(data)\"\n            ></v-switch>\n            <v-spacer></v-spacer>\n            <v-overflow-btn\n              dense\n              style=\"max-width: 180px;\"\n              label=\"Analysis Mode\"\n              :items=\"analyses\"\n              v-model=\"selectedAnalysis\"\n            ></v-overflow-btn>\n          </v-toolbar>\n          <v-card class=\"fill-height\">\n            <div v-bind:class=\"{hidden: selectedAnalysis != 'graph'}\" id=\"graph-view\"></div>\n            <div v-bind:class=\"{hidden: selectedAnalysis != 'PCA'}\" id=\"stats-view\"></div>\n          </v-card>\n        </v-flex>\n      </v-layout>\n    </v-container>\n  </v-content>\n  <v-footer color=\"blue-grey\" class=\"white--text\" app>\n    <!-- <span> VIDi Labs, University of California, Davis </span>\n    <v-spacer></v-spacer>\n    <span>&copy; 2018</span> -->\n  </v-footer>\n</v-app>\n";
 
 /***/ }),
 
@@ -3203,13 +3249,18 @@ function mapColor(colors, colorDomain) {
 // EXTERNAL MODULE: ./node_modules/d3-chord/src/index.js + 5 modules
 var d3_chord_src = __webpack_require__("s5jH");
 
+// EXTERNAL MODULE: ./node_modules/d3-shape/src/index.js + 50 modules
+var d3_shape_src = __webpack_require__("1gFY");
+
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/picos/src/chord.js
+
+
 
 
 // import {arc as d3Arc} from 'd3-arc';
 
 function Chord(arg) {
-    var options = arg || {},
+    let options = arg || {},
         container = options.container || "body",
         data = options.data,
         vmap = options.vmap,
@@ -3220,7 +3271,7 @@ function Chord(arg) {
         colors = options.colors || ['steelblue', 'red'],
         hover = options.hover || function(d) {};
 
-    var chord = Object(d3_chord_src["a" /* chord */])().padAngle(padding)
+    let chord = Object(d3_chord_src["a" /* chord */])().padAngle(padding)
         // .sortSubgroups(d3Chord.descending)
 
     let matrix = {};
@@ -3236,45 +3287,76 @@ function Chord(arg) {
         });
     });
 
-    var colorValues = [];
+    let colorValues = [];
     matrix.color.forEach((row) => { colorValues = colorValues.concat(row)});
     colorValues = colorValues.filter(d => d !== 0)
-    
-    var chords = chord(matrix.size);
+
+    let chords = chord(matrix.size);
 
     if(colorDomain === null) {
         colorDomain = [Math.min.apply(null, colorValues), Math.max.apply(null, colorValues)];
     }
 
-    var getColor = mapColor(colors, colorDomain);
-    var svg = container;
+    let interpolateColor = mapColor(colors, colorDomain);
 
-    var core = svg.append("g")
-        .attr("class", "chord")
-        .selectAll("path")
-        .data(chords)
-        .enter();
+    let getColor = function(d) {
+        console.log(d)
+        let send = matrix.color[d.source.index][d.target.index];
+        let recv = matrix.color[d.target.index][d.source.index];
+        return interpolateColor(Math.max(send, recv));
+    } 
+    let svg = container;
+    let links;
 
-    var ribbons = core.append("path").attr("class", "ribbons")
-        .attr("d", Object(d3_chord_src["b" /* ribbon */])().radius(radius))
-        .style("fill",  function(d){
-            var send = matrix.color[d.source.index][d.target.index];
-            var recv = matrix.color[d.target.index][d.source.index];
+    if(chords.groups.length < 10) {
+        let core = svg.append("g")
+            .attr("class", "chord")
+            .selectAll("path")
+            .data(chords)
+            .enter();
 
-            return getColor(Math.max(send, recv));
+        links = core.append("path").attr("class", "ribbons")
+            .attr("d", Object(d3_chord_src["b" /* ribbon */])().radius(radius))
+            .style("fill",  getColor)
+            .style("stroke", "#FFF")
+            .style("opacity", 1);
+    } else {
+        let line = Object(d3_shape_src["f" /* lineRadial */])()
+            .curve(d3_shape_src["d" /* curveBundle */].beta(0.5))
+            .radius(d => d.radius)
+            .angle(d => { return d.angle})
+
+        let linkData = chords.map((conn) => {
+            let source = chords.groups[conn.source.index];
+            let sourceAngle = source.startAngle + (source.endAngle - source.startAngle) / 2;
+            let target = chords.groups[conn.target.index];
+            let targetAngle = target.startAngle + (target.endAngle - target.startAngle) / 2;
+            return {
+                points: [
+                    {angle: sourceAngle, radius},
+                    {angle: 0, radius: 0, link: conn}, // curve midpoint
+                    {angle: targetAngle, radius}
+                ], 
+                link: conn 
+            } 
         })
-        .style("stroke", "#FFF")
-        .style("opacity", 1);
+
+        links = svg.append("g")
+            .selectAll(".links")
+            .data(linkData)
+            .enter().append('path')
+            .attr('class', 'link')
+            .attr('d', d => line(d.points))
+            .attr('fill', 'none')
+            .style("stroke-width", 2)
+            .style("stroke", d => getColor(d.link))
+    }
 
     chords.colorDomain = colorDomain;
     chords.updateColor = function(colorDomain) {
         chords.colorDomain = colorDomain;
-        getColor.domain(colorDomain);
-        ribbons.style("fill", function(d){
-            var send = data[d.source.index][d.target.index][vmap.color];
-            var recv =  data[d.target.index][d.source.index][vmap.color];
-            return getColor(Math.max(send, recv));
-        })
+        interpolateColor.domain(colorDomain);
+        links.style("fill", getColor);
     }
     return chords;
 }
@@ -3334,9 +3416,6 @@ function stats_stats(data, fields){
 
     return result;
 };
-// EXTERNAL MODULE: ./node_modules/d3-shape/src/index.js + 50 modules
-var d3_shape_src = __webpack_require__("1gFY");
-
 // EXTERNAL MODULE: ./node_modules/d3-selection/src/index.js + 49 modules
 var d3_selection_src = __webpack_require__("sHXk");
 
@@ -3980,6 +4059,13 @@ module.exports = stats;
 
 /***/ }),
 
+/***/ "VXnA":
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ "XLO3":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -4279,7 +4365,7 @@ module.exports = function(data, spec){
 "use strict";
  
 class Transpiler {
-  constructor(attributes) {
+  constructor(attributes, categories) {
    this.attributes = attributes
   }
 
@@ -4289,31 +4375,71 @@ class Transpiler {
       let opt = Object.keys(rule)[0]
       if(opt == '$aggregate') {
         spec.push({$aggregate: this.aggregate(rule[opt])})
+      } else if(opt == '$visualize') {
+        spec.push({$visualize: this.visualize(rule[opt])})
       }
       else {
-        spec.push(Object.assign({}, rule));
+        spec.push(Object.assign({}, rule))
       }
-    } 
-
+    }
     return spec
   }
 
   aggregate (rule) {
     let includes = rule.$include || this.attributes
     let excludes = rule.$exclude || []
-    let calculates = rule.$calculate
+    let calculates = rule.$calculate || []
     let fields = includes.filter(attr => excludes.indexOf(attr) === -1)
     let collection = {}
 
-    calculates.forEach( opt => {
-      fields.forEach( field => {
-        let metric = [opt, field].join('.');
-        collection[metric] = {}
-        collection[metric]['$'+opt] = field
-      })
-    })
-
+    for (let opt of calculates) {
+      if (opt === 'count') {
+        collection['count'] = {$count: '*'}
+      } else {
+        fields.forEach( field => {
+          let metric = [opt, field].join('.');
+          collection[metric] = {}
+          collection[metric]['$'+opt] = field
+        })
+      }
+    }
     return Object.assign({$collect: collection}, rule)
+  }
+
+
+  visualize (rule) {
+    let facets = rule.facets || rule.facet
+
+    if (facets === undefined) return rule
+
+    let rows = facets.rows || facets.row
+    let columns = facets.columns || facets.column
+    let spec = rows || columns
+    let key = spec.key || spec.name
+    let values = spec.values || []
+    let encodings = Object.keys(rule).filter(k => k !== 'facets')
+
+    let variables = Object.keys(spec)
+
+    let minLoopCount = Math.min(...variables.map(v => spec[v].length))
+
+    let vmaps = new Array(minLoopCount)
+    for(let i = 0; i < minLoopCount; i++) {
+      let vmap = {}
+      encodings.forEach(code => {
+        let vi = variables.indexOf(rule[code])
+        if(vi < 0) {
+          vmap[code] = rule[code]     
+        } else {
+          vmap[code] = spec[variables[vi]][i]
+        }
+      })
+      vmaps[i] = vmap
+    }
+    vmaps.facets = facets
+    vmaps.order = facets.order
+    vmaps.sortBy = facets.sortBy
+    return vmaps
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Transpiler;
@@ -4487,6 +4613,316 @@ function validate(actual, expected, _delta) {
     }
 
 }
+
+/***/ }),
+
+/***/ "g2B4":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+// EXTERNAL MODULE: ./node_modules/d3-scale/src/index.js + 48 modules
+var src = __webpack_require__("dJjO");
+
+// EXTERNAL MODULE: ./node_modules/d3-selection/src/index.js + 49 modules
+var d3_selection_src = __webpack_require__("sHXk");
+
+// EXTERNAL MODULE: ./node_modules/d3-interpolate/src/index.js + 24 modules
+var d3_interpolate_src = __webpack_require__("JyCv");
+
+// EXTERNAL MODULE: ./node_modules/d3-axis/src/index.js + 3 modules
+var d3_axis_src = __webpack_require__("Mx2h");
+
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/plot.js
+
+
+
+
+
+let Data = {
+    json: [],
+    domains: {},
+    vmap: {}
+}
+
+let View = {
+    container: null,
+    svg: null,
+    height: 300,
+    width: 400,
+    axes: true
+}
+
+class plot_Plot {
+    constructor(data = Data, view = View) {
+        this.data = data;
+        this.view = view;
+        this.container = view.container;
+        this.padding = view.padding || {top: 0, bottom: 0, left: 0, right: 0};
+        this.height = view.height;
+        this.width = view.width;
+        this.svg = {};
+
+        if(!view.svg || view.svg === null) {
+            if(view.container !== null) {
+                this.svg = this.createSvg();
+            }
+            this.height -= this.padding.top + this.padding.bottom;
+            this.width -= this.padding.left + this.padding.right;
+            this.svg.main = this.svg.append('g')
+                .attr("transform", `translate(${this.padding.left}, ${this.padding.top})`);
+    
+        } else {
+            this.svg.main = Object(d3_selection_src["a" /* select */])(view.svg);
+        }
+
+        if(this.data.json) {
+            this.scales = this.getScales();
+        }
+    }
+
+    createSvg() {
+        let svg = Object(d3_selection_src["a" /* select */])(this.container)
+            .append('svg')
+                .attr('width', this.width)
+                .attr('height', this.height);
+        return svg;
+    }
+
+    channels() {
+        return {
+            x: [0, this.width],
+            y: [this.height, 0],
+            color: ['steelblue', 'red'],
+            opacity: [0, 1],
+            size: [2, 20],
+            width: [0, this.width],
+            height: [0, this.height]
+        }
+    }
+
+    getScales() {
+        let scales = {};
+        let channels = this.channels();
+        let vmap = this.data.vmap;
+        let domains = this.data.domains || null;
+        let fields = this.data.fields || null;
+        if(fields === null && this.data.json) {
+            this.data.fields = Object.keys(this.data.json[0]);
+            fields = Object.keys(this.data.json[0]);
+        }
+        
+        for (let channel of Object.keys(channels)) {
+            if(channel in vmap && fields.indexOf(vmap[channel]) !== -1) {
+                let domain; 
+                if(domains === null) {
+                    let value = this.data.json.map(d=>d[vmap[channel]]);
+                    let min = Math.min(...value) || 0;
+                    let max = Math.max(...value) || 0;
+                   
+                    if(max === min) {
+                        max += 1e-6;
+                    }
+                    domain = [min, max];
+                } else {
+                    domain = domains[vmap[channel]] || [0, 1];
+                }
+                
+                let range = channels[channel];
+                scales[channel] = Object(src["a" /* scaleLinear */])().domain(domain).range(range);
+                if(channel == 'color') {
+                    scales[channel].interpolate(d3_interpolate_src["c" /* interpolateHcl */])
+                }
+            } else {
+                scales[channel] = () => vmap[channel]
+            }
+        }
+
+        return scales;
+    }
+
+    axes() {
+        if(!this.view.hideAxes) {
+            this.xAxis = this.svg.main.append('g')
+            .attr("transform", `translate(0, ${this.height})`)
+            .call(Object(d3_axis_src["a" /* axisBottom */])(this.scales.x))
+            
+            this.yAxis = this.svg.main.append('g')
+                .call(Object(d3_axis_src["b" /* axisLeft */])(this.scales.y).ticks(this.height/20))
+
+            if(this.view.gridlines && this.view.gridlines.y) {
+                this.yGridlines = this.yAxis.append('g')
+                .style('opacity', 0.3)
+                .call(Object(d3_axis_src["b" /* axisLeft */])(this.scales.y).ticks(this.height/30).tickSize(-this.width))
+                .selectAll('text').remove()
+            }
+            
+        }
+    }
+
+    render() {
+        this.axes();
+    }
+}
+// EXTERNAL MODULE: ./node_modules/d3-shape/src/index.js + 50 modules
+var d3_shape_src = __webpack_require__("1gFY");
+
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/area.js
+
+
+
+class area_AreaChart extends plot_Plot {
+   
+    constructor(data, view) {
+        super(data, view);
+        this.render();
+    }
+
+    render() {
+        let vmap = this.data.vmap;
+
+        super.axes();
+        let shape = Object(d3_shape_src["b" /* area */])()
+            .curve(d3_shape_src["c" /* curveBasis */])
+            .x( d => this.scales.x(d[vmap.x]) )
+            .y0(this.height)
+            .y1( d => this.scales.y(d[vmap.y]) );
+
+        this.svg.main.append("path")
+            .datum(this.data.json)
+            .attr("d", shape)
+            .style("fill", vmap.color)
+            .style("fill-opacity", vmap.opacity)
+            .style("stroke-width", 0)
+    }
+}
+// EXTERNAL MODULE: ./node_modules/d3-scale-chromatic/src/index.js + 42 modules
+var d3_scale_chromatic_src = __webpack_require__("u6Xv");
+
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/spline.js
+
+
+
+
+
+class spline_Spline extends plot_Plot {
+    constructor(data, view) {
+        super(data, view);
+        this.render();
+    }
+
+    render() {
+        let vmap = this.data.vmap;
+        super.axes();
+        let path = Object(d3_shape_src["e" /* line */])()
+            .curve(d3_shape_src["c" /* curveBasis */])
+            .x( d => this.scales.x(d[vmap.x]) )
+            .y( d => this.scales.y(d[vmap.y]) );
+    
+       
+        let datum = this.data.json;
+        let color = () => vmap.color
+        if(this.data.fields.indexOf(vmap.color) !== -1) {
+            let result = {}
+            this.data.json.forEach(function(d){
+                if(result.hasOwnProperty(d[vmap.color])) {
+                    result[d[vmap.color]].push(d)
+                } else {
+                    result[d[vmap.color]] = [];
+                }
+            })
+            datum = result;
+
+            color = Object(src["b" /* scaleOrdinal */])(d3_scale_chromatic_src["schemeCategory10"]);
+        }
+
+        if(Array.isArray(datum)) {
+            this.svg.main.append("path")
+            .datum(datum)
+            .attr("d", path)
+            .style("fill", 'none')
+            .style("stroke", vmap.color)
+            .style("stroke-width", vmap.size)
+        } else if(typeof(datum) == 'object') {
+            let series = Object.keys(datum);
+            series .forEach((sample, di) => {
+                this.svg.main.append("path")
+                .datum(datum[sample])
+                .attr("d", path)
+                .style("fill", 'none')
+                .style("stroke", color(sample))
+                .style("stroke-width", vmap.size)
+            
+                let legendWidth = Math.min(15, this.padding.right/2);
+                let legendPosY = (di + 1) * Math.min(30, this.width / series.length);
+                this.svg.main.append('rect')
+                    .attr('x', this.width + 10)
+                    .attr('y', legendPosY)
+                    .attr('width', legendWidth)
+                    .attr('height', 6)
+                    .style('fill', color(sample))
+                
+                this.svg.main.append('text')
+                    .attr('x', this.width + 15 + legendWidth)
+                    .attr('y', legendPosY + 6)
+                    .text(sample)
+
+                if(di == 0){
+                    this.svg.main.append('text')
+                        .attr('x', this.width + 10 + legendWidth/2)
+                        .attr('y', 6)
+                        .text(vmap.color)
+                }
+
+            })
+
+
+        }
+
+    }
+}
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/circle.js
+
+
+class ScatterPlot extends plot_Plot {
+   
+    constructor(data, view) {
+        super(data, view);
+        this.render();
+    }
+
+    render() {
+        let vmap = this.data.vmap;
+
+        super.axes();
+
+        this.svg.main.selectAll('.plot-circles')
+            .data(this.data.json)
+            .enter()
+            .append('circle')
+                .attr('class', 'plot-circles')
+                .attr('cx', d => this.scales.x(d[vmap.x]))
+                .attr('cy', d => this.scales.y(d[vmap.y]))
+                .attr('r', d => this.scales.size(d[vmap.size]))
+                .style("fill", d => this.scales.color(d[vmap.color]))
+                .style("fill-opacity", 1)
+                .style("stroke-width", 0)
+    }
+}
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/index.js
+
+
+
+
+
+/* harmony default export */ var p_plot = __webpack_exports__["a"] = ({
+    Plot: plot_Plot,
+    ScatterPlot: ScatterPlot,
+    AreaChart: area_AreaChart,
+    Spline: spline_Spline
+});
+
+
 
 /***/ }),
 
@@ -5004,19 +5440,7 @@ function input({
         $p.ctx.readPixels(offset[0], offset[1], rowSize, colSize, gl.RGBA, gl.UNSIGNED_BYTE, result);
         return result.filter(function(d, i){ return i%4===3;} );
     }
-
-    output.clearViews = function() {
-        $p.bindFramebuffer("offScreenFBO");
-        $p.ctx.clearColor( 0.0, 0.0, 0.0, 0.0 );
-        $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
-        $p.bindFramebuffer("visStats");
-        $p.ctx.clearColor( 0.0, 0.0, 0.0, 0.0 );
-        $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
-        $p.bindFramebuffer(null);
-        $p.ctx.clearColor( 0.0, 0.0, 0.0, 0.0 );
-        $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
-    }
-
+    
     return output;
 });
 
@@ -5026,18 +5450,20 @@ var flexgl = __webpack_require__("uGFW");
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/initialize.js
 
 
-function init(options) {
-    var $p = options.context || null,
-        container = options.container || document.body,
-        viewport = options.viewport || [800, 450],
-        padding = {left:0, right: 0,top: 0, bottom: 0},
-        glAttr = options.attributes || {};
-
-    var defaultLayout = [
+function init({
+    context = null,
+    container = document.body,
+    viewport =  [800, 450],
+    padding = {left:0, right: 0,top: 0, bottom: 0},
+    attributes = {},
+    views
+}){
+    let $p = context;
+    let defaultLayout = [
         {
             width: viewport[0],
             height: viewport[1],
-            padding: {left: 30, right: 30, top: 30, bottom: 30},
+            // padding: {left: 30, right: 30, top: 30, bottom: 30},
             offset: [0, 0]
         }
     ];
@@ -5046,14 +5472,14 @@ function init(options) {
             container: container,
             width: viewport[0],
             height: viewport[1],
-            padding: padding,
-            attributes: glAttr
+            padding: {left:0, right: 0,top: 0, bottom: 0},
+            attributes: attributes
         });
-        $p.padding = padding;
-        $p.viewport = viewport;
     }
     $p.container = container;
-    $p.views = options.views || defaultLayout;
+    $p.padding = padding;
+    $p.viewport = viewport;
+    $p.views = views || defaultLayout;
     return $p;
 }
 
@@ -5529,6 +5955,70 @@ function interact($p, options) {
 
     return control;
 });
+
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/view.js
+/* harmony default export */ var view = (function ($p) {
+    return {
+        view(views) {
+            $p.views.forEach(function(v){
+                if(v.hasOwnProperty('chart')) {
+                    v.chart.svg.remove();
+                    v.chart.removeAxis();
+                    v.chart.removeLegend();
+                    delete v.chart;
+                }
+                if(!v.hasOwnProperty('padding')) {
+                    v.padding = {left: 30, right: 30, top: 30, bottom: 30};
+                }
+            })
+            $p.views = views;
+            return this;
+        },
+
+        addView(view) {
+            $p.views.push(view);
+        },
+
+        updateViews(views) {
+            $p.views = views;
+            return this;
+        },
+
+        resetViews() {
+            $p.views.forEach(function(v){
+                if(v.hasOwnProperty('chart')) {
+                    v.chart.svg.remove();
+                    delete v.chart;
+                }
+            })
+            return this;
+        },
+
+        generateViews({
+            layout = 'rows',
+            count = 1,
+            width = 640,
+            height = 480,
+            padding = {left: 0, right: 0, top: 0, bottom: 0}
+        }) {
+            let views = new Array(count);
+            let calcOffset;
+            if (layout == 'rows') {
+                height = height / count
+                calcOffset = (index) => [0, index * height / count];
+            } else {
+                width = width / count
+                calcOffset = (index) => [index * width / count, 0];
+            }
+            for (let i = 0; i < count; i++) {
+                let offset = calcOffset(i);
+                views[i] = {width, height, padding, offset};
+            }
+            return views
+        }
+    }
+});
+
 
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/pipeline.js
 function pipeline($p) {    
@@ -6072,7 +6562,7 @@ function derive($p, spec) {
         .uniform("uDeriveId", "int", 0)
         .subroutine("getDerivedValue", "float", new Function("$int_index", "$vec2_pos", marco));
 
-
+    console.log(marco)
     function vertexShader() {
         gl_PointSize = 1.0;
 
@@ -6886,9 +7376,6 @@ function mapColorRGB({fieldId = 'int', value = 'float'}) {
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/vis/reveal.js
 
 function reveal($p) {
-    var viewport = $p.viewport,
-        padding = $p.padding;
-
     $p.uniform('uRevealMode', 'int', 1)
         .framebuffer("offScreenFBO", "float", $p.viewport)
         .framebuffer("visStats", "float", [1, 1]);
@@ -6896,9 +7383,8 @@ function reveal($p) {
     var aViewX = new Float32Array($p.viewport[0]).map((d, i) => i);
     var aViewY = new Float32Array($p.viewport[1]).map((d, i) => i);
 
-    $p.attribute("aViewX", "float", aViewX)
-        .attribute("aViewY", "float", aViewY);
-
+    $p.attribute("aViewX", "float", aViewX);
+    $p.attribute("aViewY", "float", aViewY);
     $p.ctx.ext.vertexAttribDivisorANGLE($p.attribute.aViewX.location, 0);
     $p.ctx.ext.vertexAttribDivisorANGLE($p.attribute.aViewY.location, 1);
 
@@ -6941,6 +7427,8 @@ function reveal($p) {
 
     $p.program("vis-render", vs2, fs2);
 
+    let isFBOAllocatedFBO = false;
+
     return function(options) {
         var gl,
             viewIndex = options.viewIndex,
@@ -6949,27 +7437,38 @@ function reveal($p) {
             padding = options.padding || {left: 0, right: 0, left: 0, right:0};
 
         if(!$p._update) {
-            $p.framebuffer("visStats", "float", [1, 1]);
+
+            if(!isFBOAllocatedFBO) {
+                isFBOAllocatedFBO = true;
+                $p.framebuffer("visStats", "float", [1, $p.views.length]);
+            }
             gl = $p.program("post-processing");
             $p.framebuffer.enableRead("offScreenFBO");
             $p.bindFramebuffer("visStats");
+
+            $p.ctx.ext.vertexAttribDivisorANGLE($p.attribute._square.location, 0);
             $p.ctx.ext.vertexAttribDivisorANGLE($p.attribute.aViewX.location, 0);
             $p.ctx.ext.vertexAttribDivisorANGLE($p.attribute.aViewY.location, 1);
-            gl.clearColor( 0.0, 0.0, 0.0, 0.0 );
-            gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+            // gl.clearColor( 0.0, 0.0, 0.0, 0.0 );
+            // gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
             gl.disable(gl.CULL_FACE);
             gl.disable(gl.DEPTH_TEST);
             gl.enable( gl.BLEND );
             gl.blendFunc( gl.ONE, gl.ONE );
             gl.blendEquation(gl.MAX_EXT);
-            gl.viewport(0, 0, 1, 1);
-            gl.ext.drawArraysInstancedANGLE(gl.POINTS, 0,  viewDim[0], viewDim[1]);
+            gl.viewport(0, viewIndex, 1, 1);
+            gl.ext.drawArraysInstancedANGLE(
+                gl.POINTS,
+                0,
+                viewDim[0],
+                viewDim[1]);
 
             var max = new Float32Array(4);
-            gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.FLOAT, max);
-            if(max[3] == 0) {
-                max[3] = Math.sqrt($p.dataSize) * Math.log2($p.dataSize);
-            }
+            gl.readPixels(0, viewIndex, 1, 1, gl.RGBA, gl.FLOAT, max);
+            // if(max[3] == 0) {
+            //     max[3] = Math.sqrt($p.dataSize) * Math.log2($p.dataSize);
+            // }
+            console.log(offset, viewDim);
             $p.views[viewIndex].maxRGBA = max;
         }
 
@@ -6982,7 +7481,8 @@ function reveal($p) {
 
         gl.viewport(
             offset[0] + padding.left,
-            offset[1] + padding.bottom,
+            // offset[1] + padding.bottom,
+            $p.viewport[1] - viewDim[1] + padding.bottom - offset[1],
             viewDim[0] - padding.left - padding.right,
             viewDim[1] - padding.top - padding.bottom
         );
@@ -7035,6 +7535,7 @@ function encode($p, vmap, colorManager) {
     ) {
         $p.revealDensity = true;
         $p.uniform.uRevealMode.data = 0;
+        // $p.uniform.uDefaultAlpha.data = 1.0;
     }
 
     if(vmapIndex[6] === -1 && typeof(vmap.size) == 'number') {
@@ -7099,13 +7600,13 @@ function encode($p, vmap, colorManager) {
 
     if(!$p._update) {
         if(!vmap.width && vmap.x) {
-            $p.uniform.uDefaultWidth.data = 1.0 / ($p.fieldWidths[$p.fields.indexOf(vmap.x)] );
+            $p.uniform.uDefaultWidth.data = 1.0 / ($p.fieldWidths[$p.fields.indexOf(vmap.x)]);
         } else if(vmapIndex[4] === -1 && typeof(vmap.width) == 'number') {
             $p.uniform.uDefaultWidth.data = vmap.width / width;
         }
 
         if(!vmap.height && vmap.y) {
-            $p.uniform.uDefaultHeight.data = 1.0 / ($p.fieldWidths[$p.fields.indexOf(vmap.y)] );
+            $p.uniform.uDefaultHeight.data = 1.0 / ($p.fieldWidths[$p.fields.indexOf(vmap.y)]);
         } else if(vmapIndex[5] === -1 && typeof(vmap.width) == 'number') {
             $p.uniform.uDefaultHeight.data = vmap.height / height;
         }
@@ -8655,9 +9156,13 @@ function visualize($p) {
     let enhance = reveal($p);
 
     $p.framebuffer('offScreenFBO', 'float', $p.viewport);
-    $p.framebuffer('visStats', 'float', [1, 1]);
+    // $p.framebuffer('visStats', 'float', [1, 1]);
+    // $p.framebuffer("visStats", "float", [$p.views.length, 1]);
     // $p.framebuffer.enableRead('offScreenFBO');
-
+    $p.bindFramebuffer('offScreenFBO');
+    $p.ctx.clearColor( 1.0, 1.0, 1.0, 0.0 );
+    $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
+    $p.bindFramebuffer(null);
     $p.subroutine('visMap', 'float', interpolate_gl.visMap);
     
     let renderers = {
@@ -8677,8 +9182,8 @@ function visualize($p) {
         let visDimension = vmap.viewport || [$p.views[viewIndex].width, $p.views[viewIndex].height] || viewport;
         let width = visDimension[0];
         let height =  visDimension[1];
-        let padding = $p.views[viewIndex].padding || chartPadding;
-        let offset = $p.views[viewIndex].offset || [0, 0];
+        let padding = vmap.padding || $p.views[viewIndex].padding || chartPadding;
+        let offset = vmap.offset || $p.views[viewIndex].offset || [0, 0];
         let dimSetting = encode($p, vmap, colorManager);
 
         let pv = $p.views[viewIndex];
@@ -8695,7 +9200,7 @@ function visualize($p) {
             categories: $p.categoryLookup,
             padding: padding,
             left: offset[0],
-            top: viewport[1] - height - offset[1],
+            top:  offset[1],
             colors: colorManager.getColors(),
         };
 
@@ -8770,14 +9275,12 @@ function visualize($p) {
             gl.blendFunc( gl.ONE, gl.ONE_MINUS_SRC_ALPHA );
             // gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_ALPHA);
         }
-
         gl.viewport(
             offset[0] + padding.left,
-            offset[1] + padding.bottom,
-            width-padding.left-padding.right,
-            height-padding.top-padding.bottom
+            viewport[1] - height + padding.bottom - offset[1],
+            width - padding.left - padding.right,
+            height - padding.top - padding.bottom
         );
-
         gl.disable(gl.CULL_FACE);
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
@@ -8912,7 +9415,6 @@ function compile($p, fields, spec) {
             spec.$group = binSpecs.map((spec, ii) => {
                 return bin(spec, ii);
             })
-            
         }
         if(Object.keys($p.crossfilters).length) {
             $p.uniform.uFilterFlag = 1;
@@ -8952,12 +9454,21 @@ function compile($p, fields, spec) {
         // if(Object.keys($p.crossfilters).length > 0)
         //     operations.match({});
         let vmaps = Array.isArray(vmap) ? vmap : [vmap];
+        if($p.grid.views.length < vmaps.length) {
+            $p.grid.reset();
+            $p.views = $p.grid.generateViews({
+                count: vmaps.length, 
+                width: $p.viewport[0],
+                height: $p.viewport[1],
+                padding: $p.padding
+            })
+        }
 
-        vmaps.forEach( (vmap) => {
+        vmaps.forEach( (vmap, vi) => {
             if (!kernels.hasOwnProperty('visualize')) {
                 kernels.visualize = src_kernels.visualize($p);
             }
-            let viewIndex = 0;
+            let viewIndex = vi;
             if(typeof vmap.id == 'string') {
                 viewIndex = $p.views.map(d=>d.id).indexOf(vmap.id);
                 if(viewIndex == -1) {
@@ -8971,6 +9482,7 @@ function compile($p, fields, spec) {
                     }
                 }
             }
+
             if(vmap.mark == 'bar') vmap.zero = true;
             $p.views[viewIndex].vmap = vmap;
             let encoding = vmap,
@@ -8994,266 +9506,8 @@ function compile($p, fields, spec) {
 
     return operations;
 });
-// EXTERNAL MODULE: ./node_modules/d3-scale/src/index.js + 48 modules
-var src = __webpack_require__("dJjO");
-
-// EXTERNAL MODULE: ./node_modules/d3-selection/src/index.js + 49 modules
-var d3_selection_src = __webpack_require__("sHXk");
-
-// EXTERNAL MODULE: ./node_modules/d3-axis/src/index.js + 3 modules
-var d3_axis_src = __webpack_require__("Mx2h");
-
-// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/plot.js
-
-
-
-
-let Data = {
-    json: [],
-    domains: {},
-    vmap: {}
-}
-
-let View = {
-    container: null,
-    svg: null,
-    height: 300,
-    width: 400,
-    axes: true
-}
-
-class plot_Plot {
-    constructor(data = Data, view = View) {
-        this.data = data;
-        this.view = view;
-        this.container = view.container;
-        this.padding = view.padding || {top: 0, bottom: 0, left: 0, right: 0};
-        this.height = view.height;
-        this.width = view.width;
-        this.svg = {};
-
-        if(!view.svg || view.svg === null) {
-            if(view.container !== null) {
-                this.svg = this.createSvg();
-            }
-            this.height -= this.padding.top + this.padding.bottom;
-            this.width -= this.padding.left + this.padding.right;
-            this.svg.main = this.svg.append('g')
-                .attr("transform", `translate(${this.padding.left}, ${this.padding.top})`);
-    
-        } else {
-            this.svg.main = Object(d3_selection_src["a" /* select */])(view.svg);
-        }
-
-        if(this.data.json) {
-            this.scales = this.getScales();
-        }
-    }
-
-    createSvg() {
-        let svg = Object(d3_selection_src["a" /* select */])(this.container)
-            .append('svg')
-                .attr('width', this.width)
-                .attr('height', this.height);
-        return svg;
-    }
-
-    channels() {
-        return {
-            x: [0, this.width],
-            y: [this.height, 0],
-            color: ['white', 'green'],
-            opacity: [0, 1],
-            size: [2, 20],
-            width: [0, this.width],
-            height: [0, this.height]
-        }
-    }
-
-    getScales() {
-        let scales = {};
-        let channels = this.channels();
-        let vmap = this.data.vmap;
-        let domains = this.data.domains || null;
-        // let fields = this.data.fields || null;
-        // if(fields === null) fields = Object.keys(this.data.json[0]);
-        
-        for (let channel of Object.keys(channels)) {
-            if(channel in vmap) {
-                let domain; 
-                if(domains === null) {
-                    let value = this.data.json.map(d=>d[vmap[channel]]);
-                    let min = Math.min(...value) || 0;
-                    let max = Math.max(...value) || 0;
-                   
-                    if(max === min) {
-                        max += 1e-6;
-                    }
-                    domain = [min, max];
-                } else {
-                    domain = domains[vmap[channel]] || [0, 1];
-                }
-                
-                let range = channels[channel];
-                scales[channel] = Object(src["a" /* scaleLinear */])().domain(domain).range(range);
-            }
-        }
-
-        return scales;
-    }
-
-    axes() {
-        if(!this.view.hideAxes) {
-            this.xAxis = this.svg.main.append('g')
-            .attr("transform", `translate(0, ${this.height})`)
-            .call(Object(d3_axis_src["a" /* axisBottom */])(this.scales.x))
-            
-            this.yAxis = this.svg.main.append('g')
-                .call(Object(d3_axis_src["b" /* axisLeft */])(this.scales.y).ticks(this.height/20))
-
-            if(this.view.gridlines && this.view.gridlines.y) {
-                this.yGridlines = this.yAxis.append('g')
-                .style('opacity', 0.3)
-                .call(Object(d3_axis_src["b" /* axisLeft */])(this.scales.y).ticks(this.height/30).tickSize(-this.width))
-                .selectAll('text').remove()
-            }
-            
-        }
-    }
-
-    render() {
-        this.axes();
-    }
-}
-// EXTERNAL MODULE: ./node_modules/d3-shape/src/index.js + 50 modules
-var d3_shape_src = __webpack_require__("1gFY");
-
-// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/area.js
-
-
-
-class area_AreaChart extends plot_Plot {
-   
-    constructor(data, view) {
-        super(data, view);
-        this.render();
-    }
-
-    render() {
-        let vmap = this.data.vmap;
-
-        super.axes();
-        let shape = Object(d3_shape_src["b" /* area */])()
-            .curve(d3_shape_src["c" /* curveBasis */])
-            .x( d => this.scales.x(d[vmap.x]) )
-            .y0(this.height)
-            .y1( d => this.scales.y(d[vmap.y]) );
-
-        this.svg.main.append("path")
-            .datum(this.data.json)
-            .attr("d", shape)
-            .style("fill", vmap.color)
-            .style("fill-opacity", vmap.opacity)
-            .style("stroke", vmap.color)
-            .style("stroke-width", 1)
-    }
-}
-// EXTERNAL MODULE: ./node_modules/d3-scale-chromatic/src/index.js + 42 modules
-var d3_scale_chromatic_src = __webpack_require__("u6Xv");
-
-// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/src/spline.js
-
-
-
-
-
-class spline_Spline extends plot_Plot {
-    constructor(data, view) {
-        super(data, view);
-        this.render();
-    }
-
-    render() {
-        let vmap = this.data.vmap;
-        super.axes();
-        let path = Object(d3_shape_src["d" /* line */])()
-            .curve(d3_shape_src["c" /* curveBasis */])
-            .x( d => this.scales.x(d[vmap.x]) )
-            .y( d => this.scales.y(d[vmap.y]) );
-    
-       
-        let datum = this.data.json;
-        let color = () => vmap.color
-        if(this.data.fields.indexOf(vmap.color) !== -1) {
-            let result = {}
-            this.data.json.forEach(function(d){
-                if(result.hasOwnProperty(d[vmap.color])) {
-                    result[d[vmap.color]].push(d)
-                } else {
-                    result[d[vmap.color]] = [];
-                }
-            })
-            datum = result;
-
-            color = Object(src["b" /* scaleOrdinal */])(d3_scale_chromatic_src["schemeCategory10"]);
-        }
-
-        if(Array.isArray(datum)) {
-            this.svg.main.append("path")
-            .datum(datum)
-            .attr("d", path)
-            .style("fill", 'none')
-            .style("stroke", vmap.color)
-            .style("stroke-width", vmap.size)
-        } else if(typeof(datum) == 'object') {
-            let series = Object.keys(datum);
-            series .forEach((sample, di) => {
-                this.svg.main.append("path")
-                .datum(datum[sample])
-                .attr("d", path)
-                .style("fill", 'none')
-                .style("stroke", color(sample))
-                .style("stroke-width", vmap.size)
-            
-                let legendWidth = Math.min(15, this.padding.right/2);
-                let legendPosY = (di + 1) * Math.min(30, this.width / series.length);
-                this.svg.main.append('rect')
-                    .attr('x', this.width + 10)
-                    .attr('y', legendPosY)
-                    .attr('width', legendWidth)
-                    .attr('height', 6)
-                    .style('fill', color(sample))
-                
-                this.svg.main.append('text')
-                    .attr('x', this.width + 15 + legendWidth)
-                    .attr('y', legendPosY + 6)
-                    .text(sample)
-
-                if(di == 0){
-                    this.svg.main.append('text')
-                        .attr('x', this.width + 10 + legendWidth/2)
-                        .attr('y', 6)
-                        .text(vmap.color)
-                }
-
-            })
-
-
-        }
-
-    }
-}
-// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/index.js
-
-
-
-
-/* harmony default export */ var p_plot = ({
-    Plot: plot_Plot,
-    AreaChart: area_AreaChart,
-    Spline: spline_Spline
-});
-
+// EXTERNAL MODULE: /home/kelvin/Dropbox/workspace/p.pack/p.plot/index.js + 4 modules
+var p_plot = __webpack_require__("g2B4");
 
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/animate.js
 function getValue ({fieldId = 'int', addrX = 'float', addrY = 'float'}){
@@ -9437,7 +9691,7 @@ let fShader = function() {
         compute: true,
         condition: vmap => vmap.mark === 'spline', 
         type: 'class',
-        function: p_plot.Spline
+        function: p_plot["a" /* default */].Spline
     },
     {
         name: 'area',
@@ -9447,7 +9701,7 @@ let fShader = function() {
         restartOnUpdate: false,
         condition: vmap => vmap.mark === 'area', 
         type: 'class',
-        function: p_plot.AreaChart
+        function: p_plot["a" /* default */].AreaChart
     },
     // {
     //     name: 'animate',
@@ -9459,8 +9713,57 @@ let fShader = function() {
     //     function: animation
     // }
 ]);
+// CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/grid.js
+class Grid {
+    constructor(views) {
+        this.views = views
+    }
+
+    add (view) {
+        this.view.push(view)
+    }
+
+    reset () {
+        this.views.forEach(function(v){
+            if(v.hasOwnProperty('chart')) {
+                v.chart.svg.remove()
+                v.chart.removeAxis()
+                v.chart.removeLegend()
+                delete v.chart
+            }
+        })
+    }
+
+    generateViews ({
+        layout = 'rows',
+        count = 1,
+        width = 640,
+        height = 480,
+        padding = {left: 0, right: 0, top: 0, bottom: 0}
+    }) {
+        let views = new Array(count)
+        let calcOffset
+        height -= padding.top + padding.bottom;
+        width -= padding.left + padding.right;
+        if (layout == 'rows') {
+            height = height / count
+            calcOffset = (index) => [0, index * height]
+        } else {
+            width = width / count
+            calcOffset = (index) => [index * width, 0]
+        }
+        for (let i = 0; i < count; i++) {
+            let offset = calcOffset(i)
+            views[i] = {width, height, padding, offset}
+        }
+        this.views = views;
+        return views;
+    }
+}
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p4/src/main.js
 /* harmony export (immutable) */ __webpack_exports__["a"] = p4;
+
+
 
 
 
@@ -9497,6 +9800,7 @@ function p4(options) {
     api.ctx = $p;
     api.addModule(control);
     api.addModule(output);
+    // api.addModule(view);
 
     api.addOperation('head', function() {
         api.resume('__init__');
@@ -9504,6 +9808,16 @@ function p4(options) {
         $p.getResult = $p.getRawData;
         return api;
     });
+
+    $p.grid = {views: []};
+    api.view = function(views) {
+        if($p.grid.views.length !== 0) {
+            $p.grid.reset();
+        } 
+        $p.grid = new Grid(views);
+        $p.views = $p.grid.views;
+        return api;
+    }
     
     $p.reset = api.head;
     $p.exportResult = api.result;
@@ -9525,40 +9839,6 @@ function p4(options) {
         api.register('__init__');
     }
     
-    api.view = function(views) {
-        $p.views.forEach(function(v){
-            if(v.hasOwnProperty('chart')) {
-                v.chart.svg.remove();
-                v.chart.removeAxis();
-                v.chart.removeLegend();
-                delete v.chart;
-            }
-            if(!v.hasOwnProperty('padding')) {
-                v.padding = {left: 30, right: 30, top: 30, bottom: 30};
-            }
-        })
-        $p.views = views;
-        return api;
-    }
-
-    api.addView = function(view) {
-        $p.views.push(view);
-    }
-
-    api.updateViews = function(views) {
-        $p.views = views;
-        return api;
-    }
-
-    api.resetViews = function(views) {
-        $p.views.forEach(function(v){
-            if(v.hasOwnProperty('chart')) {
-                v.chart.svg.remove();
-                delete v.chart;
-            }
-        })
-    }
-
     api.data = function(dataOptions) {
         allocate($p, dataOptions);
         configPipeline($p);
@@ -9609,9 +9889,21 @@ function p4(options) {
         return $p.getResult(d);
     }
 
+    api.clearWebGLBuffers = function() {
+        $p.bindFramebuffer("offScreenFBO");
+        $p.ctx.clearColor( 0.0, 0.0, 0.0, 0.0 );
+        $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
+        $p.bindFramebuffer("visStats");
+        $p.ctx.clearColor( 0.0, 0.0, 0.0, 0.0 );
+        $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
+        $p.bindFramebuffer(null);
+        $p.ctx.clearColor( 0.0, 0.0, 0.0, 0.0 );
+        $p.ctx.clear( $p.ctx.COLOR_BUFFER_BIT | $p.ctx.DEPTH_BUFFER_BIT );
+    }
+
     api.runSpec = function(specs) {
         api.head();
-        api.clearViews();
+        api.clearWebGLBuffers();
         $p.interactions = [];
         $p.responses = {};
         $p.crossfilters = [];
@@ -9993,7 +10285,11 @@ class FileLoader {
   }
 }
 
+// EXTERNAL MODULE: /home/kelvin/Dropbox/workspace/p.pack/p5/src/Transpiler.js
+var Transpiler = __webpack_require__("Y1y4");
+
 // CONCATENATED MODULE: /home/kelvin/Dropbox/workspace/p.pack/p5/src/main.js
+
 
 
 
@@ -10058,6 +10354,12 @@ const OPERATIONS = ['aggregate', 'derive', 'match', 'visualize'];
             jobs.push(job);
             return p5;
         }
+    }
+
+    p5.transpile = function(spec) {
+        console.log(p4x.ctx.fields)
+        let tplr = new Transpiler["a" /* default */](p4x.ctx.fields)
+        return tplr.transpile(spec)
     }
 
     p5.jobs = function() {
@@ -10163,4 +10465,4 @@ const OPERATIONS = ['aggregate', 'derive', 'match', 'visualize'];
 /***/ })
 
 },["NHnr"]);
-//# sourceMappingURL=app.50c4b10a5cbd9182b410.js.map
+//# sourceMappingURL=app.c9a55680ea3b6d551404.js.map
