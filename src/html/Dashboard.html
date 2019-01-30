@@ -33,12 +33,13 @@
     <v-spacer></v-spacer>
     <v-flex xs2>
       <v-select
-        :items="modes"
-        label="App Mode"
-        v-model="defaultMode"
+        label="Analysis Mode"
+        :items="analyses"
+        v-model="selectedAnalysis"
         box
       ></v-select>
     </v-flex>
+
   </v-toolbar>
   <v-navigation-drawer
     v-model="left"
@@ -50,7 +51,7 @@
     <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn>
     <v-card>
       <v-card-title>
-        <span class="headline">Server and Data Settings</span>
+        <span class="headline">Server Settings</span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
@@ -61,14 +62,16 @@
             >
               Cannot connect to server!
             </v-alert>
+            <v-flex>
+              <v-select
+                :items="modes"
+                label="App Mode"
+                v-model="defaultMode"
+                box
+              ></v-select>
+            </v-flex>
             <v-flex xs12>
               <v-text-field box label="Server Address"  v-model="server" required></v-text-field>
-            </v-flex>
-            <v-flex xs12 sm6>
-              <v-text-field box label="Number of PEs" v-model="numPE" required></v-text-field>
-            </v-flex>
-            <v-flex xs12 sm6>
-              <v-text-field box label="Number of KPs per PE" v-model="numKP" required></v-text-field>
             </v-flex>
           </v-layout>
         </v-container>
@@ -113,13 +116,7 @@
                 >
                 </v-select>
               </v-flex>
-            <!-- <v-btn icon>
-              <v-icon>search</v-icon>
-            </v-btn> -->
             <v-spacer></v-spacer>
-            <!-- <v-btn icon>
-              <v-icon>apps</v-icon>
-            </v-btn> -->
             <v-switch
               :label="`Aggr`"
               v-model="isAggregated"
@@ -130,36 +127,18 @@
             </v-btn>
 
           </v-toolbar>
-          <v-card height="100%" id="vis-overview">
-          </v-card>
+          <TimeSeries ref="TimeSeries"></TimeSeries>
         </v-flex>
         <v-flex xs5 fill-height class="pa-2">
-          <v-toolbar dense>
-              <v-switch  v-bind:class="{hidden: selectedAnalysis != 'graph'}"
-              label="Intra-Comm"
-              v-model="showIntraComm"
-              v-on:change="visualizeComm(data)"
-            ></v-switch>
-            <v-spacer></v-spacer>
-            <v-overflow-btn
-              dense
-              style="max-width: 180px;"
-              label="Analysis Mode"
-              :items="analyses"
-              v-model="selectedAnalysis"
-            ></v-overflow-btn>
-          </v-toolbar>
-          <v-card class="fill-height">
-            <div v-bind:class="{hidden: selectedAnalysis != 'graph'}" id="graph-view"></div>
-            <div v-bind:class="{hidden: selectedAnalysis != 'PCA'}" id="stats-view"></div>
-          </v-card>
+          <Communication  ref="Communication" v-bind:class="{hidden: selectedAnalysis != 'Communication'}" />
+          <Dimensionality  ref="Dimensionality" class="fill-height" v-bind:class="{hidden: selectedAnalysis != 'Dimensionality'}" />
         </v-flex>
       </v-layout>
     </v-container>
   </v-content>
-  <v-footer color="blue-grey" class="white--text" app>
+  <!-- <v-footer color="blue-grey" class="white--text" app> -->
     <!-- <span> VIDi Labs, University of California, Davis </span>
     <v-spacer></v-spacer>
     <span>&copy; 2018</span> -->
-  </v-footer>
+  <!-- </v-footer> -->
 </v-app>

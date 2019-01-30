@@ -1,0 +1,14 @@
+<v-flex fill-height>
+  <v-toolbar dense>
+  <v-switch
+    label="Intra-Comm"
+    v-model="showIntraComm"
+    v-on:change="visualize()"
+  ></v-switch>
+  <v-spacer></v-spacer>
+
+  </v-toolbar>
+  <v-card class="fill-height">
+    <div id="graph-view"></div>
+  </v-card>
+</v-flex>

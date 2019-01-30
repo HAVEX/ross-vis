@@ -1,0 +1,18 @@
+<v-flex fill-height>
+    <v-toolbar dense>
+      Method:
+    <v-overflow-btn
+      dense
+      style="max-width: 180px;"
+      label="Analytical Method"
+      :items="methods"
+      v-model="selectedMethod"
+    ></v-overflow-btn>
+    <v-spacer></v-spacer>
+  
+    </v-toolbar>
+    <v-card class="fill-height">
+      <div id="stats-view"></div>
+    </v-card>
+  </v-flex>
+  
