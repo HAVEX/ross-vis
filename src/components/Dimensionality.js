@@ -27,7 +27,7 @@ export default {
         let container = document.getElementById('stats-view')
         let width = container.parentElement.clientWidth
         let height = container.parentElement.clientHeight * 0.9
-  
+        container.innerHTML = ''
         p4({
           container: 'stats-view',
           viewport: [width, height],
