@@ -88,6 +88,13 @@ export default {
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })
       )
+        console.log("a")
+        p4.ajax.get({
+            url: 'http://localhost:8888/cpd',
+            dataType:'json'
+        }).then(result => {
+            console.log(result)
+        })
     }
   }
 }

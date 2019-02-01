@@ -9,7 +9,8 @@ import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 import Dashboard from './components/Dashboard'
-
+import TimeSeries from './components/TimeSeries'
+import Dimensionality from './components/Dimensionality'
 
 export default new Router({
   routes: [
@@ -17,6 +18,16 @@ export default new Router({
       path: '/',
       name: 'Dashboard',
       component: Dashboard
-    }
+    },
+    {
+      path: '/cpd',
+      name: 'TimeSeries',
+      component: TimeSeries
+    },
+    {
+      path: '/pca',
+      name: 'Dimensionality',
+      component: Dimensionality
+    }      
   ]
 })

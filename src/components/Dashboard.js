@@ -1,5 +1,5 @@
 import tpl from '../html/Dashboard.html'
-import '../css/app.css'
+//import '../css/app.css'
 import p5 from 'p5'
 import p4 from 'p4'
 
@@ -37,7 +37,8 @@ export default {
     defaultMetrics: [
       'NeventProcessed', 
       'RbTotal',
-      'VirtualTimeDiff', 
+        'VirtualTimeDiff',
+        'ChangePointDetection',
       // 'NetworkRecv', 'NetworkSend'
     ],
     selectedMetrics: [],
