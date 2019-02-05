@@ -37,8 +37,7 @@ export default {
     defaultMetrics: [
       'NeventProcessed', 
       'RbTotal',
-        'VirtualTimeDiff',
-        'ChangePointDetection',
+      'VirtualTimeDiff',
       // 'NetworkRecv', 'NetworkSend'
     ],
     selectedMetrics: [],

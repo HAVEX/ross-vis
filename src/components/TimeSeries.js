@@ -1,8 +1,10 @@
 import p4 from 'p4'
+import template from '../html/TimeSeries.html'
+import axios from 'axios'
 
 export default {
   name: 'TimeSeries',
-  template: '<v-card height="100%" id="vis-overview"></v-card>',
+  template: template,
   data: () => ({
     data: null,
     view: null,
@@ -12,10 +14,12 @@ export default {
     metrics: null,
     selectedTimeDomain: null,
     isAggregated: true,
+    showCPD: false,
     selectedMeasure: null
   }),
   methods: {
     init (data) {
+      this.data = data
       let visContainer = document.getElementById('vis-overview')
       this.width = visContainer.clientWidth
       this.height = visContainer.clientHeight * 0.9
@@ -37,6 +41,7 @@ export default {
     },
 
     visualize (metrics, callback) {
+      this.metrics = metrics
       let viewSetting = {
         gridlines: {y: true},
         padding: {left: 70, right: 60, top: 10, bottom: 40},
@@ -87,14 +92,18 @@ export default {
         metrics.map((metric, mi) => {
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })
-      )
-        console.log("a")
-        p4.ajax.get({
-            url: 'http://localhost:8888/cpd',
-            dataType:'json'
-        }).then(result => {
-            console.log(result)
-        })
+      )     
+    },
+
+    visualizeCPD () {
+      axios.get('http://localhost:8888/cpd', {
+        params: {
+          metrics: this.metrics
+        }
+      }).then(result => {
+        console.log(result)
+      })
+
     }
   }
 }
