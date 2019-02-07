@@ -20,6 +20,7 @@ export default {
   methods: {
     init (data) {
       this.data = data
+      console.log(data)
       let visContainer = document.getElementById('vis-overview')
       this.width = visContainer.clientWidth
       this.height = visContainer.clientHeight * 0.9
@@ -74,7 +75,7 @@ export default {
           callback
         }
       }
-
+      
       let aggregation = [this.selectedTimeDomain]
 
       if(!this.isAggregated) {
@@ -101,7 +102,20 @@ export default {
           metrics: this.metrics
         }
       }).then(result => {
-        console.log(result)
+        let cpd_map = {
+          mark: 'line',
+          x: this.selectedTimeDomain,          
+          color: 'red',
+          size: 3,
+        }
+
+        let plot_points_index = result.data
+        this.vis.visualize(
+          this.metrics.map((metric, mi) => {
+            console.log(metric, mi)
+            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  
+          })
+        )
       })
 
     }
