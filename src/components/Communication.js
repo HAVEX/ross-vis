@@ -136,7 +136,7 @@ export default {
           container: '#graph-view',
           legend: true,
           width: container.clientWidth,
-          height: container.clientHeight
+          height: container.clientHeight*0.50
         },
         layers: layers
       })

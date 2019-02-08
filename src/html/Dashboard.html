@@ -6,7 +6,8 @@
     app
     clipped-right
   >
-    <v-toolbar-side-icon @click.stop="left = !left"></v-toolbar-side-icon>
+    <v-toolbar-side-icon @click.stop="left = !left">
+    </v-toolbar-side-icon>
     <v-toolbar-title style="margin-right: 3em;">{{ appName }}</v-toolbar-title>
     <v-flex xs2 class="ma-2">
       <v-select 
@@ -131,7 +132,7 @@
         </v-flex>
         <v-flex xs5 fill-height class="pa-2">
           <Communication  ref="Communication" v-bind:class="{hidden: selectedAnalysis != 'Communication'}" />
-          <Dimensionality  ref="Dimensionality" class="fill-height" v-bind:class="{hidden: selectedAnalysis != 'Dimensionality'}" />
+          <Dimensionality  ref="Dimensionality" v-bind:class="{hidden: selectedAnalysis != 'Dimensionality'}" />
         </v-flex>
       </v-layout>
     </v-container>

@@ -1,7 +1,19 @@
 <v-card height="100%" id="vis-overview">
-  <v-switch
-    label="CPD"
-    v-model="showCPD"
-    v-on:change="visualizeCPD()"
-  ></v-switch>
+   <v-toolbar dense>
+     <v-switch
+       label="Change Point Detection"
+       v-model="showCPD"
+       v-on:change="visualizeCPD()"
+      ></v-switch>
+       <v-text-area
+          placeholder="Method:"
+        ></v-text-area>
+     <v-overflow-btn
+        dense
+        label="Analytical Method"
+        :items="methods"
+        v-model="selectedMethod"
+      ></v-overflow-btn>
+      <v-spacer></v-spacer>
+    </v-toolbar>
   </v-card>

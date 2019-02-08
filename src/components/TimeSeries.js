@@ -15,7 +15,9 @@ export default {
     selectedTimeDomain: null,
     isAggregated: true,
     showCPD: false,
-    selectedMeasure: null
+    selectedMeasure: null,
+    methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
+    selectedMethod :'AFF'
   }),
   methods: {
     init (data) {
@@ -102,6 +104,7 @@ export default {
           metrics: this.metrics
         }
       }).then(result => {
+        console.log(result)
         let cpd_map = {
           mark: 'line',
           x: this.selectedTimeDomain,          
@@ -110,12 +113,12 @@ export default {
         }
 
         let plot_points_index = result.data
-        this.vis.visualize(
-          this.metrics.map((metric, mi) => {
-            console.log(metric, mi)
-            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  
-          })
-        )
+//       this.vis.visualize(
+//           this.metrics.map((metric, mi) => {
+//             console.log(metric, mi)
+//            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  
+//           })
+//         )
       })
 
     }

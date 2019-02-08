@@ -32,6 +32,14 @@ To start the app server for listening HTTP and WebSocket requests on port 8888 a
 python server.py --http=8888 --datafile=<path-to-file> --appdir=../ross-vis/dist
 ```
 
+### To build
+ ``` npm run build
+ ```
+  
+### To enable automatic re-build
+  ``` npm run nodemon-build
+  ```
+
 ## Access the Client App
 After the server is started with HTTP port = 8888, use a web browser to access the ROSS-Vis app at:
 
