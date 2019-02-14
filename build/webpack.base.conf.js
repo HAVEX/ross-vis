@@ -9,10 +9,15 @@ function resolve (dir) {
 }
 
 module.exports = {
+  watch: true,
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000,
+    ignored: /node_modules/,
+
+  }, 
   context: path.resolve(__dirname, '../'),
-  entry: {
-    app: './src/main.js'
-  },
+  entry:'./src/main.js',
   output: {
     path: config.build.assetsRoot,
     filename: '[name].js',
