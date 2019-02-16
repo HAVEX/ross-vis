@@ -1,0 +1,28 @@
+<v-container fluid fill-height class="pa-1">
+  <v-layout justify-center align-center>
+    <v-flex xs7 fill-height class="pa-2">
+      <v-toolbar dense>
+        <v-flex xs9 class="ma-2">
+          <v-select label="Metric" :items="metrics" multiple v-model="selectedMetrics"
+            :menu-props="{ maxHeight: '400' }" persistent-hint v-on:change="visualize()">
+          </v-select>
+        </v-flex>
+        <v-flex xs2 class="ma-2">
+          <v-select label="Measure" :items="measures" v-model="selectedMeasure" v-on:change="visualize()">
+          </v-select>
+        </v-flex>
+        <v-spacer></v-spacer>
+        <v-switch :label="`Aggr`" v-model="isAggregated" v-on:change="visualize()"></v-switch>
+        <v-btn icon>
+          <v-icon v-on:click="reset()">refresh</v-icon>
+        </v-btn>
+
+      </v-toolbar>
+      <TimeSeries ref="TimeSeries"></TimeSeries>
+    </v-flex>
+    <v-flex xs5 fill-height class="pa-2">
+      <Communication ref="Communication" v-bind:class="" />
+      <Dimensionality ref="Dimensionality" v-bind:class="" />
+    </v-flex>
+  </v-layout>
+</v-container>

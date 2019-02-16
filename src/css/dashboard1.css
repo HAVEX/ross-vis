@@ -1,0 +1,11 @@
+.hidden {
+  display: none;
+}
+
+.item{
+  min-height:0.33vh;
+}
+
+.resultContainer {
+  height: 350px;
+}

@@ -1,10 +1,10 @@
 import p3 from 'p3'
 import picos from 'picos'
-import template from '../html/Communication.html'
+import tpl from '../html/Communication.html'
 
 export default {
   name: 'Communication',
-  template,
+  tpl,
   data: () => ({
     data: null,
     selectedTimeDomain: null,

@@ -5,6 +5,7 @@ import axios from 'axios'
 export default {
   name: 'TimeSeries',
   template: template,
+  props: ['tsData'],
   data: () => ({
     data: null,
     view: null,
@@ -20,17 +21,15 @@ export default {
     selectedMethod :'AFF'
   }),
   methods: {
-    init (data) {
-      this.data = data
-      console.log(data)
+    init () {
+      this.data = this.tsData
       let visContainer = document.getElementById('vis-overview')
       this.width = visContainer.clientWidth
-      this.height = visContainer.clientHeight * 0.9
+      this.height = window.innerHeight/3 - 20
       let config = {
         container: 'vis-overview',
         viewport: [this.width, this.height]
       }
-
       this.views = [{
         id: 'view-right',
         width: this.width / 2,
@@ -40,9 +39,8 @@ export default {
         offset: [this.width / 2, 0]
       }]
 
-      this.vis = p4(config).data(data).view(this.views)
+      this.vis = p4(config).data(this.data).view(this.views)
     },
-
     visualize (metrics, callback) {
       this.metrics = metrics
       let viewSetting = {
@@ -113,7 +111,8 @@ export default {
         }
 
         let plot_points_index = result.data
-//       this.vis.visualize(
+        console.log(this.metrics)
+        //       this.vis.visualize(
 //           this.metrics.map((metric, mi) => {
 //             console.log(metric, mi)
 //            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  

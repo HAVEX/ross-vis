@@ -4,14 +4,19 @@ import axios from 'axios'
 
 export default {
   name: 'Dimensionality',
-  template,
+  template: template,
+  props: ['tsData'],
   data: () => ({
     data: null,
     methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
-    selectedMethod: 'inc_PCA'
+    selectedMethod: 'prog_inc_PCA'
   }),
   methods: {
-    visualize () {      
+    init() {
+      this.data = this.tsData
+    },
+    visualize() {
+      console.log(document.getElementById('stats-view'))
       axios.get('http://localhost:8888/pca', {
         params: {
           metrics: this.metrics,
@@ -25,19 +30,20 @@ export default {
             PC1: 'float'
           }
         })
-            .data()
-        
+          .data()
+
         let container = document.getElementById('stats-view')
-        let width = container.parentElement.clientWidth
-        let height = container.parentElement.clientHeight
+        let width = container.clientWidth
+        let height = window.innerHeight/3 - 100
+        console.log(height)
         container.innerHTML = ''
         p4({
           container: 'stats-view',
           viewport: [width, height],
-          padding: {left: 80, right: 30, top: 30, bottom: 80}
+          padding: { left: 80, right: 30, top: 30, bottom: 30 }
         })
           .data(data)
-          .view([{width, height, offset: [0, 0]}])
+          .view([{ width, height, offset: [-10, -10] }])
           .visualize({
             x: 'PC0',
             y: 'PC1',
@@ -46,6 +52,6 @@ export default {
           })
       })
     }
-  }    
+  }
 }
-    
+

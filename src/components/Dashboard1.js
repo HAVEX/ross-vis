@@ -1,29 +1,26 @@
-import tpl from '../html/Dashboard.html'
-//import '../css/app.css'
-import p5 from 'p5'
-import p4 from 'p4'
+import tpl from '../html/Dashboard1.html'
+import '../css/dashboard1.css'
+import Vue from 'vue'
 
 import Communication from './Communication'
 import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
+import Overview from './Overview'
 
 export default {
-  name: 'Dashboard',
+  name: 'Dashboard1',
   template: tpl,
   components: {
     Dimensionality,
     TimeSeries,
-    Communication
+    Communication,
+    Overview
   },
   data: () => ({
-    appName: 'ROSS-Vis',
     dialog: true,
-    socketError: false,
-    server: 'localhost:8888',
-    modes: ['Post Hoc', 'In Situ'],
-    defaultMode: 'Post Hoc',
-    timeDomains: ['LastGvt','RealTs','VirtualTime'],
-    granularity: ['PE','KP','LP'],
+    height: '200',
+    timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
+    granularity: ['PE', 'KP', 'LP'],
     measures: ['avg', 'sum', 'max', 'min'],
     timeIndexes: null,
     selectedTimeDomain: 'LastGvt',
@@ -34,62 +31,40 @@ export default {
     left: false,
     metrics: [],
     checkboxs: [],
+    isTsDataLoaded: false,
     defaultMetrics: [
-      'NeventProcessed', 
-      'RbTotal',
-      'VirtualTimeDiff',
-      // 'NetworkRecv', 'NetworkSend'
+      'NeventProcessed',
+      //'RbTotal',
+      //'VirtualTimeDiff',
+      //'NetworkRecv', 'NetworkSend'
     ],
     selectedMetrics: [],
-    analyses: ['Communication', 'Dimensionality'],
-    selectedAnalysis: 'Dimensionality'
   }),
-  props: {
-    source: String
-  },
-  mounted: function() {
+  mounted: function () {
     this.selectedMetrics = this.defaultMetrics.slice()
-
   },
   methods: {
-    start() {
-
+    init(tsData) {
+      this.height = this.calculateHeight()
+      this.isTsDataLoaded = true
+      this.tsData = tsData;
+      if (this.isTsDataLoaded) {
+        Vue.nextTick(() => {
+          console.log(this.$refs)
+          console.log(this.tsData)
+          this.$refs.TimeSeries.init()
+          this.$refs.Dimensionality.init()
+          this.reset()
+        });  
+      }
     },
-    init() {
-      let socket = new WebSocket('ws://' + this.server + '/websocket')
-      socket.onopen = () => {
-        this.dialog = !this.dialog
-        this.socketError = false
-        socket.send(JSON.stringify({data: 'KpData', method: 'get'}))
-      }
-
-      socket.onerror = (error) => {
-        this.socketError = true
-      }
-  
-      socket.onmessage = (event) => {
-        let data = JSON.parse(event.data)
-        this.data = data.data
-        if (data.schema.hasOwnProperty('CommData')) {
-          data.schema.CommData = 'int'
-        }
-        let cache = p4.cstore({})
-        this.metrics = Object.keys(data.schema)
-        cache.import(data)
-        cache.index('RealTs')
-        cache.index('LastGvt')
-        let tsData = cache.data()
-        this.timeIndexes = tsData.uniqueValues
-        this.$refs.TimeSeries.init(tsData)
-        this.reset()
-      }
-
+    calculateHeight (){
+     return window.innerHeight/3
     },
     reset() {
       this.selectedMetrics = this.defaultMetrics.slice()
       this.selectedTimeInterval = null
       this.visualize()
-      
     },
     updateCommunication() {
       this.$refs.Communication.selectedTimeDomain = this.selectedTimeDomain
@@ -99,11 +74,11 @@ export default {
       this.$refs.Communication.visualize(this.data)
     },
 
-    updateDimensionality () {
+    updateDimensionality() {
       this.$refs.Dimensionality.visualize()
     },
 
-    updateTimeSeries (callback) {
+    updateTimeSeries(callback) {
       this.$refs.TimeSeries.selectedMeasure = this.selectedMeasure
       this.$refs.TimeSeries.isAggregated = this.isAggregated
       this.$refs.TimeSeries.selectedTimeDomain = this.selectedTimeDomain
@@ -117,12 +92,12 @@ export default {
         let end = Math.ceil(selection[this.selectedTimeDomain][1])
         if (end - start >= 1) {
           this.selectedTimeInterval = [ti[start], ti[end]]
-          this.updateCommunication()
+          //this.updateCommunication()
         }
       }
 
       this.updateTimeSeries(callback)
-      this.updateCommunication()
+      //this.updateCommunication()
       this.updateDimensionality()
     }
   }
