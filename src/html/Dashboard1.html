@@ -1,38 +1,41 @@
-<v-container fluid class="pa-1">
+<v-container fluid class="pa-0">
     <v-layout row wrap v-if="isTsDataLoaded">
-        <v-flex xs1>
-            <ControlPanel ref="ControlPanel" />
+        <v-flex xs2>
+            <ControlPanel ref="ControlPanel" v-bind:ts-data="isTsDataLoaded ? tsData : null" />
         </v-flex>
-        <v-flex xs5>
+        <v-flex xs4>
             <TimeSeries ref="TimeSeries" v-bind:ts-data="isTsDataLoaded ? tsData : null "/>
         </v-flex>
-        <v-flex xs5>
+        <v-flex xs4>
             <Dimensionality ref="Dimensionality" v-bind:ts-data="isTsDataLoaded ? tsData : null " />
         </v-flex>
-        <v-flex xs1>
+        <v-flex xs2>
             <Correlation ref="Correlation" />
         </v-flex>
     </v-layout>
-    <v-layout row wrap >
-        <v-flex xs1 >
-            <ControlPanel ref="ControlPanel" />
+    <v-layout row wrap v-if="isSecondPlotNeeded" >
+        <v-flex xs2 >
+            <!--ControlPanel ref="ControlPanel" /> -->
         </v-flex>
-        <v-flex xs5 >
+        <v-flex xs4 >
             <TimeSeries ref="TimeSeries" v-bind:ts-data="isTsDataLoaded ? tsData : null "></TimeSeries>
         </v-flex>
-        <v-flex xs5>
+        <v-flex xs4>
             <Dimensionality ref="Dimensionality" v-bind:ts-data="isTsDataLoaded ? tsData : null "/>
         </v-flex>
-        <v-flex xs1>
+        <v-flex xs2>
             <Correlation ref="Correlation"></Correlation>
         </v-flex>
     </v-layout>
     <v-layout row wrap >
-        <v-flex xs1 >
-            <ControlPanel ref="ControlPanel"/>
+        <v-flex xs2 >
+            <!-- <ControlPanel ref="ControlPanel"/> -->
         </v-flex>
-        <v-flex xs8 >
+        <v-flex xs6>
             <Communication ref="Communication" v-bind:ts-data="isTsDataLoaded ? tsData : null "/>
+        </v-flex>
+        <v-flex xs4>
+            <Overview ref="Communication" v-bind:ts-data="isTsDataLoaded ? tsData : null "/>
         </v-flex>
     </v-layout>
 </v-container>

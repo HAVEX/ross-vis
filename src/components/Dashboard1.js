@@ -6,71 +6,63 @@ import Communication from './Communication'
 import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 import Overview from './Overview'
+import ControlPanel from './ControlPanel'
 
 export default {
   name: 'Dashboard1',
   template: tpl,
   components: {
+    ControlPanel,
     Dimensionality,
     TimeSeries,
     Communication,
     Overview
   },
+
   data: () => ({
     dialog: true,
     height: '200',
-    timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
-    granularity: ['PE', 'KP', 'LP'],
-    measures: ['avg', 'sum', 'max', 'min'],
     timeIndexes: null,
-    selectedTimeDomain: 'LastGvt',
-    selectedTimeInterval: null,
-    selectedGran: 'PE',
-    selectedMeasure: 'sum',
-    isAggregated: true,
     left: false,
-    metrics: [],
     checkboxs: [],
     isTsDataLoaded: false,
-    defaultMetrics: [
-      'NeventProcessed',
-      //'RbTotal',
-      //'VirtualTimeDiff',
-      //'NetworkRecv', 'NetworkSend'
-    ],
-    selectedMetrics: [],
+    isSecondPlotNeeded: true,
   }),
+
   mounted: function () {
-    this.selectedMetrics = this.defaultMetrics.slice()
+    //this.selectedMetrics = this.defaultMetrics.slice()
   },
+
   methods: {
     init(tsData) {
-      this.height = this.calculateHeight()
+      //this.height = this.calculateHeight()
       this.isTsDataLoaded = true
       this.tsData = tsData;
       if (this.isTsDataLoaded) {
         Vue.nextTick(() => {
-          console.log(this.$refs)
-          console.log(this.tsData)
           this.$refs.TimeSeries.init()
           this.$refs.Dimensionality.init()
+          this.$refs.ControlPanel.init();
           this.reset()
         });  
       }
     },
-    calculateHeight (){
+
+   /*  calculateHeight (){
      return window.innerHeight/3
     },
+ */
     reset() {
-      this.selectedMetrics = this.defaultMetrics.slice()
+      //this.selectedMetrics = this.defaultMetrics.slice()
       this.selectedTimeInterval = null
       this.visualize()
     },
+
     updateCommunication() {
-      this.$refs.Communication.selectedTimeDomain = this.selectedTimeDomain
-      this.$refs.Communication.selectedTimeInterval = this.selectedTimeInterval
-      this.$refs.Communication.selectedMetrics = this.selectedMetrics
-      this.$refs.Communication.selectedMeasure = this.selectedMeasure
+      this.$refs.Communication.selectedTimeDomain = this.$refs.ControlPanel.selectedTimeDomain
+      this.$refs.Communication.selectedTimeInterval = this.$refs.ControlPanel.selectedTimeInterval
+      this.$refs.Communication.selectedMetrics = this.$refs.ControlPanel.selectedMetrics
+      this.$refs.Communication.selectedMeasure = this.$refs.ControlPanel.selectedMeasure
       this.$refs.Communication.visualize(this.data)
     },
 
@@ -79,10 +71,12 @@ export default {
     },
 
     updateTimeSeries(callback) {
-      this.$refs.TimeSeries.selectedMeasure = this.selectedMeasure
-      this.$refs.TimeSeries.isAggregated = this.isAggregated
-      this.$refs.TimeSeries.selectedTimeDomain = this.selectedTimeDomain
-      this.$refs.TimeSeries.visualize(this.selectedMetrics, callback)
+      this.$refs.TimeSeries.selectedMeasure = this.$refs.ControlPanel.selectedMeasure
+      this.$refs.TimeSeries.isAggregated = this.$refs.ControlPanel.isAggregated
+      this.$refs.TimeSeries.selectedMetrics = this.$refs.ControlPanel.plot1Metrics
+      this.$refs.TimeSeries.selectedTimeDomain = this.$refs.ControlPanel.selectedTimeDomain
+      this.$refs.TimeSeries.visualize(this.$refs.TimeSeries.selectedMetrics, callback)
+      
     },
 
     visualize() {

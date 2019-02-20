@@ -1,0 +1,25 @@
+<v-card flex fill-height id="control-panel">
+    <v-layout row wrap>
+        <v-switch :label="`Aggr`" v-model="isAggregated" v-on:change="visualize()"></v-switch>
+        <v-btn icon>
+            <v-icon v-on:click="reset()">refresh</v-icon>
+        </v-btn>
+        <v-flex xs12 class="ma-1">
+            <v-select label="1st Plot Metric" :items="metrics" multiple v-model="plot1Metrics"
+                :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="visualize()">
+            </v-select>
+        </v-flex>
+        <v-flex xs12 class="ma-1">
+            <v-select label="Measure" :items="measures" v-model="selectedMeasure" v-on:change="visualize()">
+            </v-select>
+        </v-flex>
+        <v-flex xs12 class="ma-1">
+            <v-switch :label="`2nd Metric`" v-model="isSecondPlotNeeded" v-on:change="changeSecondPlotNeeded()">
+            </v-switch>
+            <v-select v-if="isSecondPlotNeeded" label="2nd Plot Metric" :items="metrics" multiple v-model="plot2Metrics"
+                :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="visualize()">
+            </v-select>
+        </v-flex>
+        <v-spacer></v-spacer>
+    </v-layout>
+</v-card>

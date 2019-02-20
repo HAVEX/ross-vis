@@ -25,7 +25,7 @@ export default {
       this.data = this.tsData
       let visContainer = document.getElementById('vis-overview')
       this.width = visContainer.clientWidth
-      this.height = window.innerHeight/3 - 20
+      this.height = window.innerHeight/3 - 100
       let config = {
         container: 'vis-overview',
         viewport: [this.width, this.height]
@@ -99,7 +99,8 @@ export default {
     visualizeCPD () {
       axios.get('http://localhost:8888/cpd', {
         params: {
-          metrics: this.metrics
+          'timeDomain': this.selectedTimeDomain,
+          'yDomain': this.metrics[0]
         }
       }).then(result => {
         console.log(result)
