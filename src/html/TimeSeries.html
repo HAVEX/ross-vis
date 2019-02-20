@@ -1,7 +1,6 @@
-<v-card id="vis-overview">
+<v-card :id="id">
   <v-toolbar dense>
     <v-switch label="Change Point Detection" v-model="showCPD" v-on:change="visualizeCPD()"></v-switch>
-    <v-text-area placeholder="Method:"></v-text-area>
     <v-overflow-btn dense label="Analytical Method" :items="methods" v-model="selectedMethod"></v-overflow-btn>
     <v-spacer></v-spacer>
   </v-toolbar>

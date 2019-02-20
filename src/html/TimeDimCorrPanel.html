@@ -1,0 +1,14 @@
+<v-layout row wrap>
+    <v-flex xs2>
+        <ControlPanel ref="ControlPanel" v-bind:ts-data="tsData"/>
+    </v-flex>
+    <v-flex xs4>
+        <TimeSeries ref="TimeSeries" v-bind:ts-data="tsData" />
+    </v-flex>
+    <v-flex xs4>
+        <Dimensionality ref="Dimensionality" v-bind:ts-data="tsData" />
+    </v-flex>
+    <v-flex xs2>
+        <Correlation ref="Correlation" v-bind:ts-data="tsData" />
+    </v-flex>
+</v-layout>

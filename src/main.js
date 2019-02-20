@@ -10,7 +10,9 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
-  components: { App },
-  template: '<App/>'
+  render: h => h(App)
+  // refer https://github.com/vuejs/vue-router/issues/976 as to why this was commented out
+  //components: { App },
+  //template: '<App/>'
 })
 Vue.config.devtools = true

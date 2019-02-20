@@ -5,8 +5,9 @@ import axios from 'axios'
 export default {
   name: 'TimeSeries',
   template: template,
-  props: ['tsData'],
+  props: ['tsData', 'plotMetric'],
   data: () => ({
+    id: null,
     data: null,
     view: null,
     vis: null,
@@ -14,20 +15,22 @@ export default {
     width: 0,
     metrics: null,
     selectedTimeDomain: null,
-    isAggregated: true,
     showCPD: false,
     selectedMeasure: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
     selectedMethod :'AFF'
   }),
+  mounted () {
+    this.id = this._uid +'-overview'
+  },
   methods: {
     init () {
       this.data = this.tsData
-      let visContainer = document.getElementById('vis-overview')
+      let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth
       this.height = window.innerHeight/3 - 100
       let config = {
-        container: 'vis-overview',
+        container: this.id,
         viewport: [this.width, this.height]
       }
       this.views = [{
@@ -41,6 +44,7 @@ export default {
 
       this.vis = p4(config).data(this.data).view(this.views)
     },
+
     visualize (metrics, callback) {
       this.metrics = metrics
       let viewSetting = {
@@ -60,6 +64,7 @@ export default {
         view.offset = [0, this.height - view.height * (mi+1)]
         views.push(view)
       })
+
 
       let firstMetric = {}
       let firstMetricName = Object.keys(collection)[0]

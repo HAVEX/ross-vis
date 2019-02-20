@@ -7,16 +7,19 @@ export default {
   template: template,
   props: ['tsData'],
   data: () => ({
+    id: null,
     data: null,
     methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
     selectedMethod: 'prog_inc_PCA'
   }),
+  mounted () {
+    this.id = this._uid +'-overview'
+  },
   methods: {
     init() {
       this.data = this.tsData
     },
     visualize() {
-      console.log(document.getElementById('stats-view'))
       axios.get('http://localhost:8888/pca', {
         params: {
           metrics: this.metrics,
@@ -32,13 +35,12 @@ export default {
         })
           .data()
 
-        let container = document.getElementById('stats-view')
+        let container = document.getElementById(this.id)
         let width = container.clientWidth
         let height = window.innerHeight/3 - 100
-        console.log(height)
         container.innerHTML = ''
         p4({
-          container: 'stats-view',
+          container: this.id,
           viewport: [width, height],
           padding: { left: 80, right: 30, top: 30, bottom: 30 }
         })

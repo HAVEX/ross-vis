@@ -18,44 +18,60 @@ export default {
     socketError: false,
     server: 'localhost:8888',
     modes: ['Post Hoc', 'In Situ'],
-    defaultMode: 'Post Hoc',
+    selectedMode: 'Post Hoc',
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
-    granularity: ['PE', 'KP', 'LP'],
-    measures: ['avg', 'sum', 'max', 'min'],
-    timeIndexes: null,
     selectedTimeDomain: 'LastGvt',
-    selectedTimeInterval: null,
+    timeIndexes: null,
+    granularity: ['PE', 'KP', 'LP'],
     selectedGran: 'PE',
+    measures: ['avg', 'sum', 'max', 'min'],
     selectedMeasure: 'sum',
     isAggregated: true,
     left: false,
     metrics: [],
     checkboxs: [],
-    defaultMetrics: [
-      'NeventProcessed',
-      //'RbTotal',
-      //'VirtualTimeDiff',
-      // 'NetworkRecv', 'NetworkSend'
-    ],
-    selectedMetrics: [],
     analysis: ['Case_study-1', 'Case_study-2'],
     selectedAnalysis: 'Case_study-1'
   }),
 
   mounted: function () {
-    this.selectedMetrics = this.defaultMetrics.slice()
+    //this.selectedMetrics = this.defaultMetrics.slice()
   },
 
   methods: {
     init(){
-      this.fetchTsData()
+      this.fetchTsData(this.selectedGran)
     },
+
+    updateGran(){
+      this.clear()
+      this.fetchTsData(this.selectedGran)
+    },
+
+    updateTimeDomain(){
+      this.$refs.Dashboard1.visualize()
+    },
+
+    updateAnalysis(){
+      this.clear()
+    },
+
+    updateMode(){
+
+    },
+
+    clear() {
+      this.$refs.Dashboard1.clear()
+    },
+
     fetchTsData() {
       let socket = new WebSocket('ws://' + this.server + '/websocket')
       socket.onopen = () => {
         this.dialog = !this.dialog
         this.socketError = false
-        socket.send(JSON.stringify({ data: 'KpData', method: 'get' }))
+        socket.send(JSON.stringify({ 
+          data: this.selectedGran + 'Data', method: 'get' 
+        }))
       }
 
       socket.onerror = (error) => {
@@ -75,6 +91,7 @@ export default {
         cache.index('LastGvt')
         let tsData = cache.data()
         this.timeIndexes = tsData.uniqueValues
+        console.log(tsData)
         this.$refs.Dashboard1.init(tsData)
       }
     },

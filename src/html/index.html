@@ -5,17 +5,18 @@
     <v-toolbar-title style="margin-right: 3em;">{{ appName }}</v-toolbar-title>
     <v-flex xs2 class="ma-2">
       <v-select label="TimeMode" :items="timeDomains" v-model="selectedTimeDomain" :menu-props="{ maxHeight: '400' }"
-        box v-on:change="visualize()">
+        box v-on:change="updateTimeMode()">
       </v-select>
     </v-flex>
     <v-flex xs2 class="ma-2">
       <v-select label="Granularity" :items="granularity" v-model="selectedGran" :menu-props="{ maxHeight: '400' }" box
-        v-on:change="visualize()">
+        v-on:change="updateGran()">
       </v-select>
     </v-flex>
     <v-spacer></v-spacer>
     <v-flex xs2>
-      <v-select label="Analysis Mode" :items="analysis" v-model="selectedAnalysis" box></v-select>
+      <v-select label="Analysis Mode" :items="analysis" v-model="selectedAnalysis" box :menu-props="{ maxHeight: '400' }"
+      v-on:change="updateAnalysis()"></v-select>
     </v-flex>
   </v-toolbar>
 
@@ -35,7 +36,7 @@
               Cannot connect to server!
             </v-alert>
             <v-flex>
-              <v-select :items="modes" label="App Mode" v-model="defaultMode" box></v-select>
+              <v-select :items="modes" label="App Mode" v-model="selectedMode" box></v-select>
             </v-flex>
             <v-flex xs12>
               <v-text-field box label="Server Address" v-model="server" required></v-text-field>
@@ -55,8 +56,8 @@
   </v-dialog>
 
   <v-content class="pt-auto" fill-height id="dashboard">
-    <v-flex class="pa-0 ma-0">
-        <Dashboard1 ref="Dashboard1"/>
+    <v-flex>
+        <Dashboard1 ref="Dashboard1" />
         <!--Dashboard2 ref="Dashboard2" v-bind:class="{hidden: selectedAnalysis != 'Case_study-1'}"/-->
     </v-flex>
    
