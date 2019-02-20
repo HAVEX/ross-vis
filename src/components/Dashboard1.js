@@ -20,7 +20,7 @@ export default {
     timeDomain: ['LastGvt', 'VirtualTime', 'RealTs'],
     selectedTimeDomain: 'LastGvt',
     plotMetric1: ['RbTotal'],
-    plotMetric2: ['NeventsProcessed'],
+    plotMetric2: ['NeventProcessed'],
     granularity: ['PE', 'KP', 'LP'],
     selectedGran: 'PE',
     measures: ['avg', 'sum', 'max', 'min'],

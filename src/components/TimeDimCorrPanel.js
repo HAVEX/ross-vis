@@ -34,6 +34,7 @@ export default {
     },
 
     updateDimensionality() {
+      this.$refs.Dimensionality.selectedMetrics = this.plotMetric
       this.$refs.Dimensionality.visualize()
     },
 

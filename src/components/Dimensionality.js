@@ -12,8 +12,8 @@ export default {
     methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
     selectedMethod: 'prog_inc_PCA'
   }),
-  mounted () {
-    this.id = this._uid +'-overview'
+  mounted() {
+    this.id = this._uid + '-overview'
   },
   methods: {
     init() {
@@ -22,7 +22,7 @@ export default {
     visualize() {
       axios.get('http://localhost:8888/pca', {
         params: {
-          metrics: this.metrics,
+          metrics: this.selectedMetrics,
           method: this.selectedMethod
         }
       }).then(result => {
@@ -32,26 +32,31 @@ export default {
             PC0: 'float',
             PC1: 'float'
           }
-        })
-          .data()
+        }).data()
 
-        let container = document.getElementById(this.id)
-        let width = container.clientWidth
-        let height = window.innerHeight/3 - 100
-        container.innerHTML = ''
-        p4({
+        let visContainer = document.getElementById(this.id)
+        this.width = visContainer.clientWidth
+        this.height = window.innerHeight / 3 - 60
+
+        let config = {
           container: this.id,
-          viewport: [width, height],
-          padding: { left: 80, right: 30, top: 30, bottom: 30 }
+          viewport: [this.width, this.height]
+        }
+        this.views = [{
+          width: this.width,
+          height: this.height,
+          gridlines: { y: true },
+          padding: { left: 80, top: 10, right: 30, bottom: 30 },
+          offset: [0, 0]
+        }]
+        this.vis = p4(config).data(data).view(this.views)
+
+        this.vis.visualize({
+          x: 'PC0',
+          y: 'PC1',
+          color: 'steelblue',
+          size: 7
         })
-          .data(data)
-          .view([{ width, height, offset: [-10, -10] }])
-          .visualize({
-            x: 'PC0',
-            y: 'PC1',
-            color: 'steelblue',
-            size: 10
-          })
       })
     }
   }

@@ -5,7 +5,7 @@ import axios from 'axios'
 export default {
   name: 'TimeSeries',
   template: template,
-  props: ['tsData', 'plotMetric'],
+  props: ['tsData'],
   data: () => ({
     id: null,
     data: null,
@@ -28,7 +28,7 @@ export default {
       this.data = this.tsData
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth
-      this.height = window.innerHeight/3 - 100
+      this.height = window.innerHeight/3 - 60
       let config = {
         container: this.id,
         viewport: [this.width, this.height]
@@ -49,7 +49,7 @@ export default {
       this.metrics = metrics
       let viewSetting = {
         gridlines: {y: true},
-        padding: {left: 70, right: 60, top: 10, bottom: 40},
+        padding: {left: 70, right: 60, top: 10, bottom: 30},
       }
 
       let collection = {}
