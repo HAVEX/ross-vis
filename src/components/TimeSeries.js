@@ -108,22 +108,13 @@ export default {
           'yDomain': this.metrics[0]
         }
       }).then(result => {
-        console.log(result)
-        let cpd_map = {
-          mark: 'line',
-          x: this.selectedTimeDomain,          
-          color: 'red',
+        this.vis.annotate({
+          id: this.id,
+          mark: 'vline',
           size: 3,
-        }
-
-        let plot_points_index = result.data
-        console.log(this.metrics)
-        //       this.vis.visualize(
-//           this.metrics.map((metric, mi) => {
-//             console.log(metric, mi)
-//            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  
-//           })
-//         )
+          color: 'red',
+          position: {values: result.data.data} // this set the positions of the vlines
+        })
       })
 
     }
