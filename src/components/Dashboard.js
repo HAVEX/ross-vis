@@ -92,11 +92,13 @@ export default {
       
     },
     updateCommunication() {
-      this.$refs.Communication.selectedTimeDomain = this.selectedTimeDomain
-      this.$refs.Communication.selectedTimeInterval = this.selectedTimeInterval
-      this.$refs.Communication.selectedMetrics = this.selectedMetrics
-      this.$refs.Communication.selectedMeasure = this.selectedMeasure
-      this.$refs.Communication.visualize(this.data)
+      this.$refs.Communication.visualize({
+        data: this.data,
+        measure: this.selectedMeasure,
+        timeDomain: this.selectedTimeDomain,
+        metrics: this.selectedMetrics,
+        timeIntervals: [this.selectedTimeInterval]
+      })
     },
 
     updateDimensionality () {
@@ -115,12 +117,11 @@ export default {
         let ti = this.timeIndexes[this.selectedTimeDomain]
         let start = Math.floor(selection[this.selectedTimeDomain][0])
         let end = Math.ceil(selection[this.selectedTimeDomain][1])
-        if (end - start >= 1) {
+        if (end - start > 1) {
           this.selectedTimeInterval = [ti[start], ti[end]]
           this.updateCommunication()
         }
       }
-
       this.updateTimeSeries(callback)
       this.updateCommunication()
       this.updateDimensionality()

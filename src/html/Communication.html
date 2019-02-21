@@ -6,9 +6,15 @@
     v-on:change="visualize()"
   ></v-switch>
   <v-spacer></v-spacer>
-
+  <v-slider
+    v-model="threshold"
+    :thumb-size="24"
+    :min=0
+    label="threshold"
+  ></v-slider>
+  <span>{{thresholdValue}}</span>
   </v-toolbar>
-  <v-card height="45%">
-    <div id="graph-view"></div>
+  <v-card>
+    <div ref="container" style="display: flex;"></div>
   </v-card>
 </v-flex>

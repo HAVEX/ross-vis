@@ -11,6 +11,7 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import Dashboard from './components/Dashboard'
 import TimeSeries from './components/TimeSeries'
 import Dimensionality from './components/Dimensionality'
+import CommPanels from './components/CommPanels'
 
 export default new Router({
   routes: [
@@ -28,6 +29,11 @@ export default new Router({
       path: '/pca',
       name: 'Dimensionality',
       component: Dimensionality
-    }      
+    },
+    {
+      path: '/communications',
+      name: 'Communications',
+      component: CommPanels
+    }  
   ]
 })
