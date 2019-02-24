@@ -4,26 +4,47 @@ import template from '../html/TimeDimCorrPanel.html'
 import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 import ControlPanel from './ControlPanel'
-import Correlation from './Correlation'
+import Causality from './Causality'
 
 export default {
   name: 'TimeDimCorrPanel',
-  props: ['plotMetric', 'tsData'],
+  props: ['plotMetric', 'metricData'],
   template: template,
   components: {
     ControlPanel,
     Dimensionality,
     TimeSeries,
-    Correlation
+    Causality
   },
   data: () => ({
     data: null,
+    ts: null,
+    cpd: null,
+    pca: null,
+    clustering: null,
+    causality: null,
+    metrics: null
   }),
   methods: {
     init() {
-      this.$refs.TimeSeries.init(this.plotMetric)
-      this.$refs.Dimensionality.init(this.plotMetric)
-      this.$refs.Correlation.init(this.plotMetric)
+      
+    },
+
+    jsonParse(val) {
+      return JSON.parse(JSON.stringify(val))
+    },
+
+    tick() {
+      this.data = this.jsonParse(this.metricData)
+      console.log(this.data)
+      this.ts = this.data['ts']
+      this.cpd = this.data['cpd']
+      this.pca = this.data['pca']
+      this.clustering = this.data['clustering']
+      this.causality = this.data['causality']
+      this.$refs.TimeSeries.init()
+      this.$refs.Dimensionality.init()
+      this.$refs.Causality.init()
       this.$refs.ControlPanel.init()
       this.reset()
     },

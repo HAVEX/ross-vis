@@ -5,7 +5,7 @@ import axios from 'axios'
 export default {
   name: 'TimeSeries',
   template: template,
-  props: ['tsData'],
+  props: ['ts', 'clustering'],
   data: () => ({
     id: null,
     data: null,
@@ -25,7 +25,10 @@ export default {
   },
   methods: {
     init () {
-      this.data = this.tsData
+      this.data = this.ts
+      let cache = p4.cstore({})
+      console.log(this.data)
+      cache.import(this.data)
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth
       this.height = window.innerHeight/3 - 60

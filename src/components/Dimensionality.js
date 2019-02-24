@@ -55,7 +55,7 @@ export default {
           x: 'PC0',
           y: 'PC1',
           color: 'steelblue',
-          size: 7
+          size: 10
         })
       })
     }

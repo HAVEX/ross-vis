@@ -8,18 +8,17 @@ Vue.use(Vuetify)
 import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
-import index from './components/index'
+import entry from './components/entry'
 import TimeSeries from './components/TimeSeries'
 import Dimensionality from './components/Dimensionality'
 
 
 export default new Router({
-  mode: 'history',
   routes: [
     {
       path: '/',
-      name: 'index',
-      component: index
+      name: 'entry',
+      component: entry
     },
     {
       path: '/cpd',

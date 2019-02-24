@@ -1,4 +1,4 @@
-import tpl from '../html/Dashboard2.html'
+import tpl from '../html/HocBoard.html'
 //import '../css/app.css'
 import p5 from 'p5'
 import p4 from 'p4'
@@ -7,7 +7,7 @@ import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 
 export default {
-  name: 'Dashboard2',
+  name: 'HocBoard',
   template: tpl,
   components: {
     Dimensionality,
@@ -16,7 +16,7 @@ export default {
   data: () => ({
     appName: 'ROSS-Vis',
     dialog: true,
-    socketError: false,
+    socketError: false, 
     server: 'localhost:8888',
     modes: ['Post Hoc', 'In Situ'],
     defaultMode: 'Post Hoc',

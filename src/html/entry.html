@@ -15,8 +15,8 @@
     </v-flex>
     <v-spacer></v-spacer>
     <v-flex xs2>
-      <v-select label="Analysis Mode" :items="analysis" v-model="selectedAnalysis" box :menu-props="{ maxHeight: '400' }"
-      v-on:change="updateAnalysis()"></v-select>
+      <v-select label="Analysis Mode" :items="modes" v-model="selectedMode" box :menu-props="{ maxHeight: '400' }"
+      v-on:change="updateMode()"></v-select>
     </v-flex>
   </v-toolbar>
 
@@ -57,8 +57,8 @@
 
   <v-content class="pt-auto" fill-height id="dashboard">
     <v-flex>
-        <Dashboard1 ref="Dashboard1" />
-        <!--Dashboard2 ref="Dashboard2" v-bind:class="{hidden: selectedAnalysis != 'Case_study-1'}"/-->
+        <StreamBoard ref="StreamBoard"/>
+        <!--HocBoard ref="HocBoard" v-bind:class="{hidden: selectedMode != 'In Situ'}"-->
     </v-flex>
    
   </v-content>
