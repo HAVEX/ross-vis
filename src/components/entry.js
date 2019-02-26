@@ -13,8 +13,8 @@ export default {
     HocBoard
   },
   data: () => ({
-    tsData: [],
-    data: [],
+    results: [],
+    stream: [],
     appName: 'ROSS-Vis',
     dialog: true,
     socketError: false,
@@ -51,12 +51,12 @@ export default {
         this.$refs.HocBoard.init(this.tsData)
       }
       else {
-        this.$refs.StreamBoard.init(this.data)
+        this.$refs.StreamBoard.init(this.results)
       }
     },
 
     updateView() {
-      this.$refs.StreamBoard.update(this.data)
+      this.$refs.StreamBoard.update(this.results)
     },
 
     updateGran() {
@@ -107,29 +107,27 @@ export default {
         this.count += 1
         let data = JSON.parse(event.data)
         console.log(data)
-        this.data = data
+        this.stream = data.stream
+        this.results = data.results
         if (data.schema.hasOwnProperty('CommData')) {
           data.schema.CommData = 'int'
         }
         if (data.schema.hasOwnProperty('results')) {
           data.schema.results = 'object'
         }
-        this.metrics = Object.keys(data.schema)
+        this.metrics = Object.keys(data.schema)        
         if (this.count == 1) {
-          let cache = p4.cstore({})
+          this.initView()
+          /* let cache = p4.cstore({})
           this.initView()
           cache.import(data)
           cache.index('RealTs')
           cache.index('LastGvt')
           let tsData = cache.data()
           this.timeIndexes = tsData.uniqueValues
-          this.tsData = tsData
+          this.tsData = tsData */
         }
         else if (this.count <= 100) {
-          let cache = p4.cstore({})
-          cache.import(data)
-          this.tsData = cache.data()
-          console.log(this.tsData)
           this.updateView()
         }
         else {

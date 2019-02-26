@@ -8,7 +8,7 @@ import Causality from './Causality'
 
 export default {
   name: 'TimeDimCorrPanel',
-  props: ['plotMetric', 'metricData'],
+  props: ['plotMetric', 'plotData'],
   template: template,
   components: {
     ControlPanel,
@@ -27,25 +27,23 @@ export default {
   }),
   methods: {
     init() {
-      
-    },
-
-    jsonParse(val) {
-      return JSON.parse(JSON.stringify(val))
-    },
-
-    tick() {
-      this.data = this.jsonParse(this.metricData)
-      console.log(this.data)
-      this.ts = this.data['ts']
-      this.cpd = this.data['cpd']
-      this.pca = this.data['pca']
-      this.clustering = this.data['clustering']
-      this.causality = this.data['causality']
       this.$refs.TimeSeries.init()
       this.$refs.Dimensionality.init()
       this.$refs.Causality.init()
       this.$refs.ControlPanel.init()
+    },
+
+    tick() {
+      this.data = this.plotData
+      this.ts = this.data['ts']
+      console.log(this.ts)
+      let tsCache = p4.cstore({})
+      tsCache.import(this.ts)
+      console.log(tsCache)
+      this.cpd = this.data['cpd']
+      this.pca = this.data['pca']
+      this.clustering = this.data['clustering']
+      this.causality = this.data['causality']
       this.reset()
     },
 

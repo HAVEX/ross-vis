@@ -26,6 +26,7 @@ export default {
   methods: {
     init () {
       this.data = this.ts
+      console.log(this.ts)
       let cache = p4.cstore({})
       console.log(this.data)
       cache.import(this.data)

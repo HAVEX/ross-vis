@@ -24,15 +24,15 @@ export default {
     measures: ['avg', 'sum', 'max', 'min'],
     selectedMeasure: 'sum',
     isAggregated: false,
-    metricDataOne: null,
-    metricDataTwo: null
+    plotData1: null,
+    plotData2: null
   }),
   watch: {
-    metricDataOne: function() {
-      return this.metricDataOne
+    plotData2: function() {
+      return this.plotData1
     },
-    metricDataTwo: function() {
-      return this.metricDataTwo
+    plotData1: function() {
+      return this.plotData2
     }
   },
   methods: {
@@ -40,8 +40,8 @@ export default {
       this.isTsDataLoaded = true
       if (this.isTsDataLoaded) {
         Vue.nextTick(() => {
-          this.results = JSON.parse(JSON.stringify(data))['results']
-          if (Object.keys(this.results).length === 0 && this.results.constructor === Object) {
+          console.log(data)
+          if (Object.keys(data).length === 0 && data.constructor === Object) {
             this.$refs.TimeDimCorrPanel1.init()
             this.$refs.TimeDimCorrPanel2.init()
             this.reset()
@@ -63,10 +63,10 @@ export default {
       this.$refs.Communication.visualize(this.data)
     },
 
-    update(data) {      
-      this.results = JSON.parse(JSON.stringify(data))['results']
-      this.metricDataOne = JSON.parse(JSON.stringify(this.results[this.plotMetric1]))
-      this.metricDataTwo = JSON.parse(JSON.stringify(this.results[this.plotMetric2]))
+    update(data) {  
+      console.log(data)
+      this.plotData1 = data[this.plotMetric1]
+      this.plotData2 = data[this.plotMetric2]
       this.$refs.TimeDimCorrPanel1.tick()
       this.$refs.TimeDimCorrPanel2.tick()
     },

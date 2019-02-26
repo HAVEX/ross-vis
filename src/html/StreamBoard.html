@@ -3,12 +3,12 @@
         ref="TimeDimCorrPanel1" 
         v-show="isTsDataLoaded" 
         v-bind:plot-metric="plotMetric1" 
-        v-bind:metric-data="isTsDataLoaded ? metricDataOne : null" />
+        v-bind:plot-data="isTsDataLoaded ? plotData1 : null" />
     <TimeDimCorrPanel 
         ref="TimeDimCorrPanel2" 
         v-show="isTsDataLoaded" 
         v-bind:plot-metric="plotMetric2" 
-        v-bind:metric-data="isTsDataLoaded ? metricDataTwo : null" />
+        v-bind:plot-data="isTsDataLoaded ? plotData2 : null" />
     <!-- <v-layout row wrap >
         <v-flex xs2 >
              <ControlPanel ref="ControlPanel"/> 
