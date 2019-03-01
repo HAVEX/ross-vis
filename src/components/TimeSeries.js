@@ -25,15 +25,10 @@ export default {
   },
   methods: {
     init () {
-      this.data = this.ts
-      console.log(this.ts)
-      let cache = p4.cstore({})
-      console.log(this.data)
-      cache.import(this.data)
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth
-      this.height = window.innerHeight/3 - 60
-      let config = {
+      this.height = window.innerHeight/2
+      this.config = {
         container: this.id,
         viewport: [this.width, this.height]
       }
@@ -45,11 +40,16 @@ export default {
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0]
       }]
-
-      this.vis = p4(config).data(this.data).view(this.views)
+     
+    },
+    
+    set (){
+      console.log(this.ts)
     },
 
-    visualize (metrics, callback) {
+    visualize (ts, metrics, callback) {
+      console.log(ts)
+      this.vis = p4(this.config).data(ts).view(this.views)
       this.metrics = metrics
       let viewSetting = {
         gridlines: {y: true},

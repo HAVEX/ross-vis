@@ -24,7 +24,7 @@ export default {
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
     selectedTimeDomain: 'LastGvt',
     granularity: ['PE', 'KP', 'LP'],
-    GranID: ['Peid', 'KpGid', 'Lpid'],
+    GranID: ['Peid', 'Kpid', 'Lpid'],
     selectedGranID: 'KpGid',
     selectedGran: 'Kp',
     timeIndexes: null,
@@ -51,12 +51,12 @@ export default {
         this.$refs.HocBoard.init(this.tsData)
       }
       else {
-        this.$refs.StreamBoard.init(this.results)
+        this.$refs.StreamBoard.init(this.data)
       }
     },
 
     updateView() {
-      this.$refs.StreamBoard.update(this.results)
+      this.$refs.StreamBoard.update(this.data)
     },
 
     updateGran() {
@@ -106,20 +106,16 @@ export default {
       socket.onmessage = (event) => {
         this.count += 1
         let data = JSON.parse(event.data)
-        console.log(data)
-        this.stream = data.stream
-        this.results = data.results
-        if (data.schema.hasOwnProperty('CommData')) {
+        let d = data
+        console.log("Incoming data stream", d)
+        this.data = data
+        /* if (data.schema.hasOwnProperty('CommData')) {
           data.schema.CommData = 'int'
-        }
-        if (data.schema.hasOwnProperty('results')) {
-          data.schema.results = 'object'
-        }
-        this.metrics = Object.keys(data.schema)        
+        } */
+        //this.metrics = Object.keys(data.schema)        
         if (this.count == 1) {
           this.initView()
           /* let cache = p4.cstore({})
-          this.initView()
           cache.import(data)
           cache.index('RealTs')
           cache.index('LastGvt')
