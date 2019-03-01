@@ -5,6 +5,7 @@ import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 import ControlPanel from './ControlPanel'
 import Causality from './Causality'
+import { throws } from 'assert';
 
 export default {
   name: 'TimeDimCorrPanel',
@@ -23,20 +24,25 @@ export default {
     pca: null,
     clustering: null,
     causality: null,
-    metrics: null
+    metrics: null,
+    stream_count: null,
   }),
   methods: {
     init() {
       this.$refs.TimeSeries.init()
-      this.$refs.Dimensionality.init()
-      this.$refs.Causality.init()
-      this.$refs.ControlPanel.init()
+      //this.$refs.Dimensionality.init()
+      //this.$refs.Causality.init()
+      //this.$refs.ControlPanel.init()
+      this.stream_count = 0
+      console.log(this.stream_count)
     },
 
     tick() {
       let data = this.plotData
       let ts = {}
+      console.log(this.stream_count)
       if (data != null || data != undefined){
+        this.stream_count = this.stream_count + 1
         console.log(data)
         ts.data = data['data']
         ts.schema = data['schema']
@@ -50,17 +56,24 @@ export default {
         this.pc1 = this.result['PC1']      
         this.reset()
       }
+
     },
 
     reset(){
-      this.$refs.TimeSeries.set()
-      this.selectedTimeInterval = null
-      this.visualize()
+      if(this.stream_count == 1){
+        console.log('initializing vis')
+        this.$refs.TimeSeries.initVis(this.ts)
+      }
+      else{
+        this.$refs.TimeSeries.clearVis()
+        this.selectedTimeInterval = null
+        this.visualize()
+      }
     },
 
     updateDimensionality() {
-      this.$refs.Dimensionality.selectedMetrics = 'RbSec'
-      this.$refs.Dimensionality.visualize()
+      this.$refs.Dimensionality.selectedMetrics = this.plotMetric
+     // this.$refs.Dimensionality.visualize()
     },
 
     updateTimeSeries(callback) {
@@ -68,7 +81,7 @@ export default {
       this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.$parent.selectedTimeDomain
-      this.$refs.TimeSeries.visualize(this.ts, ['RbSec'], callback) 
+      this.$refs.TimeSeries.visualize(this.ts, [this.plotMetric], callback) 
     },
 
     visualize() {

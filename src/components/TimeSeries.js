@@ -18,7 +18,8 @@ export default {
     showCPD: false,
     selectedMeasure: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-    selectedMethod :'AFF'
+    selectedMethod :'AFF',
+    current_views: []
   }),
   mounted () {
     this.id = this._uid +'-overview'
@@ -43,12 +44,25 @@ export default {
      
     },
     
-    set (){
-      console.log(this.ts)
+    initVis (ts){
+      this.vis = p4(this.config).data(ts).view(this.views)
     },
 
-    visualize (ts, metrics, callback) {
-      console.log(ts)
+    removeVis(elms) {
+      for(let i=0; i < elms.length; i++){
+        elms[i].remove()
+      }
+    },
+
+    clearVis (){
+      let container = document.getElementById(this.id)
+      this.removeVis(container.querySelectorAll('.p6-viz'))
+      this.vis.clearQueue()
+      this.current_views = []
+      this.vis.clearWebGLBuffers()
+    },
+
+    visualize (ts, metrics, callback) { 
       this.vis = p4(this.config).data(ts).view(this.views)
       this.metrics = metrics
       let viewSetting = {
@@ -57,7 +71,6 @@ export default {
       }
 
       let collection = {}
-      let views = [];
       metrics.forEach((metric, mi) => {
         collection[metric] = {}
         collection[metric]['$' + this.selectedMeasure] = metric
@@ -66,7 +79,7 @@ export default {
         view.width = this.width
         view.height = this.height / metrics.length
         view.offset = [0, this.height - view.height * (mi+1)]
-        views.push(view)
+        this.current_views.push(view)
       })
 
 
@@ -92,7 +105,7 @@ export default {
         aggregation.push('Peid')
       }
 
-      this.vis.view(views).head()
+      this.vis.view(this.current_views).head()
       .aggregate({
         $group: aggregation,
         $collect: collection
@@ -100,9 +113,10 @@ export default {
 
       this.vis.visualize(
         metrics.map((metric, mi) => {
+          console.log(vmap)
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })
-      )     
+      )      
     },
 
     visualizeCPD () {
