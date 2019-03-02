@@ -1,5 +1,5 @@
 <v-flex>
-  <v-toolbar dense>
+  <v-toolbar dense flat v-if="!isComparisonMode">
   <v-switch
     label="Intra-Comm"
     v-model="showIntraComm"
@@ -10,11 +10,48 @@
     v-model="threshold"
     :thumb-size="24"
     :min=0
-    label="threshold"
+    v-on:input="updateLink"
+    label="link threshold"
   ></v-slider>
   <span>{{thresholdValue}}</span>
   </v-toolbar>
   <v-card>
+      <v-navigation-drawer temporary v-if="isComparisonMode" v-model="drawer" absolute style="padding: 3em 1em;">
+        <p style="text-align: center">
+          <v-slider
+            v-model="threshold"
+            :thumb-size="24"
+            :min=0
+            v-on:input="updateLink"
+            label="link threshold"
+          ></v-slider>
+          <span>{{thresholdValue}}</span>
+        </p>
+        <v-select 
+          label="Metric"
+          :items="allMetrics"
+          multiple
+          v-model="metrics"
+          :menu-props="{ maxHeight: '400' }"
+          persistent-hint
+          v-on:change="updateMetrics"
+        >
+        </v-select>
+      </v-navigation-drawer>
+      <v-btn
+        v-if="isComparisonMode"
+        absolute
+        dark
+        fab
+        top
+        left
+        small
+        @click="drawer=!drawer"
+        style="margin-top: 2em;"
+        color="darken-2 blue"
+      >
+        <v-icon>settings</v-icon>
+      </v-btn>
     <div ref="container" style="display: flex;"></div>
   </v-card>
 </v-flex>
