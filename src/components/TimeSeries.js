@@ -5,7 +5,7 @@ import axios from 'axios'
 export default {
   name: 'TimeSeries',
   template: template,
-  props: ['ts', 'clustering'],
+  props: ['ts', 'clustering', 'cpd'],
   data: () => ({
     id: null,
     data: null,
@@ -19,7 +19,8 @@ export default {
     selectedMeasure: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
     selectedMethod :'AFF',
-    current_views: []
+    current_views: [],
+    cpds: []
   }),
   mounted () {
     this.id = this._uid +'-overview'
@@ -27,8 +28,8 @@ export default {
   methods: {
     init () {
       let visContainer = document.getElementById(this.id)
-      this.width = visContainer.clientWidth
-      this.height = window.innerHeight/2
+      this.width = visContainer.clientWidth 
+      this.height = window.innerHeight/2 - 100
       this.config = {
         container: this.id,
         viewport: [this.width, this.height]
@@ -40,8 +41,7 @@ export default {
         gridlines: {y: true},
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0]
-      }]
-     
+      }]     
     },
     
     initVis (ts){
@@ -54,17 +54,19 @@ export default {
       }
     },
 
-    clearVis (){
+    clearVis (ts){
       let container = document.getElementById(this.id)
       this.removeVis(container.querySelectorAll('.p6-viz'))
-      this.vis.clearQueue()
+      this.vis = null
       this.current_views = []
-      this.vis.clearWebGLBuffers()
+      this.initVis(ts)
     },
 
-    visualize (ts, metrics, callback) { 
-      this.vis = p4(this.config).data(ts).view(this.views)
+    visualize (cpd, metrics, callback) { 
       this.metrics = metrics
+      if(cpd == 1){
+        this.cpds.push(this.$parent.stream_count - 1)
+      }
       let viewSetting = {
         gridlines: {y: true},
         padding: {left: 70, right: 60, top: 10, bottom: 30},
@@ -86,7 +88,7 @@ export default {
       let firstMetric = {}
       let firstMetricName = Object.keys(collection)[0]
       firstMetric[firstMetricName] = collection[firstMetricName]
-      
+      console.log(this.selectedTimeDomain)
       let vmap = {
         mark: this.isAggregated ? 'area' : 'spline',
         x: this.selectedTimeDomain,
@@ -103,9 +105,15 @@ export default {
       if(!this.isAggregated) {
         vmap.color = 'Peid'
         aggregation.push('Peid')
-      }
+      
+      // let matchSpec = {}
+      // matchSpec[this.selectedTimeDomain] = 
+      // domain = this.selectedTimeDomain
 
       this.vis.view(this.current_views).head()
+      // .match({
+      //   lastGvt: [1000, 2000]       
+      // })
       .aggregate({
         $group: aggregation,
         $collect: collection
@@ -113,28 +121,23 @@ export default {
 
       this.vis.visualize(
         metrics.map((metric, mi) => {
-          console.log(vmap)
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })
-      )      
-    },
+      )   
 
-    visualizeCPD () {
-      axios.get('http://localhost:8888/cpd', {
-        params: {
-          'timeDomain': this.selectedTimeDomain,
-          'yDomain': this.metrics[0]
-        }
-      }).then(result => {
-        this.vis.annotate({
-          id: this.id,
-          mark: 'vline',
-          size: 3,
-          color: 'red',
-          position: {values: result.data.data} // this set the positions of the vlines
-        })
+      this.vis.annotate({
+        id: this.id,
+        mark: 'vline',
+        size: 3,
+        color: 'red',
+        brush: {
+          callback: function(s) {
+            console.log(s)
+          }
+        },
+        position: {values: this.cpds} // this set the positions of the vlines
       })
-
     }
   }
+}
 }

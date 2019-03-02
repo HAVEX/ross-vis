@@ -26,6 +26,7 @@ export default {
     causality: null,
     metrics: null,
     stream_count: null,
+    initVis: false,
   }),
   methods: {
     init() {
@@ -33,14 +34,13 @@ export default {
       //this.$refs.Dimensionality.init()
       //this.$refs.Causality.init()
       //this.$refs.ControlPanel.init()
-      this.stream_count = 0
-      console.log(this.stream_count)
+      this.initVis = true
     },
 
     tick() {
       let data = this.plotData
-      let ts = {}
-      console.log(this.stream_count)
+      let ts = {} 
+      console.log(data)
       if (data != null || data != undefined){
         this.stream_count = this.stream_count + 1
         console.log(data)
@@ -48,24 +48,24 @@ export default {
         ts.schema = data['schema']
         let tsCache = p4.cstore({})
         tsCache.import(ts)
+        tsCache.index('LastGvt')
         this.result = data['result']
         console.log(data['result'])
         this.ts =  tsCache.data()
-        this.cpd = this.result['cpd']
+        this.cpd = this.result[0]['cpd']
         this.pc0 = this.result['PC0']
         this.pc1 = this.result['PC1']      
         this.reset()
       }
-
     },
 
     reset(){
-      if(this.stream_count == 1){
+      if(!this.initVis){
         console.log('initializing vis')
         this.$refs.TimeSeries.initVis(this.ts)
       }
       else{
-        this.$refs.TimeSeries.clearVis()
+        this.$refs.TimeSeries.clearVis(this.ts)
         this.selectedTimeInterval = null
         this.visualize()
       }
@@ -81,7 +81,7 @@ export default {
       this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.$parent.selectedTimeDomain
-      this.$refs.TimeSeries.visualize(this.ts, [this.plotMetric], callback) 
+      this.$refs.TimeSeries.visualize(this.cpd, [this.plotMetric], callback) 
     },
 
     visualize() {

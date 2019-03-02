@@ -56,6 +56,7 @@ export default {
     },
 
     updateView() {
+      console.log('[Update view]')
       this.$refs.StreamBoard.update(this.data)
     },
 
@@ -97,6 +98,7 @@ export default {
           timeDomain: this.selectedTimeDomain,
           method: method
         }))
+        this.initView()
       }
 
       socket.onerror = (error) => {
@@ -112,9 +114,7 @@ export default {
         /* if (data.schema.hasOwnProperty('CommData')) {
           data.schema.CommData = 'int'
         } */
-        //this.metrics = Object.keys(data.schema)        
-        if (this.count == 1) {
-          this.initView()
+        //this.metrics = Object.keys(data.schema) 
           /* let cache = p4.cstore({})
           cache.import(data)
           cache.index('RealTs')
@@ -122,8 +122,7 @@ export default {
           let tsData = cache.data()
           this.timeIndexes = tsData.uniqueValues
           this.tsData = tsData */
-        }
-        else if (this.count <= 100) {
+        if (this.count <= 100) {
           this.updateView()
         }
         else {
