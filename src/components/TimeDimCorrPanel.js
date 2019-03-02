@@ -31,41 +31,63 @@ export default {
   methods: {
     init() {
       this.$refs.TimeSeries.init()
-      //this.$refs.Dimensionality.init()
+      this.$refs.Dimensionality.init()
       //this.$refs.Causality.init()
       //this.$refs.ControlPanel.init()
-      this.initVis = true
     },
 
     tick() {
       let data = this.plotData
       let ts = {} 
-      console.log(data)
       if (data != null || data != undefined){
         this.stream_count = this.stream_count + 1
-        console.log(data)
         ts.data = data['data']
         ts.schema = data['schema']
         let tsCache = p4.cstore({})
         tsCache.import(ts)
         tsCache.index('LastGvt')
-        this.result = data['result']
-        console.log(data['result'])
+        let result = {}
+        result.data = data['result']
+        result.schema ={
+          KpGid: "int",
+          PC0: "float",
+          PC1: "float",
+          cpd: "int",
+          from_IR_1: "int",
+          from_VD_1: "int",
+          from_causality: "int",
+          from_metrics: "int",
+          macro: "int",
+          macro_clusters: "int",
+          micro: "int",
+          micro_clusters: "int",
+          normal: "int",
+          normal_clusters: "int",
+          to_IR_1: "int",
+          to_VD_1: "int",
+          to_causality: "int",
+          to_metrics: "int",
+        }
         this.ts =  tsCache.data()
-        this.cpd = this.result[0]['cpd']
-        this.pc0 = this.result['PC0']
-        this.pc1 = this.result['PC1']      
+        this.cpd = result.data[0]['cpd']
+        let resultCache = p4.cstore({})
+        resultCache.import(result)
+        this.result = resultCache.data()
         this.reset()
       }
     },
 
     reset(){
+      console.log(this.initVis)
       if(!this.initVis){
         console.log('initializing vis')
         this.$refs.TimeSeries.initVis(this.ts)
+        this.$refs.Dimensionality.initVis(this.result)
+        this.initVis = true
       }
       else{
         this.$refs.TimeSeries.clearVis(this.ts)
+        this.$refs.Dimensionality.clearVis(this.result)
         this.selectedTimeInterval = null
         this.visualize()
       }
@@ -73,7 +95,7 @@ export default {
 
     updateDimensionality() {
       this.$refs.Dimensionality.selectedMetrics = this.plotMetric
-     // this.$refs.Dimensionality.visualize()
+      this.$refs.Dimensionality.visualize(this.result)
     },
 
     updateTimeSeries(callback) {
@@ -82,6 +104,7 @@ export default {
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.$parent.selectedTimeDomain
       this.$refs.TimeSeries.visualize(this.cpd, [this.plotMetric], callback) 
+      this.updateDimensionality()
     },
 
     visualize() {
@@ -95,7 +118,6 @@ export default {
       }
 
       this.updateTimeSeries(callback)
-      this.updateDimensionality()
     }
   }
 }
