@@ -1,16 +1,3 @@
-<v-card height="100%" id="vis-overview">
-   <v-toolbar dense>
-     <v-switch
-       label="Change Point Detection"
-       v-model="showCPD"
-       v-on:change="visualizeCPD()"
-      ></v-switch>
-     <v-overflow-btn
-        dense
-        label="Analytical Method"
-        :items="methods"
-        v-model="selectedMethod"
-      ></v-overflow-btn>
-      <v-spacer></v-spacer>
-    </v-toolbar>
-  </v-card>
+<v-flex fill-height>
+  <v-card class="fill-height" id="vis-overview"></v-card>
+</v-flex>

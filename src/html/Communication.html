@@ -1,4 +1,4 @@
-<v-flex>
+<v-flex fill-height>
   <v-toolbar dense flat v-if="!isComparisonMode">
   <v-switch
     label="Intra-Comm"
@@ -15,7 +15,7 @@
   ></v-slider>
   <span>{{thresholdValue}}</span>
   </v-toolbar>
-  <v-card>
+  <v-card class="fill-height">
       <v-navigation-drawer temporary v-if="isComparisonMode" v-model="drawer" absolute style="padding: 3em 1em;">
         <p style="text-align: center">
           <v-slider

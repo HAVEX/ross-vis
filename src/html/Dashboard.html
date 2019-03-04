@@ -94,7 +94,7 @@
   <v-content class="pa-2">
     <v-container fluid fill-height class="pa-1">
       <v-layout justify-center align-center>
-        <v-flex xs7 fill-height class="pa-2">
+        <v-flex xs7 fill-height class="pa-1">
           <v-toolbar dense>
             <v-flex xs9 class="ma-2">
               <v-select 
@@ -126,13 +126,11 @@
             <v-btn icon>
               <v-icon v-on:click="reset()">refresh</v-icon>
             </v-btn>
-
           </v-toolbar>
           <TimeSeries ref="TimeSeries"></TimeSeries>
         </v-flex>
-        <v-flex xs5 fill-height class="pa-2">
-          <Communication  ref="Communication" v-bind:class="{hidden: selectedAnalysis != 'Communication'}" />
-          <Dimensionality  ref="Dimensionality" v-bind:class="{hidden: selectedAnalysis != 'Dimensionality'}" />
+        <v-flex xs5 fill-height class="pa-1">
+          <Communication  ref="Communication" />
         </v-flex>
       </v-layout>
     </v-container>
