@@ -1,6 +1,4 @@
 import tpl from '../html/entry.html'
-import p5 from 'p5'
-import p4 from 'p4'
 
 import StreamBoard from './StreamBoard'
 import HocBoard from './HocBoard'
@@ -25,7 +23,7 @@ export default {
     selectedTimeDomain: 'LastGvt',
     granularity: ['PE', 'KP', 'LP'],
     GranID: ['Peid', 'Kpid', 'Lpid'],
-    selectedGranID: 'KpGid',
+    selectedGranID: 'Peid',
     selectedGran: 'Kp',
     timeIndexes: null,
     isAggregated: true,
@@ -111,17 +109,6 @@ export default {
         let d = data
         console.log("Incoming data stream", d)
         this.data = data
-        /* if (data.schema.hasOwnProperty('CommData')) {
-          data.schema.CommData = 'int'
-        } */
-        //this.metrics = Object.keys(data.schema) 
-          /* let cache = p4.cstore({})
-          cache.import(data)
-          cache.index('RealTs')
-          cache.index('LastGvt')
-          let tsData = cache.data()
-          this.timeIndexes = tsData.uniqueValues
-          this.tsData = tsData */
         if (this.count <= 100) {
           this.updateView()
         }

@@ -131,6 +131,13 @@ export default {
 
         this.cpd = result[0]['cpd']
 
+        // let normal_result = this.processClusterData(data['result'], 'normal')
+        // //console.log(micro_result.data)
+        // let normal_cstore = p4.cstore({})
+        // normal_cstore.import(normal_result)
+        // normal_cstore.index('LastGvt')
+        // this.normal_result = normal_cstore.data()
+
         let macro_result = this.processClusterData(data['result'], 'macro')
         // console.log(macro_result.data)
         let macro_cstore = p4.cstore({})
@@ -145,7 +152,7 @@ export default {
         micro_cstore.index('LastGvt')
         this.micro_result = micro_cstore.data()
 
-        this.causality_result = this.processCausalityData(data['result'])
+        //this.causality_result = this.processCausalityData(data['result'])
         // let schema_res = {
         //   from_IR_1: "int",
         //   from_VD_1: "int",
@@ -172,13 +179,13 @@ export default {
       if(!this.initVis){
         console.log('initializing vis')
         console.log(this.micro_result)
-        this.$refs.TimeSeries.initVis(this.micro_result)
+        this.$refs.TimeSeries.initVis(this.macro_result)
         this.$refs.Dimensionality.initVis(this.pca_result)
        // this.$refs.Causality.init(this.causality_result)
         this.initVis = true
       }
       else{
-        this.$refs.TimeSeries.clearVis(this.micro_result)
+        this.$refs.TimeSeries.clearVis(this.macro_result)
         this.$refs.Dimensionality.clearVis(this.pca_result)
        // this.$refs.Causality.clear(this.causality_result)
         this.selectedTimeInterval = null
