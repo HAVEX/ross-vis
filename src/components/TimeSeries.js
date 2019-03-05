@@ -88,7 +88,6 @@ export default {
       let firstMetric = {}
       let firstMetricName = Object.keys(collection)[0]
       firstMetric[firstMetricName] = collection[firstMetricName]
-      console.log(this.selectedTimeDomain)
       let vmap = {
         mark: this.isAggregated ? 'area' : 'spline',
         x: this.selectedTimeDomain,
@@ -103,8 +102,8 @@ export default {
       let aggregation = [this.selectedTimeDomain]
 
       if(!this.isAggregated) {
-        vmap.color = 'Peid'
-        aggregation.push('Peid')
+        vmap.color = 'KpGid'
+        aggregation.push('KpGid')
       
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 

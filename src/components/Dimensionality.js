@@ -5,10 +5,11 @@ import axios from 'axios'
 export default {
   name: 'Dimensionality',
   template: template,
-  props: ['tsData'],
+  props: [],
   data: () => ({
     id: null,
     data: null,
+    config: null,
     methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
     selectedMethod: 'prog_inc_PCA',
     vis: null,
@@ -18,12 +19,11 @@ export default {
   },
   methods: {
     init() {
-      this.vis = null
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth
-      this.height = window.innerHeight / 3 - 60
+      this.height = window.innerHeight / 2 - 100
 
-      let config = {
+      this.config = {
         container: this.id,
         viewport: [this.width, this.height]
       }
@@ -37,8 +37,7 @@ export default {
     },
 
     initVis (ts){
-      console.log(this.vis)
-      // this.vis = p4(this.config).data(ts).view(this.views)
+      this.vis = p4(this.config).data(ts).view(this.views)
     },
 
     removeVis(elms) {
@@ -55,8 +54,8 @@ export default {
       this.initVis(ts)
     },
 
-    visualize(data) {
-      this.vis = p4(this.config).data(ts).view(this.views)
+    visualize() {
+      //this.vis = p4(this.config).data(ts).view(this.views)
       this.vis.visualize({
         x: 'PC0',
         y: 'PC1',

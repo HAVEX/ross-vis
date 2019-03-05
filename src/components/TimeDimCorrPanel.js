@@ -48,11 +48,12 @@ export default {
         tsCache.index('LastGvt')
         let result = {}
         result.data = data['result']
+        this.cpd = result.data[0]['cpd']
         result.schema ={
           KpGid: "int",
+          cpd: "int",
           PC0: "float",
           PC1: "float",
-          cpd: "int",
           from_IR_1: "int",
           from_VD_1: "int",
           from_causality: "int",
@@ -69,16 +70,15 @@ export default {
           to_metrics: "int",
         }
         this.ts =  tsCache.data()
-        this.cpd = result.data[0]['cpd']
         let resultCache = p4.cstore({})
         resultCache.import(result)
         this.result = resultCache.data()
+        console.log(this.result)
         this.reset()
       }
     },
 
     reset(){
-      console.log(this.initVis)
       if(!this.initVis){
         console.log('initializing vis')
         this.$refs.TimeSeries.initVis(this.ts)
