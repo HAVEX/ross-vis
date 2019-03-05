@@ -9,36 +9,30 @@ export default {
 
   },
   data: () => ({
-
+      sortBy: 'causality',
+      sortDesc: true,
+      fields: [
+        { key: 'IR_1', sortable: true },
+        { key: 'VD_1', sortable: true },
+        { key: 'causality', sortable: true },
+        { key: 'metric', sortable: false }
+      ],
+      to_items: [],
+      from_items: [],
   }),
 
   mounted: function () {
   },
 
   methods: {
-    init(tsData) {
-      this.reset()
+    init(data) {
+      this.from_items = data['from']
+      this.to_items = data['to']
     },
 
-    reset() {
-      this.visualize()
+    clear(data) {
+      this.from_items = data['from']
+      this.to_items = data['to']
     },
-
-    visualize() {
-      /* axios.get('http://localhost:8888/causality', {
-        params: {
-          metrics: this.selectedMetrics,
-          method: this.selectedMethod
-        }
-      }).then(result => {
-        let data = p4.cstore().import({
-          data: result.data.data,
-          schema: {
-            PC0: 'float',
-            PC1: 'float'
-          }
-        }).data()
-      }) */
-    }
   }
 }

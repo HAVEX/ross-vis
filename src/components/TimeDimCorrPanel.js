@@ -79,7 +79,38 @@ export default {
       return ret
     },
 
+    processCausalityData (data) {
+      let ret = {}
+      data = data[0]
+      ret.from = []
+      for(let i = 0; i < data['from_metrics'].length; i += 1){
+        ret.from.push({
+          'IR_1': parseFloat(data['from_IR_1'][i]).toFixed(2),
+          'VD_1': parseFloat(data['from_VD_1'][i]).toFixed(2), 
+          'causality': data['from_causality'][i],
+          'metric': data['from_metrics'][i],
+        })
+      }
+
+      ret.to = []
+      for(let i = 0; i < data['from_metrics'].length; i += 1){
+        ret.to.push({
+          'IR_1': parseFloat(data['to_IR_1'][i]).toFixed(2),
+          'VD_1': parseFloat(data['from_VD_1'][i]).toFixed(2), 
+          'causality': data['from_causality'][i],
+          'metric': data['from_metrics'][i],
+        })
+      } 
+      return ret     
+    },
+
     tick() {
+      this.ts = null
+      this.pca_result = null
+      this.macro_result = null
+      this.micro_result = null
+      this.causality_result = null
+
       let data = this.plotData
       let ts = {} 
       if (data != null || data != undefined){
@@ -101,20 +132,20 @@ export default {
         this.cpd = result[0]['cpd']
 
         let macro_result = this.processClusterData(data['result'], 'macro')
-        console.log(macro_result.data)
+        // console.log(macro_result.data)
         let macro_cstore = p4.cstore({})
         macro_cstore.import(macro_result)
         macro_cstore.index('LastGvt')
         this.macro_result = macro_cstore.data()
 
         let micro_result = this.processClusterData(data['result'], 'micro')
-        console.log(micro_result.data)
+        //console.log(micro_result.data)
         let micro_cstore = p4.cstore({})
         micro_cstore.import(micro_result)
         micro_cstore.index('LastGvt')
         this.micro_result = micro_cstore.data()
 
-        
+        this.causality_result = this.processCausalityData(data['result'])
         // let schema_res = {
         //   from_IR_1: "int",
         //   from_VD_1: "int",
@@ -138,16 +169,18 @@ export default {
     },
 
     reset(){
-      this.ts = null
       if(!this.initVis){
         console.log('initializing vis')
+        console.log(this.micro_result)
         this.$refs.TimeSeries.initVis(this.micro_result)
         this.$refs.Dimensionality.initVis(this.pca_result)
+       // this.$refs.Causality.init(this.causality_result)
         this.initVis = true
       }
       else{
         this.$refs.TimeSeries.clearVis(this.micro_result)
         this.$refs.Dimensionality.clearVis(this.pca_result)
+       // this.$refs.Causality.clear(this.causality_result)
         this.selectedTimeInterval = null
         this.visualize()
       }
@@ -157,6 +190,7 @@ export default {
       this.$refs.Dimensionality.selectedMetrics = this.plotMetric
       this.$refs.Dimensionality.visualize()
     },
+
 
     updateTimeSeries(callback) {
       this.$refs.TimeSeries.selectedMeasure = this.$parent.selectedMeasure
