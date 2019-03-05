@@ -21,7 +21,7 @@ export default {
     init() {
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth
-      this.height = window.innerHeight / 2 - 100
+      this.height = window.innerHeight / 2 - 60
 
       this.config = {
         container: this.id,

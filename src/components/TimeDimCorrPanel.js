@@ -32,8 +32,51 @@ export default {
     init() {
       this.$refs.TimeSeries.init()
       this.$refs.Dimensionality.init()
-      //this.$refs.Causality.init()
+      this.$refs.Causality.init()
       //this.$refs.ControlPanel.init()
+    },
+
+    getColumns (data, colnames, schema){
+      let ret = {}
+      ret.data = []
+      ret.schema = {}
+      for(let i = 0; i < data.length; i += 1){
+        for(let j = 0; j < colnames.length; j += 1){
+          if(j == 0){
+            ret.data[i] = {}
+          }
+          if(i == 0){
+            ret.schema[colnames[j]] = schema[j]
+          }
+          ret.data[i][colnames[j]] = data[i][colnames[j]]
+        }
+      }
+      return ret
+    },
+
+    // Because most results are being dumped to [0] th element of array.
+    processClusterData (data, clusterType) {
+      let ret = {}
+      ret.data = []
+      ret.schema = {
+        ts : 'float',
+        'cluster': 'int',
+        'LastGvt': 'float'
+      }
+      let zero_index_data = data[0]
+      for(let i = 0; i < zero_index_data[clusterType].length; i += 1){
+        let _data = zero_index_data[clusterType][i]
+        let _cluster = zero_index_data[clusterType + '_clusters'][i]
+        for(let time = 0; time < _data.length; time += 1){
+          let current_time = zero_index_data[clusterType + '_times'][time]
+          ret.data.push({
+            ts : _data[time],
+            'cluster': _cluster,
+            'LastGvt': current_time
+          })
+        }
+      }
+      return ret
     },
 
     tick() {
@@ -46,48 +89,65 @@ export default {
         let tsCache = p4.cstore({})
         tsCache.import(ts)
         tsCache.index('LastGvt')
-        let result = {}
-        result.data = data['result']
-        this.cpd = result.data[0]['cpd']
-        result.schema ={
-          KpGid: "int",
-          cpd: "int",
-          PC0: "float",
-          PC1: "float",
-          from_IR_1: "int",
-          from_VD_1: "int",
-          from_causality: "int",
-          from_metrics: "int",
-          macro: "int",
-          macro_clusters: "int",
-          micro: "int",
-          micro_clusters: "int",
-          normal: "int",
-          normal_clusters: "int",
-          to_IR_1: "int",
-          to_VD_1: "int",
-          to_causality: "int",
-          to_metrics: "int",
-        }
         this.ts =  tsCache.data()
-        let resultCache = p4.cstore({})
-        resultCache.import(result)
-        this.result = resultCache.data()
-        console.log(this.result)
+
+        let result = data['result']
+        // pca_result
+        let pca_result = this.getColumns(data['result'], ['KpGid', 'PC0', 'PC1'], ['int', 'float', 'float'])
+        let pca_cstore = p4.cstore({})
+        pca_cstore.import(pca_result)
+        this.pca_result = pca_cstore.data()
+
+        this.cpd = result[0]['cpd']
+
+        let macro_result = this.processClusterData(data['result'], 'macro')
+        console.log(macro_result.data)
+        let macro_cstore = p4.cstore({})
+        macro_cstore.import(macro_result)
+        macro_cstore.index('LastGvt')
+        this.macro_result = macro_cstore.data()
+
+        let micro_result = this.processClusterData(data['result'], 'micro')
+        console.log(micro_result.data)
+        let micro_cstore = p4.cstore({})
+        micro_cstore.import(micro_result)
+        micro_cstore.index('LastGvt')
+        this.micro_result = micro_cstore.data()
+
+        
+        // let schema_res = {
+        //   from_IR_1: "int",
+        //   from_VD_1: "int",
+        //   from_causality: "int",
+        //   from_metrics: "int",
+        //   macro: "int",
+        //   macro_clusters: "int",
+        //   micro: "int",
+        //   micro_clusters: "int",
+        //   normal: "int",
+        //   normal_clusters: "int",
+        //   to_IR_1: "int",
+        //   to_VD_1: "int",
+        //   to_causality: "int",
+        //   to_metrics: "int",
+        // }
+
+        
         this.reset()
       }
     },
 
     reset(){
+      this.ts = null
       if(!this.initVis){
         console.log('initializing vis')
-        this.$refs.TimeSeries.initVis(this.ts)
-        this.$refs.Dimensionality.initVis(this.result)
+        this.$refs.TimeSeries.initVis(this.micro_result)
+        this.$refs.Dimensionality.initVis(this.pca_result)
         this.initVis = true
       }
       else{
-        this.$refs.TimeSeries.clearVis(this.ts)
-        this.$refs.Dimensionality.clearVis(this.result)
+        this.$refs.TimeSeries.clearVis(this.micro_result)
+        this.$refs.Dimensionality.clearVis(this.pca_result)
         this.selectedTimeInterval = null
         this.visualize()
       }
@@ -95,7 +155,7 @@ export default {
 
     updateDimensionality() {
       this.$refs.Dimensionality.selectedMetrics = this.plotMetric
-      this.$refs.Dimensionality.visualize(this.result)
+      this.$refs.Dimensionality.visualize()
     },
 
     updateTimeSeries(callback) {

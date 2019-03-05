@@ -29,7 +29,7 @@ export default {
     init () {
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth 
-      this.height = window.innerHeight/2 - 100
+      this.height = window.innerHeight/2 - 60
       this.config = {
         container: this.id,
         viewport: [this.width, this.height]
@@ -89,7 +89,7 @@ export default {
       let firstMetricName = Object.keys(collection)[0]
       firstMetric[firstMetricName] = collection[firstMetricName]
       let vmap = {
-        mark: this.isAggregated ? 'area' : 'spline',
+        mark: this.isAggregated ? 'area' : 'line',
         x: this.selectedTimeDomain,
         color: 'steelblue',
         size: 3,
@@ -102,8 +102,8 @@ export default {
       let aggregation = [this.selectedTimeDomain]
 
       if(!this.isAggregated) {
-        vmap.color = 'KpGid'
-        aggregation.push('KpGid')
+        vmap.color = 'cluster'
+        aggregation.push('cluster')
       
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 
