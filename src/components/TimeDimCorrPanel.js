@@ -36,19 +36,28 @@ export default {
       //this.$refs.ControlPanel.init()
     },
 
-    getColumns (data, colnames, schema){
+    processPCAData (data, cluster_mapping){
       let ret = {}
       ret.data = []
-      ret.schema = {}
+      let colnames = ['KpGid', 'PC0', 'PC1','cluster']
+      ret.schema = {
+        'KpGid': 'int', 
+        'PC0': 'float',
+        'PC1': 'float',
+        'cluster': 'int', 
+      }
       for(let i = 0; i < data.length; i += 1){
         for(let j = 0; j < colnames.length; j += 1){
           if(j == 0){
             ret.data[i] = {}
           }
-          if(i == 0){
-            ret.schema[colnames[j]] = schema[j]
+          if(colnames[j] == 'cluster'){
+            console.log(cluster_mapping[data[i]['KpGid']])  
+            ret.data[i]['cluster'] = cluster_mapping[data[i]['KpGid']]
           }
-          ret.data[i][colnames[j]] = data[i][colnames[j]]
+          else{
+            ret.data[i][colnames[j]] = data[i][colnames[j]]
+          }
         }
       }
       return ret
@@ -58,25 +67,54 @@ export default {
     processClusterData (data, clusterType) {
       let ret = {}
       ret.data = []
-      ret.schema = {
-        ts : 'float',
+      let cluster_mapping = {}
+      if (clusterType == 'normal'){
+        ret.schema = {
+          ts : 'float',
         'cluster': 'int',
-        'LastGvt': 'float'
+        'LastGvt': 'float',
+        'id': 'int'
+        }
       }
+      else{
+        ret.schema = {
+          ts : 'float',
+          'cluster': 'int',
+          'LastGvt': 'float'
+        }
+      }
+
       let zero_index_data = data[0]
       for(let i = 0; i < zero_index_data[clusterType].length; i += 1){
         let _data = zero_index_data[clusterType][i]
         let _cluster = zero_index_data[clusterType + '_clusters'][i]
         for(let time = 0; time < _data.length; time += 1){
           let current_time = zero_index_data[clusterType + '_times'][time]
-          ret.data.push({
-            ts : _data[time],
-            'cluster': _cluster,
-            'LastGvt': current_time
-          })
+          if(clusterType == 'normal'){
+            let id = zero_index_data['ids'][i]
+            cluster_mapping[id] = _cluster
+            ret.data.push({
+              ts : _data[time],
+              'cluster': _cluster,
+              'LastGvt': current_time,
+              'id': id
+            })  
+          }
+          else{
+            ret.data.push({
+              ts : _data[time],
+              'cluster': _cluster,
+              'LastGvt': current_time
+            })
+          }
         }
       }
-      return ret
+      if(clusterType == 'normal'){
+        return [ret, cluster_mapping]
+      }
+      else{
+        return ret
+      }
     },
 
     processCausalityData (data) {
@@ -115,62 +153,47 @@ export default {
       let ts = {} 
       if (data != null || data != undefined){
         this.stream_count = this.stream_count + 1
-        ts.data = data['data']
-        ts.schema = data['schema']
-        let tsCache = p4.cstore({})
-        tsCache.import(ts)
-        tsCache.index('LastGvt')
-        this.ts =  tsCache.data()
+        // ts.data = data['data']
+        // ts.schema = data['schema']
+        // let tsCache = p4.cstore({})
+        // tsCache.import(ts)
+        // tsCache.index('LastGvt')
+        // this.ts =  tsCache.data()
 
         let result = data['result']
+
+        let temp = this.processClusterData(result, 'normal')
+        let normal_result = temp[0]
+        let cluster_mapping = temp[1]
+        let normal_cstore = p4.cstore({})
+        normal_cstore.import(normal_result)
+        normal_cstore.index('LastGvt')
+        this.normal_result = normal_cstore.data()
+
         // pca_result
-        let pca_result = this.getColumns(data['result'], ['KpGid', 'PC0', 'PC1'], ['int', 'float', 'float'])
+        let pca_result = this.processPCAData(result, cluster_mapping)
+        console.log(pca_result)
         let pca_cstore = p4.cstore({})
         pca_cstore.import(pca_result)
         this.pca_result = pca_cstore.data()
 
         this.cpd = result[0]['cpd']
 
-        // let normal_result = this.processClusterData(data['result'], 'normal')
-        // //console.log(micro_result.data)
-        // let normal_cstore = p4.cstore({})
-        // normal_cstore.import(normal_result)
-        // normal_cstore.index('LastGvt')
-        // this.normal_result = normal_cstore.data()
-
-        let macro_result = this.processClusterData(data['result'], 'macro')
+        let macro_result = this.processClusterData(result, 'macro')
         // console.log(macro_result.data)
         let macro_cstore = p4.cstore({})
         macro_cstore.import(macro_result)
         macro_cstore.index('LastGvt')
         this.macro_result = macro_cstore.data()
 
-        let micro_result = this.processClusterData(data['result'], 'micro')
+        let micro_result = this.processClusterData(result, 'micro')
         //console.log(micro_result.data)
         let micro_cstore = p4.cstore({})
         micro_cstore.import(micro_result)
         micro_cstore.index('LastGvt')
         this.micro_result = micro_cstore.data()
 
-        //this.causality_result = this.processCausalityData(data['result'])
-        // let schema_res = {
-        //   from_IR_1: "int",
-        //   from_VD_1: "int",
-        //   from_causality: "int",
-        //   from_metrics: "int",
-        //   macro: "int",
-        //   macro_clusters: "int",
-        //   micro: "int",
-        //   micro_clusters: "int",
-        //   normal: "int",
-        //   normal_clusters: "int",
-        //   to_IR_1: "int",
-        //   to_VD_1: "int",
-        //   to_causality: "int",
-        //   to_metrics: "int",
-        // }
-
-        
+        this.causality_result = this.processCausalityData(data['result'])
         this.reset()
       }
     },
@@ -178,16 +201,15 @@ export default {
     reset(){
       if(!this.initVis){
         console.log('initializing vis')
-        console.log(this.micro_result)
-        this.$refs.TimeSeries.initVis(this.macro_result)
+        this.$refs.TimeSeries.initVis(this.normal_result)
         this.$refs.Dimensionality.initVis(this.pca_result)
-       // this.$refs.Causality.init(this.causality_result)
+        this.$refs.Causality.init(this.causality_result)
         this.initVis = true
       }
       else{
-        this.$refs.TimeSeries.clearVis(this.macro_result)
+        this.$refs.TimeSeries.clearVis(this.normal_result)
         this.$refs.Dimensionality.clearVis(this.pca_result)
-       // this.$refs.Causality.clear(this.causality_result)
+        this.$refs.Causality.clear(this.causality_result)
         this.selectedTimeInterval = null
         this.visualize()
       }

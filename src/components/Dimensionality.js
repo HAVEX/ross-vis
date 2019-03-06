@@ -59,7 +59,7 @@ export default {
       this.vis.visualize({
         x: 'PC0',
         y: 'PC1',
-        color: 'steelblue',
+        color: 'cluster',
         size: 10
       })
     }

@@ -23,7 +23,7 @@ export default {
     selectedTimeDomain: 'LastGvt',
     granularity: ['PE', 'KP', 'LP'],
     GranID: ['Peid', 'Kpid', 'Lpid'],
-    selectedGranID: 'Peid',
+    selectedGranID: 'KpGid',
     selectedGran: 'Kp',
     timeIndexes: null,
     isAggregated: true,
@@ -96,7 +96,6 @@ export default {
           timeDomain: this.selectedTimeDomain,
           method: method
         }))
-        this.initView()
       }
 
       socket.onerror = (error) => {
@@ -109,6 +108,9 @@ export default {
         let d = data
         console.log("Incoming data stream", d)
         this.data = data
+        if (this.count > 2){
+          this.initView()
+        }
         if (this.count <= 100) {
           this.updateView()
         }

@@ -102,8 +102,8 @@ export default {
       let aggregation = [this.selectedTimeDomain]
 
       if(!this.isAggregated) {
-        vmap.color = 'cluster'
-        aggregation.push('cluster')
+        vmap.color = 'id'
+        aggregation.push('id')
       
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 

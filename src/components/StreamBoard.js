@@ -40,7 +40,6 @@ export default {
       this.isTsDataLoaded = true
       if (this.isTsDataLoaded) {
         Vue.nextTick(() => {
-          console.log(data)
           this.$refs.TimeDimCorrPanel1.init()
           this.$refs.TimeDimCorrPanel2.init()
           this.reset()
@@ -62,7 +61,6 @@ export default {
     },
 
     update(data) {  
-      console.log(data)
       this.plotData1 = data[this.plotMetric1]
       this.plotData2 = data[this.plotMetric2]
       this.$refs.TimeDimCorrPanel1.tick()
