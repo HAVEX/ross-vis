@@ -27,9 +27,12 @@ export default {
     metrics: null,
     stream_count: null,
     initVis: false,
+    selectedTimeDomain : 'LastGvt',
+    selectedGranularity : 'KpGid'
   }),
   methods: {
     init() {
+      console.log('Init ', this.plotMetric)
       this.$refs.TimeSeries.init()
       this.$refs.Dimensionality.init()
       this.$refs.Causality.init()
@@ -52,7 +55,6 @@ export default {
             ret.data[i] = {}
           }
           if(colnames[j] == 'cluster'){
-            console.log(cluster_mapping[data[i]['KpGid']])  
             ret.data[i]['cluster'] = cluster_mapping[data[i]['KpGid']]
           }
           else{
@@ -85,6 +87,7 @@ export default {
       }
 
       let zero_index_data = data[0]
+
       for(let i = 0; i < zero_index_data[clusterType].length; i += 1){
         let _data = zero_index_data[clusterType][i]
         let _cluster = zero_index_data[clusterType + '_clusters'][i]
@@ -142,7 +145,17 @@ export default {
       return ret     
     },
 
+    create_cstore(data, index) {
+      let cstore = p4.cstore({})
+      cstore.import(data)
+      if(index){
+        cstore.index(index)
+      }
+      return cstore.data()
+    },
+
     tick() {
+      console.log('Ticking ', this.plotMetric)
       this.ts = null
       this.pca_result = null
       this.macro_result = null
@@ -152,58 +165,48 @@ export default {
       let data = this.plotData
       let ts = {} 
       if (data != null || data != undefined){
-        this.stream_count = this.stream_count + 1
-        // ts.data = data['data']
-        // ts.schema = data['schema']
-        // let tsCache = p4.cstore({})
-        // tsCache.import(ts)
-        // tsCache.index('LastGvt')
-        // this.ts =  tsCache.data()
+        if (Object.keys(data).length === 1){
+          
+        }
+        else{
+          this.stream_count = this.stream_count + 1
+          let result = data['result']
 
-        let result = data['result']
-
-        let temp = this.processClusterData(result, 'normal')
-        let normal_result = temp[0]
-        let cluster_mapping = temp[1]
-        let normal_cstore = p4.cstore({})
-        normal_cstore.import(normal_result)
-        normal_cstore.index('LastGvt')
-        this.normal_result = normal_cstore.data()
-
-        // pca_result
-        let pca_result = this.processPCAData(result, cluster_mapping)
-        console.log(pca_result)
-        let pca_cstore = p4.cstore({})
-        pca_cstore.import(pca_result)
-        this.pca_result = pca_cstore.data()
-
-        this.cpd = result[0]['cpd']
-
-        let macro_result = this.processClusterData(result, 'macro')
-        // console.log(macro_result.data)
-        let macro_cstore = p4.cstore({})
-        macro_cstore.import(macro_result)
-        macro_cstore.index('LastGvt')
-        this.macro_result = macro_cstore.data()
-
-        let micro_result = this.processClusterData(result, 'micro')
-        //console.log(micro_result.data)
-        let micro_cstore = p4.cstore({})
-        micro_cstore.import(micro_result)
-        micro_cstore.index('LastGvt')
-        this.micro_result = micro_cstore.data()
-
-        this.causality_result = this.processCausalityData(data['result'])
-        this.reset()
+          // Check if the results have come. 
+          if(Object.keys(result[0]).length == 1){
+            
+          }
+          else{
+            let temp = this.processClusterData(result, 'normal')
+            let normal_result = temp[0]
+            let cluster_mapping = temp[1]
+            this.normal_result = this.create_cstore(normal_result, this.selectedTimeDomain)
+    
+            let pca_result = this.processPCAData(result, cluster_mapping)
+            this.pca_result = this.create_cstore(pca_result)
+    
+            this.cpd = result[0]['cpd']
+    
+            let macro_result = this.processClusterData(result, 'macro')
+            this.macro_result = this.create_cstore(macro_result, this.selectedTimeDomain)
+    
+            let micro_result = this.processClusterData(result, 'micro')
+            this.micro_result = this.create_cstore(micro_result, this.selectedTimeDomain)
+    
+            this.causality_result = this.processCausalityData(data['result'])
+            this.reset()
+          }
+         
+        }
       }
     },
 
     reset(){
       if(!this.initVis){
-        console.log('initializing vis')
+        console.log('initializing vis', this.plotMetric)
         this.$refs.TimeSeries.initVis(this.normal_result)
         this.$refs.Dimensionality.initVis(this.pca_result)
-        this.$refs.Causality.init(this.causality_result)
+        this.$refs.Causality.initVis(this.causality_result)
         this.initVis = true
       }
       else{

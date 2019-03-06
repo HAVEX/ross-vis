@@ -108,7 +108,7 @@ export default {
         let d = data
         console.log("Incoming data stream", d)
         this.data = data
-        if (this.count > 2){
+        if (this.count < 2){
           this.initView()
         }
         if (this.count <= 100) {

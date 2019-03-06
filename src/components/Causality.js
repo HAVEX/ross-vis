@@ -26,6 +26,10 @@ export default {
 
   methods: {
     init(data) {
+    
+    },
+
+    initVis(data) {
       this.from_items = data['from']
       this.to_items = data['to']
     },

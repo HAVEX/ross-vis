@@ -41,11 +41,14 @@ export default {
         gridlines: {y: true},
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0]
-      }]     
+      }]
     },
     
     initVis (ts){
+      this.data = ts
+      console.log(this.vis, this.config, this.views)
       this.vis = p4(this.config).data(ts).view(this.views)
+      console.log(this.vis)
     },
 
     removeVis(elms) {
