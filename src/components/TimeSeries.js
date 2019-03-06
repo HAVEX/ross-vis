@@ -46,9 +46,7 @@ export default {
     
     initVis (ts){
       this.data = ts
-      console.log(this.vis, this.config, this.views)
       this.vis = p4(this.config).data(ts).view(this.views)
-      console.log(this.vis)
     },
 
     removeVis(elms) {

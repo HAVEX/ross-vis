@@ -1,6 +1,4 @@
 import tpl from '../html/Causality.html'
-import Vue from 'vue'
-import axios from 'axios'
 
 export default {
   name: 'Causality',
@@ -11,6 +9,9 @@ export default {
   data: () => ({
       sortBy: 'causality',
       sortDesc: true,
+      striped: true,
+      bordered: true,
+      hover: true,
       fields: [
         { key: 'IR_1', sortable: true },
         { key: 'VD_1', sortable: true },

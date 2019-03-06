@@ -28,7 +28,7 @@ export default {
     stream_count: null,
     initVis: false,
     selectedTimeDomain : 'LastGvt',
-    selectedGranularity : 'KpGid'
+    selectedGranularity : 'KpGid',
   }),
   methods: {
     init() {
@@ -166,7 +166,7 @@ export default {
       let ts = {} 
       if (data != null || data != undefined){
         if (Object.keys(data).length === 1){
-          
+          console.log("The data is null or undefined")
         }
         else{
           this.stream_count = this.stream_count + 1
@@ -174,7 +174,7 @@ export default {
 
           // Check if the results have come. 
           if(Object.keys(result[0]).length == 1){
-            
+            console.log("There are no results yet. So doing nothing")
           }
           else{
             let temp = this.processClusterData(result, 'normal')

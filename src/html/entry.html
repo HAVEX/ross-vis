@@ -22,6 +22,43 @@
 
   <v-navigation-drawer v-model="left" temporary fixed>
       <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn>
+      <v-card flex fill-height id="control-panel">
+        <v-layout row wrap>
+            <v-switch :label="`Aggr`" v-model="isAggregated" v-on:change="visualize()"></v-switch>
+            <v-btn icon>
+                <v-icon v-on:click="reset()">refresh</v-icon>
+            </v-btn>
+            <v-flex xs12 class="ma-1">
+                <v-select label="1st Plot Metric" :items="metrics" multiple v-model="plotMetric"
+                    :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="visualize()">
+                </v-select>
+            </v-flex>
+            <v-flex xs12 class="ma-1">
+              <v-select label="2nd Plot Metric" :items="metrics" multiple v-model="plotMetric"
+                  :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="visualize()">
+              </v-select>
+            </v-flex>
+            <v-flex xs12 class="ma-1">
+                <v-select label="Change Point Detection" :items="cpd" v-model="selectedcpd" v-on:change="visualize()">
+                </v-select>
+            </v-flex>
+            <v-flex xs12 class="ma-1">
+                <v-select label="Dimensionality reduction" :items="dimred" v-model="selectedDimred" v-on:change="visualize()">
+                </v-select>
+            </v-flex>
+            <v-flex xs12 class="ma-1">
+                <v-select label="Similarity measure" :items="similarity" v-model="selectedSimilarity"
+                    v-on:change="visualize()">
+                </v-select>
+            </v-flex>
+            <v-flex xs12 class="ma-1">
+                <v-select label="Clustering" :items="clustering" v-model="selectedClustering" v-on:change="visualize()">
+                </v-select>
+            </v-flex>
+    
+            <v-spacer></v-spacer>
+        </v-layout>
+    </v-card>
   </v-navigation-drawer>
 
   <v-dialog v-model="dialog" persistent max-width="600px">
