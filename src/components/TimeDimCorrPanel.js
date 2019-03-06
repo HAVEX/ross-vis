@@ -9,7 +9,7 @@ import { throws } from 'assert';
 
 export default {
   name: 'TimeDimCorrPanel',
-  props: ['plotMetric', 'plotData'],
+  props: ['plotMetric', 'granularity', 'timeDomain', 'plotData', 'measure'],
   template: template,
   components: {
     ControlPanel,
@@ -27,12 +27,11 @@ export default {
     metrics: null,
     stream_count: null,
     initVis: false,
-    selectedTimeDomain : 'LastGvt',
-    selectedGranularity : 'KpGid',
+    timeAttribute: 'time'
   }),
   methods: {
     init() {
-      console.log('Init ', this.plotMetric)
+      console.log('Init ', this.plotMetric, this.timeDomain, this.granularity)
       this.$refs.TimeSeries.init()
       this.$refs.Dimensionality.init()
       this.$refs.Causality.init()
@@ -74,7 +73,7 @@ export default {
         ret.schema = {
           ts : 'float',
         'cluster': 'int',
-        'LastGvt': 'float',
+        'time': 'float',
         'id': 'int'
         }
       }
@@ -82,12 +81,11 @@ export default {
         ret.schema = {
           ts : 'float',
           'cluster': 'int',
-          'LastGvt': 'float'
+          'time': 'float'
         }
       }
 
       let zero_index_data = data[0]
-
       for(let i = 0; i < zero_index_data[clusterType].length; i += 1){
         let _data = zero_index_data[clusterType][i]
         let _cluster = zero_index_data[clusterType + '_clusters'][i]
@@ -99,7 +97,7 @@ export default {
             ret.data.push({
               ts : _data[time],
               'cluster': _cluster,
-              'LastGvt': current_time,
+              'time': current_time,
               'id': id
             })  
           }
@@ -107,7 +105,7 @@ export default {
             ret.data.push({
               ts : _data[time],
               'cluster': _cluster,
-              'LastGvt': current_time
+              'time': current_time
             })
           }
         }
@@ -180,7 +178,7 @@ export default {
             let temp = this.processClusterData(result, 'normal')
             let normal_result = temp[0]
             let cluster_mapping = temp[1]
-            this.normal_result = this.create_cstore(normal_result, this.selectedTimeDomain)
+            this.normal_result = this.create_cstore(normal_result, this.timeAttribute)
     
             let pca_result = this.processPCAData(result, cluster_mapping)
             this.pca_result = this.create_cstore(pca_result)
@@ -188,10 +186,10 @@ export default {
             this.cpd = result[0]['cpd']
     
             let macro_result = this.processClusterData(result, 'macro')
-            this.macro_result = this.create_cstore(macro_result, this.selectedTimeDomain)
+            this.macro_result = this.create_cstore(macro_result, this.timeAttribute)
     
             let micro_result = this.processClusterData(result, 'micro')
-            this.micro_result = this.create_cstore(micro_result, this.selectedTimeDomain)
+            this.micro_result = this.create_cstore(micro_result, this.timeAttribute)
     
             this.causality_result = this.processCausalityData(data['result'])
             this.reset()
@@ -225,19 +223,20 @@ export default {
 
 
     updateTimeSeries(callback) {
-      this.$refs.TimeSeries.selectedMeasure = this.$parent.selectedMeasure
+      this.$refs.TimeSeries.selectedMeasure = this.$parent.measure
       this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
-      this.$refs.TimeSeries.selectedTimeDomain = this.$parent.selectedTimeDomain
+      this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
+      this.$refs.TimeSeries.timeAttribute = 'time'
       this.$refs.TimeSeries.visualize(this.cpd, [this.plotMetric], callback) 
       this.updateDimensionality()
     },
 
     visualize() {
       let callback = (selection) => {
-        let ti = this.timeIndexes[this.selectedTimeDomain]
-        let start = Math.floor(selection[this.selectedTimeDomain][0])
-        let end = Math.ceil(selection[this.selectedTimeDomain][1])
+        let ti = this.timeIndexes[this.timeDomain]
+        let start = Math.floor(selection[this.timeDomain][0])
+        let end = Math.ceil(selection[this.timeDomain][1])
         if (end - start >= 1) {
           this.selectedTimeInterval = [ti[start], ti[end]]
         }

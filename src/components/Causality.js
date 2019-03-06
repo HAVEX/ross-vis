@@ -21,6 +21,12 @@ export default {
       to_items: [],
       from_items: [],
   }),
+  methods: {
+    rowClass(item, type) {
+      if (!item) return
+      if (item.status === 'awesome') return 'table-success'
+    }
+  },
 
   mounted: function () {
   },

@@ -40,7 +40,11 @@ export default {
         height: this.height,
         gridlines: {y: true},
         padding: {left: 70, right: 150, top: 50, bottom: 80},
-        offset: [this.width / 2, 0]
+        offset: [this.width / 2, 0],
+        "color": {
+          "range": ["orange", "green", "red"],
+          "interpolate": false
+        }
       }]
     },
     
@@ -99,8 +103,7 @@ export default {
           callback
         }
       }
-      
-      let aggregation = [this.selectedTimeDomain]
+      let aggregation = [this.timeAttribute]
 
       if(!this.isAggregated) {
         vmap.color = 'id'
@@ -110,16 +113,21 @@ export default {
       // matchSpec[this.selectedTimeDomain] = 
       // domain = this.selectedTimeDomain
 
-      this.vis.view(this.current_views).head()
       // .match({
       //   lastGvt: [1000, 2000]       
       // })
+
+      this.vis.view(this.current_views).head()
       .aggregate({
         $group: aggregation,
         $collect: collection
       })
 
       this.vis.visualize(
+        // colors.map((color, mi) => {
+        //   return Object.assign({color:  })
+        // })
+
         metrics.map((metric, mi) => {
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })

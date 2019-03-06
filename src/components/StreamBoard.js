@@ -14,16 +14,9 @@ export default {
     Communication,
     Overview
   },
+  props: ['plotMetric1', 'plotMetric2', 'granularity', 'timeDomain', 'measure'],
   data: () => ({
     isTsDataLoaded: false,
-    metrics: null,
-    timeDomain: ['LastGvt', 'VirtualTime', 'RealTs'],
-    selectedTimeDomain: 'LastGvt',
-    plotMetric1: 'RbSec',
-    plotMetric2: 'NeventProcessed',
-    measures: ['avg', 'sum', 'max', 'min'],
-    selectedMeasure: 'sum',
-    isAggregated: false,
     plotData1: null,
     plotData2: null
   }),
@@ -42,22 +35,8 @@ export default {
         Vue.nextTick(() => {
           this.$refs.TimeDimCorrPanel1.init()
           this.$refs.TimeDimCorrPanel2.init()
-          this.reset()
         });
       }
-    },
-
-    reset() {
-      this.selectedTimeInterval = null
-     // this.visualize()
-    },
-
-    updateCommunication() {
-      this.$refs.Communication.selectedTimeDomain = this.$refs.ControlPanel.selectedTimeDomain
-      this.$refs.Communication.selectedTimeInterval = this.$refs.ControlPanel.selectedTimeInterval
-      this.$refs.Communication.selectedMetrics = this.$refs.ControlPanel.selectedMetrics
-      this.$refs.Communication.selectedMeasure = this.$refs.ControlPanel.selectedMeasure
-      this.$refs.Communication.visualize(this.data)
     },
 
     update(data) {  
@@ -66,19 +45,5 @@ export default {
       this.$refs.TimeDimCorrPanel1.tick()
       this.$refs.TimeDimCorrPanel2.tick()
     },
-
-    visualize() {
-      let callback = (selection) => {
-        let ti = this.timeIndexes[this.selectedTimeDomain]
-        let start = Math.floor(selection[this.selectedTimeDomain][0])
-        let end = Math.ceil(selection[this.selectedTimeDomain][1])
-        if (end - start >= 1) {
-          this.selectedTimeInterval = [ti[start], ti[end]]
-        }
-      }
-
-      this.updateTimeSeries(callback)
-      this.updateDimensionality()
-    }
   }
 }

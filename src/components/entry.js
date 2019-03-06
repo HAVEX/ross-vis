@@ -19,12 +19,25 @@ export default {
     server: 'localhost:8888',
     modes: ['Post Hoc', 'In Situ'],
     selectedMode: 'In Situ',
-    timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
-    selectedTimeDomain: 'LastGvt',
+    timeDomains: ['LastGvt', 'RealTs', 'VirtualTs'],
+    selectedTimeDomain: 'RealTs',
     granularity: ['PE', 'KP', 'LP'],
+    selectedGranularity: 'KP',
     GranID: ['Peid', 'Kpid', 'Lpid'],
     selectedGranID: 'KpGid',
     selectedGran: 'Kp',
+    plotMetric1: 'RbSec',
+    plotMetric2: 'NeventProcessed',
+    similarity: ['euclidean'],
+    selectedSimilarity: 'euclidean',
+    clustering: ['evostream', 'dbstream'],
+    selectedClustering: 'evostream',   
+    dimred : ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
+    selectedDimred: 'prog_inc_PCA',
+    cpd: ['aff', 'pca'],
+    selectedcpd: 'pca',
+    measures: ['avg', 'sum', 'max', 'min'],
+    selectedMeasure: 'sum',
     timeIndexes: null,
     isAggregated: true,
     left: false,
@@ -41,6 +54,7 @@ export default {
 
   methods: {
     init() {
+      this.dialog = !this.dialog
       this.fetchTsData()
     },
 
@@ -64,7 +78,10 @@ export default {
     },
 
     updateTimeDomain() {
-      this.$refs.visualize()
+      console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
+      this.count  = 0
+      this.fetchTsData()
+
     },
 
     updateAnalysis() {
@@ -87,7 +104,6 @@ export default {
       let method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
       let socket = new WebSocket('ws://' + this.server + '/websocket')
       socket.onopen = () => {
-        this.dialog = !this.dialog
         this.socketError = false
         socket.send(JSON.stringify({
           data: this.selectedGran + 'Data',
@@ -106,7 +122,7 @@ export default {
         this.count += 1
         let data = JSON.parse(event.data)
         let d = data
-        console.log("Incoming data stream", d)
+        console.log("Incoming data stream", this.count, d)
         this.data = data
         if (this.count < 2){
           this.initView()
