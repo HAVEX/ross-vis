@@ -95,7 +95,7 @@ export default {
       firstMetric[firstMetricName] = collection[firstMetricName]
       let vmap = {
         mark: this.isAggregated ? 'area' : 'line',
-        x: this.selectedTimeDomain,
+        x: this.timeAttribute,
         color: 'steelblue',
         size: 3,
         brush: {

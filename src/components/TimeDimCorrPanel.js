@@ -199,6 +199,12 @@ export default {
       }
     },
 
+    clear() {
+      this.$refs.TimeSeries.clearVis(this.normal_result)
+      this.$refs.Dimensionality.clearVis(this.pca_result)
+      this.$refs.Causality.clear(this.causality_result)
+    },
+
     reset(){
       if(!this.initVis){
         console.log('initializing vis', this.plotMetric)

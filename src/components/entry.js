@@ -20,12 +20,10 @@ export default {
     modes: ['Post Hoc', 'In Situ'],
     selectedMode: 'In Situ',
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTs'],
-    selectedTimeDomain: 'RealTs',
-    granularity: ['PE', 'KP', 'LP'],
-    selectedGranularity: 'KP',
-    GranID: ['Peid', 'Kpid', 'Lpid'],
-    selectedGranID: 'KpGid',
-    selectedGran: 'Kp',
+    selectedTimeDomain: 'LastGvt',
+    granularity: ['Pe', 'Kp', 'Lp'],
+    selectedGranularity: 'Lp',
+    GranID: ['Peid', 'KpGid', 'Lpid'],
     plotMetric1: 'RbSec',
     plotMetric2: 'NeventProcessed',
     similarity: ['euclidean'],
@@ -74,10 +72,17 @@ export default {
 
     updateGran() {
       this.clear()
+      console.log("Change in granularity detected : [", this.selectedGranularity, "]")
+      this.selectedGranID = this.selectedGranularity + 'id'
+      if(this.selectedGranularity == 'Kp'){
+        this.selectedGranID = 'KpGid'
+      }
+      this.count = 0
       this.fetchTsData()
     },
 
     updateTimeDomain() {
+      this.clear()
       console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
       this.count  = 0
       this.fetchTsData()
@@ -103,10 +108,14 @@ export default {
     fetchTsData() {
       let method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
       let socket = new WebSocket('ws://' + this.server + '/websocket')
+      this.selectedGranID = this.selectedGranularity + 'id'
+      if(this.selectedGranularity == 'Kp'){
+        this.selectedGranID = 'KpGid'
+      }
       socket.onopen = () => {
         this.socketError = false
         socket.send(JSON.stringify({
-          data: this.selectedGran + 'Data',
+          data: this.selectedGranularity + 'Data',
           granularity: this.selectedGranID,
           metric: ['RbSec', 'NeventProcessed'],
           timeDomain: this.selectedTimeDomain,

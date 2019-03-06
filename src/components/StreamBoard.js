@@ -39,6 +39,11 @@ export default {
       }
     },
 
+    clear() {
+      this.$refs.TimeDimCorrPanel1.clear()
+      this.$refs.TimeDimCorrPanel2.clear()
+    },
+
     update(data) {  
       this.plotData1 = data[this.plotMetric1]
       this.plotData2 = data[this.plotMetric2]
