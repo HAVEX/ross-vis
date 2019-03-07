@@ -95,17 +95,17 @@ export default {
             let id = zero_index_data['ids'][i]
             cluster_mapping[id] = _cluster
             ret.data.push({
-              ts : _data[time],
+              'time' : _data[time],
               'cluster': _cluster,
-              'time': current_time,
+              'index': current_time,
               'id': id
-            })  
+            })
           }
           else{
             ret.data.push({
-              ts : _data[time],
+              'time' : _data[time],
               'cluster': _cluster,
-              'time': current_time
+              'index': current_time
             })
           }
         }
@@ -178,6 +178,7 @@ export default {
             let temp = this.processClusterData(result, 'normal')
             let normal_result = temp[0]
             let cluster_mapping = temp[1]
+            console.log(cluster_mapping)
             this.normal_result = this.create_cstore(normal_result, this.timeAttribute)
     
             let pca_result = this.processPCAData(result, cluster_mapping)
@@ -202,7 +203,7 @@ export default {
     clear() {
       this.$refs.TimeSeries.clearVis(this.normal_result)
       this.$refs.Dimensionality.clearVis(this.pca_result)
-      this.$refs.Causality.clear(this.causality_result)
+      his.$refs.Causality.clear(this.causality_result)
     },
 
     reset(){
