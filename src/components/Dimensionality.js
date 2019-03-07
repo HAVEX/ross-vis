@@ -7,44 +7,85 @@ export default {
   template,
   data: () => ({
     data: null,
-    methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
-    selectedMethod: 'inc_PCA'
+    server: null,
+    dimensionalMethods: ['PCA', 'tSNE'],
+    dimensionalSelected: 'PCA',
+    clusteringMethods: ['DBSCAN', 'KMeans'],
+    clusteringSelected: 'DBSCAN',
+    metrics: [],
+    metricX: null,
+    metricY: null,
+    granularities: ['PE', 'KP'],
+    granularity: 'PE',
+    proc: null,
+    oncomplete: null,
+    colorSet: ['teal', 'purple', 'orange', 'steelblue']
   }),
   methods: {
-    visualize () {      
-      axios.get('http://localhost:8888/pca', {
-        params: {
-          metrics: this.metrics,
-          method: this.selectedMethod
-        }
-      }).then(result => {
-        let data = p4.cstore().import({
-          data: result.data.data,
-          schema: {
-            PC0: 'float',
-            PC1: 'float'
-          }
-        })
-            .data()
-        
-        let container = document.getElementById('stats-view')
-        let width = container.parentElement.clientWidth
-        let height = container.parentElement.clientHeight
-        container.innerHTML = ''
-        p4({
-          container: 'stats-view',
-          viewport: [width, height],
-          padding: {left: 80, right: 30, top: 30, bottom: 80}
-        })
-          .data(data)
-          .view([{width, height, offset: [0, 0]}])
-          .visualize({
-            x: 'PC0',
-            y: 'PC1',
-            color: 'steelblue',
-            size: 10
-          })
+    init() {
+      let container = this.$refs.Vis
+      let width = container.parentElement.clientWidth
+      let height = container.parentElement.clientHeight
+      container.innerHTML = ''
+      this.proc = p4({
+        container: container,
+        viewport: [width, height],
+        padding: {left: 80, right: 30, top: 30, bottom: 80}
       })
+      .view([{
+        width, height, 
+        offset: [0, 0],
+        color: {
+          range: this.colorSet,
+          interpolate: false
+        }
+      }])
+      return this.analyze()
+    },
+
+    analyze () {
+      let baseURL = 'http://localhost:8888/analysis'
+      let dr = this.dimensionalSelected.toLowerCase()
+      let cl = this.clusteringSelected.toLowerCase()
+      let url = [baseURL, this.granularity, dr].join('/')
+
+      return new Promise((resolve, reject) => {
+        axios.get(url).then(result => {
+          this.metrics = Object.keys(result.data.schema)
+          let data = p4.cstore().import({
+            data: result.data.data,
+            schema: result.data.schema,
+          })
+          .data()
+          this.proc.data(data)
+          this.visualize()
+
+          let res = {
+            schema: result.data.schema,
+            data: result.data.data,
+            granularity: this.granularity,
+            clustering: this.clusteringMethods.map(d=>d.toLowerCase())
+          }
+          if(typeof(this.oncomplete) === 'function') {
+            this.oncomplete(res)
+          }
+          resolve(res)          
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    },
+
+    visualize () {
+      this.proc.visualize({
+        x: 'PC0',
+        y: 'PC1',
+        color:  this.clusteringSelected.toLowerCase(),
+        opacity: 0.5,
+        size: (this.granularity === 'PE' ) ? 20 : 10
+      })
+
+
     }
   }    
 }

@@ -8,27 +8,34 @@ Vue.use(Vuetify)
 import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
-import Dashboard from './components/Dashboard'
-import TimeSeries from './components/TimeSeries'
-import Dimensionality from './components/Dimensionality'
+import TimeNet from './components/TimeNet'
+import DimNet from './components/DimNet'
+import DimTime from './components/DimTime'
 import CommPanels from './components/CommPanels'
+import HomePage from './components/HomePage'
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
-      name: 'Dashboard',
-      component: Dashboard
+      name: 'HomePage',
+      component: HomePage
     },
     {
-      path: '/cpd',
-      name: 'TimeSeries',
-      component: TimeSeries
+      path: '/dimtime',
+      name: 'DimTime',
+      component: DimTime
     },
     {
-      path: '/pca',
-      name: 'Dimensionality',
-      component: Dimensionality
+      path: '/timenet',
+      name: 'TimeNet',
+      component: TimeNet
+    },
+    {
+      path: '/dimnet',
+      name: 'DimNet',
+      component: DimNet
     },
     {
       path: '/communications',

@@ -18,7 +18,9 @@ export default {
     rings: [],
     maxLinkValue: 1,
     isComparisonMode: false,
-    granularity: 'KpGid'
+    granularity: 'KpGid',
+    colors: ['red', 'blue', 'yellow', 'green', 'purple']
+
   }),
   computed: {
     thresholdValue: function() {
@@ -44,7 +46,7 @@ export default {
       measure,
       processIds = [],
       clusterIds = [],
-      clusterColors = ['red', 'blue', 'yellow', 'green', 'purple']
+      clusterColors = this.colors
     }) {
       if(data !== undefined && Array.isArray(data)) {
         this.data = data
@@ -80,7 +82,6 @@ export default {
         let tsCommData = tsData.map(sample => {
           return sample.items.sort((a,b) => a.Peid - b.Peid).map(item => item.CommData)
         })
-  
         let accCommData = tsCommData[0]
   
         if(tsCommData.length > 1) {
@@ -101,7 +102,7 @@ export default {
         })
     
         let commData = accCommData[0].map((a, i) => p3.vector.sum(accCommData.slice(i*this.numKP, (i+1)*this.numKP)))
-
+        
         let collection = {}
         for (let metric of metrics) {
           collection[measure + '.' + metric] = {}
@@ -172,7 +173,7 @@ export default {
             })
           })
 
-          layerSpec.colors = function (d) {
+          layerSpec.colors = (d) => {
             return clusterColors[d]
           }
           layerSpec.vmap = {color: 'clusterId'}

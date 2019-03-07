@@ -1,18 +1,37 @@
 <v-flex fill-height>
     <v-toolbar dense>
-      Method:
-    <v-overflow-btn
-      dense
-      style="max-width: 180px;"
-      label="Analytical Method"
-      :items="methods"
-      v-model="selectedMethod"
-    ></v-overflow-btn>
-    <v-spacer></v-spacer>
-  
+      <v-spacer></v-spacer>
+      <v-flex xs2 class="ma-2">
+        <v-select
+          label="Granularity"
+          :items="granularities"
+          v-model="granularity"
+          v-on:change="init()"
+        >
+        </v-select>
+      </v-flex>
+      <v-flex xs3 class="ma-2">
+        <v-select 
+          label="Dimensional Reduction"
+          :items="dimensionalMethods"
+          v-model="dimensionalSelected"
+          v-on:change="analyze()"
+        >
+        </v-select>
+      </v-flex>
+      <v-flex xs3 class="ma-2">
+        <v-select 
+          label="Clustering Method"
+          :items="clusteringMethods"
+          v-model="clusteringSelected"
+          v-on:change="visualize()"
+        >
+        </v-select>
+      </v-flex>
+
     </v-toolbar>
-    <v-card height="45%">
-      <div id="stats-view"></div>
+    <v-card class="fill-height">
+      <div ref="Vis"></div>
     </v-card>
   </v-flex>
   

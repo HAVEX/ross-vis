@@ -1,6 +1,5 @@
 import p4 from 'p4'
 import template from '../html/TimeSeries.html'
-import axios from 'axios'
 
 export default {
   name: 'TimeSeries',
@@ -9,80 +8,123 @@ export default {
     data: null,
     view: null,
     vis: null,
+    container: null,
+    enableInteraction: true,
     height: 0,
     width: 0,
-    metrics: null,
-    selectedTimeDomain: null,
-    isAggregated: true,
-    showCPD: false,
-    selectedMeasure: null,
-    methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-    selectedMethod :'AFF'
+    metrics: [],
+    timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
+    granularities: ['System', 'PE', 'KP'],
+    measures: ['avg', 'sum', 'max', 'min'],
+    selectedTimeDomain: 'LastGvt',
+    granularity: 'System',
+    selectedMeasure: 'sum',
+    selectedMetrics: ['NeventProcessed', 'RbTotal'],
+    callback: null,
+    colors: ['teal', 'purple', 'orange', 'steelblue'],
+    visMarks: {
+      System: 'area',
+      PE: 'line',
+      KP: 'line'
+    },
+    clusters: null,
+    colorEncoding: null,
+    colorSet: ['green', 'orange', 'purple', 'steelblue', 'red']
   }),
+  watch: {
+    clusters: function(cls) {
+      this.colorEncoding = cls[0]
+    }
+  },
+  mounted () {
+    this.container = document.getElementById('RossVisTimeSeries')
+  },
   methods: {
-    init (data) {
-      this.data = data
-      console.log(data)
-      let visContainer = document.getElementById('vis-overview')
-      this.width = visContainer.clientWidth
-      this.height = visContainer.clientHeight * 0.9
+    init (dataObj) {
+      let cache = p4.cstore({})
+      cache.import(dataObj)
+      cache.index('RealTs')
+      cache.index('LastGvt')
+      this.data = cache.data()
+      this.width = this.container.clientWidth
+      this.height = this.container.clientHeight * 0.9
       let config = {
-        container: 'vis-overview',
-        viewport: [this.width, this.height]
+        container: this.container,
+        viewport: [this.width, this.height],
+        padding: {left: 100, right: 20, top: 20, bottom: 50},
       }
-
-      this.views = [{
-        id: 'view-right',
-        width: this.width / 2,
-        height: this.height,
-        gridlines: {y: true},
-        padding: {left: 70, right: 150, top: 50, bottom: 80},
-        offset: [this.width / 2, 0]
-      }]
-
-      this.vis = p4(config).data(data).view(this.views)
+      console.log(dataObj.schema)
+      this.vis = p4(config).data(this.data)
     },
 
-    visualize (metrics, callback) {
-      this.metrics = metrics
-      let viewSetting = {
-        gridlines: {y: true},
-        padding: {left: 70, right: 60, top: 10, bottom: 40},
-      }
+    destroy () {
+      this.vis = null
+      this.container.innerHTML = ''
+    },
 
+    visualize (callback) {
+      if(typeof(callback) === 'function') {
+        this.callback = callback
+      }
+      let aggregation = []
       let collection = {}
-      let views = [];
+      let views = []
+      let metrics = this.selectedMetrics
       metrics.forEach((metric, mi) => {
         collection[metric] = {}
         collection[metric]['$' + this.selectedMeasure] = metric
-        let view = Object.assign({}, viewSetting)
-        view.id = 'view' + mi
-        view.width = this.width
-        view.height = this.height / metrics.length
-        view.offset = [0, this.height - view.height * (mi+1)]
-        views.push(view)
       })
 
       let firstMetric = {}
       let firstMetricName = Object.keys(collection)[0]
       firstMetric[firstMetricName] = collection[firstMetricName]
-      
+
       let vmap = {
-        mark: this.isAggregated ? 'area' : 'spline',
+        mark: this.visMarks[this.granularity],
         x: this.selectedTimeDomain,
-        color: 'steelblue',
-        size: 3,
-        brush: {
+        color: 'colors',
+        y: 'metrics',
+        size: 1,
+        gridlines: {y: true},
+        opacity: (this.granularity === 'KP') ? 0.5 : 1,
+        facets: {
+          rows: {
+            metrics: metrics,
+            colors: this.colors
+          },
+          sortBy: {var: 'metrics'}
+        },
+      }
+
+      if (this.enableInteraction) {
+        vmap.facets.brush = {
           condition: {x: true, lazy: true},
-          callback
+          callback: (selection) => {
+            this.callback(selection[this.selectedTimeDomain])
+          }
+        }
+      }
+
+      if(Array.isArray(this.clusters)) {
+        this.clusters.forEach(cluster => {
+          collection[cluster] = {$max: cluster}
+        })
+        if(this.colorEncoding) {
+          vmap.color = {
+            field: this.colorEncoding,
+            range: this.colorSet,
+            "interpolate": false
+          }
         }
       }
       
-      let aggregation = [this.selectedTimeDomain]
-
-      if(!this.isAggregated) {
-        vmap.color = 'Peid'
-        aggregation.push('Peid')
+      if(this.granularity === 'PE') {
+        vmap.by = 'Peid'
+        aggregation = [this.selectedTimeDomain, 'Peid']
+      } else if (this.granularity === 'KP') {
+        aggregation = [this.selectedTimeDomain, 'KpGid']
+      } else {
+        aggregation = [this.selectedTimeDomain]
       }
 
       this.vis.view(views).head()
@@ -90,37 +132,9 @@ export default {
         $group: aggregation,
         $collect: collection
       })
+      .visualize(vmap)
 
-      this.vis.visualize(
-        metrics.map((metric, mi) => {
-          return Object.assign({id: 'view' + mi, y: metric}, vmap)
-        })
-      )     
-    },
-
-    visualizeCPD () {
-      axios.get('http://localhost:8888/cpd', {
-        params: {
-          metrics: this.metrics
-        }
-      }).then(result => {
-        console.log(result)
-        let cpd_map = {
-          mark: 'line',
-          x: this.selectedTimeDomain,          
-          color: 'red',
-          size: 3,
-        }
-
-        let plot_points_index = result.data
-//       this.vis.visualize(
-//           this.metrics.map((metric, mi) => {
-//             console.log(metric, mi)
-//            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  
-//           })
-//         )
-      })
-
+      this.selectedMetrics = vmap.facets.rows.metrics
     }
   }
 }
