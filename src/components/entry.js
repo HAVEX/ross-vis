@@ -86,7 +86,20 @@ export default {
       console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
       this.count  = 0
       this.fetchTsData()
+    },
 
+    updatePlotMetric1(){
+      this.clear()
+      console.log("Change in metric detected : [", this.plotMetric1, "]")
+      this.count  = 0
+      this.fetchTsData()
+    },
+
+    updatePlotMetric2(){
+      this.clear()
+      console.log("Change in metric detected : [", this.plotMetric1, "]")
+      this.count  = 0
+      this.fetchTsData()
     },
 
     updateAnalysis() {
@@ -117,7 +130,7 @@ export default {
         socket.send(JSON.stringify({
           data: this.selectedGranularity + 'Data',
           granularity: this.selectedGranID,
-          metric: ['RbSec', 'NeventProcessed'],
+          metric: [this.plotMetric1, this.plotMetric2],
           timeDomain: this.selectedTimeDomain,
           method: method
         }))
@@ -131,6 +144,8 @@ export default {
         this.count += 1
         let data = JSON.parse(event.data)
         let d = data
+        console.log(d)
+        this.metrics = Object.keys(d['RbSec'].schema)
         console.log("Incoming data stream", this.count, d)
         this.data = data
         if (this.count < 2){

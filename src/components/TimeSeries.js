@@ -19,6 +19,7 @@ export default {
     selectedMeasure: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
     selectedMethod :'AFF',
+    colors: ['teal', 'purple', 'orange', 'steelblue'],
     current_views: [],
     cpds: []
   }),
@@ -42,7 +43,11 @@ export default {
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0],
         "color": {
-          "range": ["orange", "green", "red"],
+          "range": ["steelblue",
+          "red",
+          "teal",
+          "orange",
+          "purple"],
           "interpolate": false
         }
       }]
@@ -67,7 +72,7 @@ export default {
       this.initVis(ts)
     },
 
-    visualize (cpd, metrics, callback) { 
+    visualize (cpd, clusters, metrics, callback) { 
       this.metrics = metrics
       if(cpd == 1){
         this.cpds.push(this.$parent.stream_count - 1)
@@ -96,7 +101,7 @@ export default {
       let vmap = {
         mark: this.isAggregated ? 'area' : 'line',
         x: this.timeAttribute,
-        color: 'steelblue',
+        color: 'colors',
         size: 3,
         brush: {
           condition: {x: true, lazy: true},
@@ -106,8 +111,11 @@ export default {
       let aggregation = [this.timeAttribute]
 
       if(!this.isAggregated) {
-        vmap.color = 'cluster'
-        //aggregation.push('id')
+        vmap.color = {
+          field: clusters,
+          "interpolate": false
+        }
+        aggregation.push('id')
       
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 

@@ -27,7 +27,8 @@ export default {
     metrics: null,
     stream_count: null,
     initVis: false,
-    timeAttribute: 'time'
+    timeAttribute: 'time',
+    cluster_mapping: null,
   }),
   methods: {
     init() {
@@ -177,11 +178,10 @@ export default {
           else{
             let temp = this.processClusterData(result, 'normal')
             let normal_result = temp[0]
-            let cluster_mapping = temp[1]
-            console.log(cluster_mapping)
+            this.cluster_mapping = temp[1]
             this.normal_result = this.create_cstore(normal_result, this.timeAttribute)
     
-            let pca_result = this.processPCAData(result, cluster_mapping)
+            let pca_result = this.processPCAData(result, this.cluster_mapping)
             this.pca_result = this.create_cstore(pca_result)
     
             this.cpd = result[0]['cpd']
@@ -235,7 +235,7 @@ export default {
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
       this.$refs.TimeSeries.timeAttribute = 'time'
-      this.$refs.TimeSeries.visualize(this.cpd, [this.plotMetric], callback) 
+      this.$refs.TimeSeries.visualize(this.cpd, this.cluster_mapping, [this.plotMetric], callback) 
       this.updateDimensionality()
     },
 
