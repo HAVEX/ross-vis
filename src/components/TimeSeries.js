@@ -53,7 +53,6 @@ export default {
         viewport: [this.width, this.height],
         padding: {left: 100, right: 20, top: 20, bottom: 50},
       }
-      console.log(dataObj.schema)
       this.vis = p4(config).data(this.data)
     },
 
