@@ -15,7 +15,7 @@ export default {
       fields: [
         { key: 'IR_1', sortable: true },
         { key: 'VD_1', sortable: true },
-        { key: 'causality', sortable: true },
+        { key: 'C', sortable: true },
         { key: 'metric', sortable: false }
       ],
       to_items: [],
