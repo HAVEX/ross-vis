@@ -1,19 +1,9 @@
 <v-container fluid class="pa-0">
-    <TimeDimCorrPanel 
-        ref="TimeDimCorrPanel1" 
-        v-show="isTsDataLoaded" 
-        v-bind:plot-metric="plotMetric1" 
-        v-bind:granularity="granularity"
-        v-bind:measure="measure"
-        v-bind:time-domain="timeDomain"
+    <TimeDimCorrPanel ref="TimeDimCorrPanel1" v-show="isTsDataLoaded" v-bind:plot-metric="plotMetric1"
+        v-bind:granularity="granularity" v-bind:measure="measure" v-bind:time-domain="timeDomain"
         v-bind:plot-data="isTsDataLoaded ? plotData1 : null" />
-    <TimeDimCorrPanel 
-        ref="TimeDimCorrPanel2" 
-        v-show="isTsDataLoaded" 
-        v-bind:time-domain="timeDomain"
-        v-bind:measure="measure"
-        v-bind:granularity="granularity"
-        v-bind:plot-metric="plotMetric2" 
+    <TimeDimCorrPanel ref="TimeDimCorrPanel2" v-show="isTsDataLoaded" v-bind:time-domain="timeDomain"
+        v-bind:measure="measure" v-bind:granularity="granularity" v-bind:plot-metric="plotMetric2"
         v-bind:plot-data="isTsDataLoaded ? plotData2 : null" />
     <!-- <v-layout row wrap >
         <v-flex xs2 >

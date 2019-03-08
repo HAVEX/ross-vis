@@ -14,10 +14,25 @@
       </v-select>
     </v-flex>
     <v-spacer></v-spacer>
+    <v-flex xs4 dense>
+        <v-spacer></v-spacer>
+        <v-btn outline fab small color="white" v-on:click="updateStop">
+            <v-icon>stop</v-icon>
+        </v-btn>
+        <v-btn outline fab small color="white" v-on:click="updatePlay">
+            <v-icon>play_arrow</v-icon>
+        </v-btn>
+        <v-btn outline fab small color="white" v-on:click="updatePause">
+            <v-icon>pause</v-icon>
+        </v-btn>
+        <v-spacer></v-spacer>
+    </v-flex>
+    <v-spacer></v-spacer>
     <v-flex xs2>
       <v-select label="Analysis Mode" :items="modes" v-model="selectedMode" box :menu-props="{ maxHeight: '400' }"
       v-on:change="updateMode()"></v-select>
     </v-flex>
+    
   </v-toolbar>
 
   <v-navigation-drawer v-model="left" temporary fixed>
@@ -29,13 +44,13 @@
                 <v-icon v-on:click="reset()">refresh</v-icon>
             </v-btn>
             <v-flex xs12 class="ma-1">
-                <v-select label="1st Plot Metric" :items="metrics" multiple v-model="plotMetric1"
-                    :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="visualize()">
+                <v-select label="1st Plot Metric" :items="metrics" v-model="plotMetric1"
+                    :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="changePlotMetric1()">
                 </v-select>
             </v-flex>
             <v-flex xs12 class="ma-1">
-              <v-select label="2nd Plot Metric" :items="metrics" multiple v-model="plotMetric2"
-                  :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="visualize()">
+              <v-select label="2nd Plot Metric" :items="metrics" v-model="plotMetric2"
+                  :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="changePlotMetric2()">
               </v-select>
             </v-flex>
             <v-flex xs12 class="ma-1">

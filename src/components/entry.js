@@ -29,8 +29,8 @@ export default {
     similarity: ['euclidean'],
     selectedSimilarity: 'euclidean',
     clustering: ['evostream', 'dbstream'],
-    selectedClustering: 'evostream',   
-    dimred : ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
+    selectedClustering: 'evostream',
+    dimred: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
     selectedDimred: 'prog_inc_PCA',
     cpd: ['aff', 'pca'],
     selectedcpd: 'pca',
@@ -43,7 +43,9 @@ export default {
     checkboxs: [],
     count: 0,
     analysis: ['Case_study-1', 'Case_study-2'],
-    selectedAnalysis: 'Case_study-1'
+    selectedAnalysis: 'Case_study-1',
+    socket: null,
+    play: 1,
   }),
 
   mounted: function () {
@@ -52,8 +54,28 @@ export default {
 
   methods: {
     init() {
+      //set initial variables.
       this.dialog = !this.dialog
+      this.socket = new WebSocket('ws://' + this.server + '/websocket')
+      this.method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
+      this.selectedGranID = this.selectedGranularity + 'id'
+      if (this.selectedGranularity == 'Kp') {
+        this.selectedGranID = 'KpGid'
+      }
       this.fetchTsData()
+    },
+
+    updatePlay() {
+      this.play = 1
+      this.fetchTsData()
+    },
+
+    updatePause() {
+      this.play = 0
+    },
+
+    updateStop() {
+     this.play = -1
     },
 
     initView() {
@@ -68,13 +90,14 @@ export default {
     updateView() {
       console.log('[Update view]')
       this.$refs.StreamBoard.update(this.data)
+      
     },
 
     updateGran() {
       this.clear()
       console.log("Change in granularity detected : [", this.selectedGranularity, "]")
       this.selectedGranID = this.selectedGranularity + 'id'
-      if(this.selectedGranularity == 'Kp'){
+      if (this.selectedGranularity == 'Kp') {
         this.selectedGranID = 'KpGid'
       }
       this.count = 0
@@ -84,21 +107,21 @@ export default {
     updateTimeDomain() {
       this.clear()
       console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
-      this.count  = 0
+      this.count = 0
       this.fetchTsData()
     },
 
-    updatePlotMetric1(){
+    updatePlotMetric1() {
       this.clear()
       console.log("Change in metric detected : [", this.plotMetric1, "]")
-      this.count  = 0
+      this.count = 0
       this.fetchTsData()
     },
 
-    updatePlotMetric2(){
+    updatePlotMetric2() {
       this.clear()
       console.log("Change in metric detected : [", this.plotMetric1, "]")
-      this.count  = 0
+      this.count = 0
       this.fetchTsData()
     },
 
@@ -114,41 +137,46 @@ export default {
       this.$refs.StreamBoard.clear()
     },
 
-    receiveData() {
-
-    },
-
     fetchTsData() {
-      let method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
-      let socket = new WebSocket('ws://' + this.server + '/websocket')
-      this.selectedGranID = this.selectedGranularity + 'id'
-      if(this.selectedGranularity == 'Kp'){
-        this.selectedGranID = 'KpGid'
-      }
-      socket.onopen = () => {
+     if(this.count == 0){
+      this.socket.onopen = () => {
         this.socketError = false
-        socket.send(JSON.stringify({
+        console.log('Requesting ', this.count, ' stream.')
+        this.socket.send(JSON.stringify({
           data: this.selectedGranularity + 'Data',
           granularity: this.selectedGranID,
           metric: [this.plotMetric1, this.plotMetric2],
           timeDomain: this.selectedTimeDomain,
-          method: method
+          method: this.method,
+          stream_count: this.count,
+          play: this.play
         }))
       }
+     } 
 
-      socket.onerror = (error) => {
+     else{
+      this.socket.send(JSON.stringify({
+        data: this.selectedGranularity + 'Data',
+        granularity: this.selectedGranID,
+        metric: [this.plotMetric1, this.plotMetric2],
+        timeDomain: this.selectedTimeDomain,
+        method: this.method,
+        stream_count: this.count,
+        play: this.play
+      }))
+     }
+
+      this.socket.onerror = (error) => {
         this.socketError = true
       }
 
-      socket.onmessage = (event) => {
-        this.count += 1
+      this.socket.onmessage = (event) => {
         let data = JSON.parse(event.data)
         let d = data
-        console.log(d)
         this.metrics = Object.keys(d['RbSec'].schema)
-        console.log("Incoming data stream", this.count, d)
+        console.log("Incoming data: ", this.count, d)
         this.data = data
-        if (this.count < 2){
+        if (this.count == 1) {
           this.initView()
         }
         if (this.count <= 100) {
@@ -157,7 +185,13 @@ export default {
         else {
           socket.close()
         }
+        this.count += 1
+
+        if(this.play == 1){
+          this.fetchTsData()
+        }
       }
+
     },
   }
 }
