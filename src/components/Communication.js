@@ -137,11 +137,11 @@ export default {
         .map(r => r.items)
 
         let colorSets = [
-          ['white', 'teal'],
-          ['white', 'purple'],
-          ['white', 'orange'],
-          ['white', 'steelblue'],
-          ['white', 'red'],
+          ['#EEE', 'teal'],
+          ['#EEE', 'purple'],
+          ['#EEE', 'orange'],
+          ['#EEE', 'steelblue'],
+          ['#EEE', 'red'],
           ['steelblue', 'red'],
           ['green', 'yellow'],
         ]

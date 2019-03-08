@@ -130,6 +130,20 @@ if(typeof module != 'undefined' && module.exports)
 
 /***/ }),
 
+/***/ "31Cv":
+/***/ (function(module, exports) {
+
+module.exports = "<v-app id=\"inspire\">\n  <WebSocket ref=\"WebSocket\" @connect=\"connect\" />\n  <v-toolbar\n    color=\"blue-grey\"\n    dark\n    fixed\n    app\n    clipped-right\n  >\n    <v-toolbar-side-icon @click.stop=\"left = !left\">\n    </v-toolbar-side-icon>\n    <v-toolbar-title style=\"margin-right: 3em;\">{{ appName }}</v-toolbar-title>\n      <v-flex xs4 class=\"ma-2\">\n        <v-select box\n          label=\"Metric\"\n          :items=\"metrics\"\n          multiple\n          v-model=\"selectedMetrics\"\n          persistent-hint\n          v-on:change=\"visualize()\"\n        >\n        </v-select>\n      </v-flex>\n    <v-spacer></v-spacer>\n    <v-flex xs2>\n    </v-flex>\n  </v-toolbar>\n  <v-content class=\"pa-2\">\n    <v-container fluid fill-height class=\"pa-1\">\n      <v-layout justify-center align-center>\n        <v-flex xs7 fill-height class=\"pa-1\">\n          <TimeSeries ref=\"TimeSeries\"></TimeSeries>\n        </v-flex>\n        <v-flex xs5 fill-height class=\"pa-1\">\n          <Communication  ref=\"Communication\" />\n        </v-flex>\n      </v-layout>\n    </v-container>\n  </v-content>\n  <!-- <v-footer color=\"blue-grey\" class=\"white--text\" app> -->\n    <!-- <span> VIDi Labs, University of California, Davis </span>\n    <v-spacer></v-spacer>\n    <span>&copy; 2018</span> -->\n  <!-- </v-footer> -->\n</v-app>\n";
+
+/***/ }),
+
+/***/ "3ySA":
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
 /***/ "7zck":
 /***/ (function(module, exports) {
 
@@ -325,31 +339,10 @@ module.exports = function embed(spec) {
 
 /***/ }),
 
-/***/ "EMGt":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "IB2n":
+/***/ (function(module, exports) {
 
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global, module) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p4__ = __webpack_require__("m82B");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__src_main__ = __webpack_require__("KpIS");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__src_Transpiler__ = __webpack_require__("ZuFV");
-
-
-
-
-var root = typeof self == 'object' && self.self === self && self ||
-           typeof global == 'object' && global.global === global && global ||
-           this;
-
-__WEBPACK_IMPORTED_MODULE_1__src_main__["a" /* default */].Transpiler = __WEBPACK_IMPORTED_MODULE_2__src_Transpiler__["a" /* default */];
-__WEBPACK_IMPORTED_MODULE_1__src_main__["a" /* default */].cstore = __WEBPACK_IMPORTED_MODULE_0_p4__["a" /* default */].cstore
-__WEBPACK_IMPORTED_MODULE_1__src_main__["a" /* default */].datasets = __WEBPACK_IMPORTED_MODULE_0_p4__["a" /* default */].datasets
-root.p5 = __WEBPACK_IMPORTED_MODULE_1__src_main__["a" /* default */];
-
-/* unused harmony default export */ var _unused_webpack_default_export = (__WEBPACK_IMPORTED_MODULE_1__src_main__["a" /* default */]);
-
-if(typeof module != 'undefined' && module.exports)
-    module.exports = __WEBPACK_IMPORTED_MODULE_1__src_main__["a" /* default */];
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__("DuR2"), __webpack_require__("f1Eh")(module)))
+module.exports = "<v-app id=\"inspire\">\n  <WebSocket ref=\"WebSocket\" @connect=\"connect\" />\n  <v-toolbar\n    color=\"blue-grey\"\n    dark\n    fixed\n    app\n    clipped-right\n  >\n    <v-toolbar-side-icon @click.stop=\"left = !left\">\n    </v-toolbar-side-icon>\n    <v-toolbar-title style=\"margin-right: 3em;\">{{ appName }}</v-toolbar-title>\n    <v-spacer></v-spacer>\n  </v-toolbar>\n  <v-content class=\"pa-2\">\n    <v-container fluid style=\"height: 90%\" class=\"pa-2\">\n      <v-layout fill-height row>\n          <v-flex xs6 fill-height class=\"pa-1\">\n            <Dimensionality ref=\"Dimensionality\"></Dimensionality>\n          </v-flex>\n          <v-flex xs6 fill-height class=\"pa-1\">\n            <Communication  ref=\"Communication\" />\n          </v-flex>\n      </v-layout>\n    </v-container>\n  </v-content>\n</v-app>\n";
 
 /***/ }),
 
@@ -464,7 +457,7 @@ function Chord(arg) {
     let svg = container;
     let links;
 
-    if(chords.groups.length < 10) {
+    if(chords.groups.length < 13) {
         let core = svg.append("g")
             .attr("class", "chord")
             .selectAll("path")
@@ -876,11 +869,11 @@ function colorLegend({
     if(title) {
         rect.append("g")
             .append("text")
-            .attr("y", pos[1] - height/2 - 5)
-            .attr("x", pos[0] + width/2 - 5)
-            .attr("dy", "0.7em")
+            .attr("y", pos[1])
+            .attr("x", pos[0] + (width - padding.left) / 2)
+            // .attr("dy", "0.7em")
             .style("text-anchor", "middle")
-            .style("font-size", "0.7em")
+            // .style("font-size", "0.7em")
             .text(title);
     }
 
@@ -1120,562 +1113,6 @@ function Picos(spec) {
 
 /***/ }),
 
-/***/ "KpIS":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-
-// EXTERNAL MODULE: ../p4/index.js
-var p4 = __webpack_require__("m82B");
-
-// EXTERNAL MODULE: ../p3/index.js
-var p3 = __webpack_require__("vsA5");
-var p3_default = /*#__PURE__*/__webpack_require__.n(p3);
-
-// CONCATENATED MODULE: ../p5/src/FileLoader.js
-let formats = {
-  text: 'text',
-  array: 'array',
-  json: 'json'
-}
-
-class FileLoader {
-
-  constructor({
-    file,
-    skip = 0,
-    chunk = 64 * 1024,
-    delimiter = ','
-  }) {
-    if (typeof (file) === 'undefined') {
-      throw Error('No file provided for FileLoader.')
-    }
-    this.file = file
-    this.fileSize = file.size
-    this.reader = new FileReader()
-    this.skip = skip
-    this.chunk = chunk
-    this.delimiter = delimiter
-    this.reset()
-  }
-
-  static get format() {
-    return formats
-  }
-
-  reset() {
-    this.offset = 0
-    this.lineTotal = 0
-    this.leftOver = ''
-  }
-
-  parseDataSchema(rows) {
-    let delimiter = rows[0].match(/(\,|\:|\t|\s{2,})/g)[0] || ','
-    let header = rows[0].split(delimiter)
-    let values = rows[1].split(delimiter)
-    let schema = header.map((f, i) => {
-      return {
-        name: f,
-        dtype: Number.isNaN(Number(values[i])) ? 'string' : 'int'
-      }
-    })
-    this.delimiter = delimiter
-    for (let rid = 1; rid < rows.length; rid++) {
-      let values = rows[rid].split(delimiter)
-      for (let fid = 0; fid < header.length; fid++) {
-        let value = values[fid]
-        if (schema[fid].dtype === 'int' && parseInt(value) !== parseFloat(value)) {
-          schema[fid].dtype = 'float'
-        }
-      }
-    }
-    return schema
-  }
-
-  errorHandler(evt) {
-    switch (evt.target.error.code) {
-      case evt.target.error.NOT_FOUND_ERR:
-        throw Error('File Not Found!', evt.target.error)
-
-      case evt.target.error.NOT_READABLE_ERR:
-        throw Error('File is not readable', evt.target.error)
-      case evt.target.error.ABORT_ERR:
-        throw Error('Aborted', evt.target.error)
-      default:
-        throw Error('An error occurred reading this file.', evt.target.error)
-    };
-  }
-
-  getSchema() {
-    this.reader.readAsBinaryString(this.file.slice(0, this.chunk / 16));
-    return new Promise((resolve, reject) => {
-      this.reader.onloadend = (evt) => {
-        if (evt.target.readyState == FileReader.DONE) {
-          let rawText = this.leftOver + evt.target.result
-          let lines = rawText.split('\n')
-          let schema = this.parseDataSchema(lines.slice(0, 10))
-          resolve(schema)
-        }
-      }
-      this.reader.onerror = (evt) => {
-        reject(this.errorHandler(evt))
-      }
-    })
-  }
-
-  read(format) {
-    this.reader.readAsBinaryString(this.file.slice(this.offset, Math.min(this.file.size, this.offset + this.chunk)));
-    return new Promise((resolve, reject) => {
-      this.reader.onloadend = (evt) => {
-        if (evt.target.readyState == FileReader.DONE) {
-          let rawText = this.leftOver + evt.target.result
-          let lines = rawText.split('\n')
-          this.leftOver = lines.pop()
-          this.offset += this.chunk
-          let results
-          if (format == FileLoader.format.text) {
-            results = lines
-          } else {
-            results = lines.map((line) => line.split(this.delimiter))
-          }
-          resolve(results)
-        }
-      }
-      this.reader.onerror = (evt) => {
-        reject(this.errorHandler(evt))
-      }
-    })
-  }
-
-  readAll(onprocess) {
-    if (typeof onprocess !== 'function') {
-      throw Error('undefined function specified for reading file content')
-    }
-    this.reader.readAsBinaryString(this.file.slice(this.offset, this.offset + this.chunk))
-    return new Promise((resolve, reject) => {
-      this.reader.onloadend = (evt) => {
-        if (evt.target.readyState == FileReader.DONE) {
-          let rawText = this.leftOver + evt.target.result
-          let lines = rawText.split('\n')
-          this.leftOver = lines.pop()
-
-          if (this.offset == 0 && this.skip > 0) {
-            if (this.skip > 0) lines.shift()
-          }
-
-          onprocess(lines.map((line) => line.split(this.delimiter)))
-          this.lineTotal += lines.length
-
-          if (this.offset < this.file.size) {
-            this.offset += this.chunk
-            this.reader.readAsBinaryString(this.file.slice(this.offset, this.offset + this.chunk));
-          } else {
-            resolve(this.lineTotal)
-          }
-        }
-      }
-      this.reader.onerror = (evt) => {
-        reject(this.errorHandler(evt));
-      }
-    })
-  }
-}
-
-// EXTERNAL MODULE: ../p5/src/Transpiler.js
-var Transpiler = __webpack_require__("ZuFV");
-
-// CONCATENATED MODULE: ../p5/src/main.js
-
-
-
-
-
-const PROGRESS_MODES = ['automatic', 'semi-automatic', 'manual'];
-const INPUT_METHODS = ['http', 'file', 'websocket'];
-const OPERATIONS = ['aggregate', 'derive', 'match', 'visualize', 'in', 'out'];
-
-/* harmony default export */ var main = __webpack_exports__["a"] = (function(arg) {
-  let p4x = Object(p4["a" /* default */])(Object.assign({preserveDrawingBuffer: true}, arg));
-  let p5 = {}
-  let dataSchema;
-  let dataSource;
-  let fetchData;
-  let progressStep = 0;
-  let jobs = [];
-  let dataSize = 0;
-  let progressedSize = 0;
-  let inProgress = false;
-  let batchProcessing;
-  let progression;
-  let crossViewProc = [];
-  let inputType = 'array'
-  let profiling = arg.profiling || false
-  let profile = {
-    lastStart: null,
-    lastLoadTime: 0,
-    lastProcTime: 0,
-    avgTime: 0
-  }
-
-  let onEach = () => {}
-
-  let interactionData = [];
-
-  p5.batchSize = 0;
-  p5.pipeline = p4x;
-  p5.mode = arg.mode || PROGRESS_MODES[2];
-  p5.data = function(arg) {p4x.data(arg); return p5};
-
-  p5.view = function(arg) {p4x.view(arg); return p5};
-
-  p5.runSpec = p4x.runSpec;
-  p5.input = function({
-    method = 'file',
-    type = 'csv',
-    delimiter = ',',
-    source,
-    batchSize,
-    schema
-  }) {
-    dataSchema = schema;
-    p5.batchSize = batchSize;
-    
-    if(method == 'file') {
-      dataSource = new FileLoader({
-        file: source,
-        chunk: batchSize,
-        delimiter
-      })
-      dataSize = source.size;
-      if (dataSchema === undefined) {
-        fetchData = () => {
-          return new Promise( (resolve, reject) => {
-            dataSource.getSchema().then( schema => {
-              dataSchema = schema;
-              return dataSource.read('json');
-            })
-            .then(res => {
-              resolve(res)
-            })
-            .catch(err => {
-              reject(err)
-            })
-          });
-        };
-      } else {
-        fetchData = () => {
-          return dataSource.read('json')
-        };
-      }
-
-    } else if (method == 'memory') {
-      fetchData = () => {
-        return new Promise( (resolve, reject) => {
-          resolve(source(batchSize))
-        });
-      };
-    } else {
-      inputType = 'json'
-      fetchData = () => {
-        return new Promise( (resolve, reject) => {
-          p4["a" /* default */].ajax.get({
-            url: source + '?nrows=' + batchSize,
-            dataType: 'json'
-          })
-          .then((res) => {
-            dataSchema = res.schema;
-            resolve(res.data);
-          })
-          .catch((err) =>  {
-            reject(err);
-          })
-        })
-      };
-    }
-  
-    return p5;
-  }
-
-  for(let ops of OPERATIONS) {
-    p5[ops] = function(arg) {
-      let job = {};
-      job[ops] = arg;
-      jobs.push(job);
-      return p5;
-    }
-  }
-
-  p5.transpile = function(spec) {
-    let tplr = new Transpiler["a" /* default */](p4x.ctx.fields)
-    return tplr.transpile(spec)
-  }
-
-  p5.compile = function(specs) {
-    let jobs = [];
-    if(Array.isArray(specs)) {
-      specs.forEach(function(spec){
-        let job = {};
-        let opt = Object.keys(spec)[0];
-        let arg = spec[opt];
-        if (opt[0] === '$'){
-          opt = opt.slice(1); // ignore $ sign 
-        }
-        if(typeof p5[opt] == 'function') {
-          job[opt] = arg;
-        }
-        jobs.push(job);
-      })
-    }
-    return jobs;
-  }
-
-  p5.jobs = function() {
-    return jobs; 
-  }
-
-  p5.jobsToPipeline = function(jobs) {
-    let pipeline = [];
-    Object.keys(jobs).forEach(opt => {
-      let task = {};
-      task[opt] = jobs[opt];
-      if(opt == 'aggregate' && jobs.out) {
-        task[opt].out = jobs.out;
-      }
-      pipeline.push(task);
-    })
-    return pipeline;
-  }
-
-  p5.batch = function(jobs) {
-    let batches = [];
-    jobs.forEach(jobs => {
-      let opts = p5.jobsToPipeline(jobs)
-      batches.push(opts);
-    })
-    batchProcessing = batches.map(batch => {
-      return p5.compile(p5.transpile(batch));
-    });
-    console.log(batchProcessing);
-    return p5;
-  }
-
-  p5.update = function(newData, specs) {
-    p4x.ctx._progress = true;
-    p4x.head();
-    p4x.updateData(newData);
-    p4x.run(p5.compile(p5.transpile(specs)));
-    return p5;
-  }
-
-  p5.progress = function(specs) {
-    progression = p5.compile(specs);
-    return p5;
-  }
-
-  p5.prepareData = function(data) {
-    let cache = p4["a" /* default */].cstore({})
-    cache.import({
-      data: data.slice(1),
-      schema: dataSchema,
-      type: inputType
-    });
-    return cache.data();
-  }
-
-  p5.autoProgress = function() {
-    p5.next().then(function(status){
-      if (!status.done) {
-        requestAnimationFrame(p5.autoProgress);
-      }
-    });
-  }
-
-  p5.start = function() {
-    requestAnimationFrame(p5.autoProgress);
-    return p5;
-  }
-
-  p5.next = function(callback) {
-
-    progressStep++;
-    progressedSize += p5.batchSize;
-    // let done = (progressedSize >= dataSize ) ? true : false;
-    
-    let status =  {
-        count: progressStep,
-        // done: done,
-        completed: progressedSize,
-        // percentage: progressedSize / dataSize
-    }
-
-    // if (done) {
-    //     return new Promise((resolve, reject) => { resolve(status) })
-    // }
-
-    return new Promise((resolve, reject) => {
-      let loadStart = performance.now();
-      fetchData().then(data => {
-        let inputData;
-        if(data._p4_cstore_version) {
-          inputData = data;
-        } else {
-          inputData = p5.prepareData(data);
-        }
-        profile.LoadTime = performance.now() - loadStart;
-        let processStart = performance.now()
-        if(progressStep == 1) {
-          p4x.data(inputData);
-        } else {
-          p4x.ctx._progress = true;
-          p4x.head();
-          p4x.updateData(inputData);
-        }
-
-        if(batchProcessing.length) {
-          batchProcessing.forEach(pp => {
-            p4x.head().run(pp);
-          })
-        }
-
-        if(crossViewProc.length) {
-          crossViewProc.forEach(pp => {
-            p4x.head().run(p5.jobsToPipeline(pp.jobs));
-            pp.result = p4x.result({outputTag: pp.jobs.out}).filter(d=>d.count !== 0)
-          })
-        }
-
-        p4x.run(progression);
-        console.log(p4x.result('row'))
-        profile.ProcTime = performance.now() - processStart
-        console.log(profile)
-        resolve(status);
-
-        if(typeof(callback) === 'function') {
-          callback(status, profile)
-        }
-      })
-    })
-  }
-
-  p5.mergedPipeline = function(p1, p2) {
-    let props = Object.keys(p1).concat(Object.keys(p2))
-    .filter(prop => prop !== 'out')
-    .reduce(function(b, c) {
-      if (b.indexOf(c) < 0) b.push(c);
-      return b;
-    }, [])
-    .sort()
-    .reverse();
-
-    let merged = {};
-    props.forEach(prop => {
-      merged[prop] = Object.assign({}, p1[prop], p2[prop]);
-    })
-
-    return merged;
-  }
-
-  p5.interact = function(interactions) {
-    interactions.forEach(interaction => {
-      let spec = interaction;
-
-      p4x.interact(interaction);
-      let connection = {
-        sourceView: spec.from,
-        targetViews: Object.keys(spec.response)
-      }
-
-      let sourceProc = progression.find(p => {
-        let key = Object.keys(p)[0];
-      
-        return p[key].id === connection.sourceView;
-      })
-
-      let sourcePipeline = {};
-      
-      batchProcessing.find(pipeline => {
-        let out = pipeline.find(p => p.out)
-        return out.out === sourceProc.visualize.in
-      })
-      .forEach(p => Object.assign(sourcePipeline, p))
-
-      batchProcessing.filter(p => p.out && p.out ==='')
-
-      connection.targetViews.forEach(tv => {
-        let vmap = progression.find(p => {
-          let key = Object.keys(p)[0];
-          return p[key].id === tv;
-        }).visualize
-        
-        let targetPipeline = {}
-        
-        batchProcessing.find(pipeline => {
-          let out = pipeline.find(p => p.out)
-          return out.out === vmap.in
-        })
-        .forEach(p => Object.assign(targetPipeline, p));
-        // console.log(targetPipeline);
- 
-        let interProc = p5.mergedPipeline(sourcePipeline, targetPipeline);
-        interProc.out = ['interResult', connection.sourceView, tv].join('-');
-        crossViewProc.push({
-          jobs: interProc,
-          result: [],
-          sourceView: connection.sourceView,
-          targetView: tv
-        })
-      })
-      // console.log(crossViewProc)
-
-      spec.callback = (selection) => {
-
-        let interactionStart = performance.now();
-        let connections = crossViewProc.filter(p => p.sourceView === connection.sourceView);
-        connections.forEach(conn => {
-          let view = p4x.getViews().find(v => v.id === conn.targetView);
-          // console.log(selection)
-          let matches = conn.result.filter(d => {
-            let validate = true;
-            Object.keys(selection).forEach(attr => {
-              validate = validate && (d[attr] > selection[attr][0] && d[attr])
-            })
-            return validate;
-          })
-          if(matches.length) {
-            // console.log(matches)
-            let result = p3_default.a.pipeline().aggregate({
-              $group: view.vmap.x,
-              $collect: {
-                count: {$sum: 'count'}
-              }
-            })
-            .execute(matches);
-            if(result.length) {
-              view.plot.update(result, 'orange')
-            }
-          }         
-        })
-        console.log(performance.now() - interactionStart)
-        
-        // let res = p4x.result({format: 'row', outputTag: 'interResult'})
-        // console.log(res)
-      }
-
-      
-    })
-
-    p5.getProfile = function() {
-      return profile;
-    }
-
-    return p5
-  }
-
-  return p5;
-});
-
-/***/ }),
-
 /***/ "L1ge":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1903,16 +1340,62 @@ var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
 var stringify = __webpack_require__("mvHQ");
 var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
 
-// EXTERNAL MODULE: ./src/html/Dashboard.html
-var Dashboard = __webpack_require__("NVFP");
-var Dashboard_default = /*#__PURE__*/__webpack_require__.n(Dashboard);
+// EXTERNAL MODULE: ./node_modules/babel-runtime/core-js/promise.js
+var promise = __webpack_require__("//Fk");
+var promise_default = /*#__PURE__*/__webpack_require__.n(promise);
 
-// EXTERNAL MODULE: ../p5/index.js
-var p5 = __webpack_require__("EMGt");
+// EXTERNAL MODULE: ./src/html/WebSocket.html
+var html_WebSocket = __webpack_require__("ZtXa");
+var WebSocket_default = /*#__PURE__*/__webpack_require__.n(html_WebSocket);
 
-// EXTERNAL MODULE: ../p4/index.js
-var p4 = __webpack_require__("m82B");
+// CONCATENATED MODULE: ./src/components/WebSocket.js
 
+
+
+
+/* harmony default export */ var components_WebSocket = ({
+  name: 'WebSocket',
+  template: WebSocket_default.a,
+  data: function data() {
+    return {
+      dialog: true,
+      socketError: false,
+      server: 'localhost:8888',
+      modes: ['Post Hoc', 'In Situ'],
+      defaultMode: 'Post Hoc'
+    };
+  },
+  methods: {
+    connect: function connect() {
+      var _this = this;
+
+      return new promise_default.a(function (resolve, reject) {
+        var socket = new WebSocket('ws://' + _this.server + '/websocket');
+        socket.onopen = function () {
+          _this.dialog = !_this.dialog;
+          _this.socketError = false;
+          socket.send(stringify_default()({ data: 'KpData', method: 'get' }));
+        };
+
+        socket.onerror = function (error) {
+          _this.socketError = true;
+          reject(error);
+        };
+
+        socket.onmessage = function (event) {
+          var dataObj = JSON.parse(event.data);
+          if (dataObj.schema.hasOwnProperty('CommData')) {
+            dataObj.schema.CommData = 'int';
+          }
+          dataObj.data.forEach(function (d) {
+            d.RbPrim = d.RbTotal - d.RbSec;
+          });
+          resolve({ data: dataObj.data, schema: dataObj.schema });
+        };
+      });
+    }
+  }
+});
 // EXTERNAL MODULE: ./node_modules/babel-runtime/core-js/get-iterator.js
 var get_iterator = __webpack_require__("BO1k");
 var get_iterator_default = /*#__PURE__*/__webpack_require__.n(get_iterator);
@@ -1962,7 +1445,9 @@ var Communication_default = /*#__PURE__*/__webpack_require__.n(Communication);
       rings: [],
       maxLinkValue: 1,
       isComparisonMode: false,
-      granularity: 'KpGid'
+      granularity: 'KpGid',
+      colors: ['red', 'blue', 'yellow', 'green', 'purple']
+
     };
   },
   computed: {
@@ -1994,7 +1479,7 @@ var Communication_default = /*#__PURE__*/__webpack_require__.n(Communication);
           _ref$clusterIds = _ref.clusterIds,
           clusterIds = _ref$clusterIds === undefined ? [] : _ref$clusterIds,
           _ref$clusterColors = _ref.clusterColors,
-          clusterColors = _ref$clusterColors === undefined ? ['red', 'blue', 'yellow', 'green', 'purple'] : _ref$clusterColors;
+          clusterColors = _ref$clusterColors === undefined ? this.colors : _ref$clusterColors;
 
       if (data !== undefined && Array.isArray(data)) {
         this.data = data;
@@ -2040,7 +1525,6 @@ var Communication_default = /*#__PURE__*/__webpack_require__.n(Communication);
             return item.CommData;
           });
         });
-
         var accCommData = tsCommData[0];
 
         if (tsCommData.length > 1) {
@@ -2121,7 +1605,7 @@ var Communication_default = /*#__PURE__*/__webpack_require__.n(Communication);
           return r.items;
         });
 
-        var colorSets = [['white', 'teal'], ['white', 'purple'], ['white', 'orange'], ['white', 'steelblue'], ['white', 'red'], ['steelblue', 'red'], ['green', 'yellow']];
+        var colorSets = [['#EEE', 'teal'], ['#EEE', 'purple'], ['#EEE', 'orange'], ['#EEE', 'steelblue'], ['#EEE', 'red'], ['steelblue', 'red'], ['green', 'yellow']];
 
         var layers = [{
           type: 'link',
@@ -2213,6 +1697,240 @@ var Communication_default = /*#__PURE__*/__webpack_require__.n(Communication);
     }
   }
 });
+// EXTERNAL MODULE: ../p4/index.js
+var p4 = __webpack_require__("m82B");
+
+// EXTERNAL MODULE: ./src/html/TimeSeries.html
+var TimeSeries = __webpack_require__("SUQ4");
+var TimeSeries_default = /*#__PURE__*/__webpack_require__.n(TimeSeries);
+
+// CONCATENATED MODULE: ./src/components/TimeSeries.js
+
+
+
+
+/* harmony default export */ var components_TimeSeries = ({
+  name: 'TimeSeries',
+  template: TimeSeries_default.a,
+  data: function data() {
+    return {
+      data: null,
+      view: null,
+      vis: null,
+      container: null,
+      enableInteraction: true,
+      height: 0,
+      width: 0,
+      metrics: [],
+      timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
+      granularities: ['System', 'PE', 'KP'],
+      measures: ['avg', 'sum', 'max', 'min'],
+      selectedTimeDomain: 'LastGvt',
+      granularity: 'System',
+      selectedMeasure: 'sum',
+      selectedMetrics: ['NeventProcessed', 'RbTotal'],
+      callback: null,
+      colors: ['teal', 'purple', 'orange', 'steelblue'],
+      visMarks: {
+        System: 'area',
+        PE: 'line',
+        KP: 'line'
+      },
+      clusters: null,
+      colorEncoding: null,
+      colorSet: ['green', 'orange', 'purple', 'steelblue', 'red']
+    };
+  },
+  watch: {
+    clusters: function clusters(cls) {
+      this.colorEncoding = cls[0];
+    }
+  },
+  mounted: function mounted() {
+    this.container = document.getElementById('RossVisTimeSeries');
+  },
+
+  methods: {
+    init: function init(dataObj) {
+      var cache = p4["a" /* default */].cstore({});
+      cache.import(dataObj);
+      cache.index('RealTs');
+      cache.index('LastGvt');
+      this.data = cache.data();
+      this.width = this.container.clientWidth;
+      this.height = this.container.clientHeight * 0.9;
+      var config = {
+        container: this.container,
+        viewport: [this.width, this.height],
+        padding: { left: 100, right: 20, top: 20, bottom: 50 }
+      };
+      this.vis = Object(p4["a" /* default */])(config).data(this.data);
+    },
+    destroy: function destroy() {
+      this.vis = null;
+      this.container.innerHTML = '';
+    },
+    visualize: function visualize(callback) {
+      var _this = this;
+
+      if (typeof callback === 'function') {
+        this.callback = callback;
+      }
+      var aggregation = [];
+      var collection = {};
+      var views = [];
+      var metrics = this.selectedMetrics;
+      metrics.forEach(function (metric, mi) {
+        collection[metric] = {};
+        collection[metric]['$' + _this.selectedMeasure] = metric;
+      });
+
+      var firstMetric = {};
+      var firstMetricName = keys_default()(collection)[0];
+      firstMetric[firstMetricName] = collection[firstMetricName];
+
+      var vmap = {
+        mark: this.visMarks[this.granularity],
+        x: this.selectedTimeDomain,
+        color: 'colors',
+        y: 'metrics',
+        size: 1,
+        gridlines: { y: true },
+        opacity: this.granularity === 'KP' ? 0.5 : 1,
+        facets: {
+          rows: {
+            metrics: metrics,
+            colors: this.colors
+          },
+          sortBy: { var: 'metrics' }
+        }
+      };
+
+      if (this.enableInteraction) {
+        vmap.facets.brush = {
+          condition: { x: true, lazy: true },
+          callback: function callback(selection) {
+            _this.callback(selection[_this.selectedTimeDomain]);
+          }
+        };
+      }
+
+      if (Array.isArray(this.clusters)) {
+        this.clusters.forEach(function (cluster) {
+          collection[cluster] = { $max: cluster };
+        });
+        if (this.colorEncoding) {
+          vmap.color = {
+            field: this.colorEncoding,
+            range: this.colorSet,
+            "interpolate": false
+          };
+        }
+      }
+
+      if (this.granularity === 'PE') {
+        vmap.by = 'Peid';
+        aggregation = [this.selectedTimeDomain, 'Peid'];
+      } else if (this.granularity === 'KP') {
+        aggregation = [this.selectedTimeDomain, 'KpGid'];
+      } else {
+        aggregation = [this.selectedTimeDomain];
+      }
+
+      this.vis.view(views).head().aggregate({
+        $group: aggregation,
+        $collect: collection
+      }).visualize(vmap);
+
+      this.selectedMetrics = vmap.facets.rows.metrics;
+    }
+  }
+});
+// EXTERNAL MODULE: ./src/html/TimeNet.html
+var TimeNet = __webpack_require__("31Cv");
+var TimeNet_default = /*#__PURE__*/__webpack_require__.n(TimeNet);
+
+// CONCATENATED MODULE: ./src/components/TimeNet.js
+
+
+
+
+
+
+/* harmony default export */ var components_TimeNet = ({
+  name: 'TimeNet',
+  template: TimeNet_default.a,
+  components: {
+    WebSocket: components_WebSocket,
+    TimeSeries: components_TimeSeries,
+    Communication: components_Communication
+  },
+  data: function data() {
+    return {
+      appName: 'ROSS-Vis',
+      granularity: ['PE', 'KP', 'LP'],
+      measures: ['avg', 'sum', 'max', 'min'],
+      timeIndexes: null,
+      selectedTimeDomain: 'LastGvt',
+      selectedTimeInterval: null,
+      selectedGran: 'PE',
+      selectedMeasure: 'sum',
+      isAggregated: true,
+      left: false,
+      metrics: [],
+      selectedMetrics: ['NeventProcessed', 'RbTotal']
+    };
+  },
+  methods: {
+    connect: function connect() {
+      var _this = this;
+
+      this.$refs.WebSocket.connect().then(function (dataObj) {
+        // this.timeIndexes = data.uniqueValues
+        var timeDomains = _this.$refs.TimeSeries.timeDomains;
+        _this.$refs.TimeSeries.init(dataObj);
+        _this.data = dataObj.data;
+        _this.metrics = keys_default()(dataObj.schema).filter(function (k) {
+          return timeDomains.indexOf(k) === -1 && !k.match(/id$/i);
+        });
+        _this.reset();
+      });
+    },
+    reset: function reset() {
+      this.selectMetrics = ['NeventProcessed', 'RbTotal'];
+      this.selectedTimeInterval = null;
+      this.visualize();
+    },
+    updateCommunication: function updateCommunication() {
+      this.$refs.Communication.visualize({
+        data: this.data,
+        measure: this.selectedMeasure,
+        timeDomain: this.selectedTimeDomain,
+        metrics: this.selectedMetrics,
+        timeIntervals: [this.selectedTimeInterval]
+      });
+    },
+    updateTimeSeries: function updateTimeSeries(callback) {
+      this.$refs.TimeSeries.selectedMetrics = this.selectedMetrics;
+      this.$refs.TimeSeries.visualize(callback);
+      this.selectedMetrics = this.$refs.TimeSeries.selectedMetrics;
+    },
+    updateTimeDomain: function updateTimeDomain(timeDomain) {
+      this.selectedTimeDomain = timeDomain;
+      this.updateCommunication();
+    },
+    visualize: function visualize() {
+      var _this2 = this;
+
+      var callback = function callback(selection) {
+        _this2.selectedTimeInterval = selection;
+        _this2.updateCommunication();
+      };
+      this.updateTimeSeries(callback);
+      this.updateCommunication();
+    }
+  }
+});
 // EXTERNAL MODULE: ./src/html/Dimensionality.html
 var Dimensionality = __webpack_require__("XMpN");
 var Dimensionality_default = /*#__PURE__*/__webpack_require__.n(Dimensionality);
@@ -2226,211 +1944,118 @@ var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
 
 
 
+
+
 /* harmony default export */ var components_Dimensionality = ({
   name: 'Dimensionality',
   template: Dimensionality_default.a,
   data: function data() {
     return {
       data: null,
-      methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
-      selectedMethod: 'inc_PCA'
+      server: null,
+      dimensionalMethods: ['PCA', 'tSNE'],
+      dimensionalSelected: 'PCA',
+      clusteringMethods: ['DBSCAN', 'KMeans'],
+      clusteringSelected: 'DBSCAN',
+      metrics: [],
+      metricX: null,
+      metricY: null,
+      granularities: ['PE', 'KP'],
+      granularity: 'PE',
+      proc: null,
+      oncomplete: null,
+      colorSet: ['teal', 'purple', 'orange', 'steelblue']
     };
   },
   methods: {
-    visualize: function visualize() {
-      axios_default.a.get('http://localhost:8888/pca', {
-        params: {
-          metrics: this.metrics,
-          method: this.selectedMethod
+    init: function init() {
+      var container = this.$refs.Vis;
+      var width = container.parentElement.clientWidth;
+      var height = container.parentElement.clientHeight;
+      container.innerHTML = '';
+      this.proc = Object(p4["a" /* default */])({
+        container: container,
+        viewport: [width, height],
+        padding: { left: 80, right: 30, top: 30, bottom: 80 }
+      }).view([{
+        width: width, height: height,
+        offset: [0, 0],
+        color: {
+          range: this.colorSet,
+          interpolate: false
         }
-      }).then(function (result) {
-        var data = p4["a" /* default */].cstore().import({
-          data: result.data.data,
-          schema: {
-            PC0: 'float',
-            PC1: 'float'
-          }
-        }).data();
-
-        var container = document.getElementById('stats-view');
-        var width = container.parentElement.clientWidth;
-        var height = container.parentElement.clientHeight;
-        container.innerHTML = '';
-        Object(p4["a" /* default */])({
-          container: 'stats-view',
-          viewport: [width, height],
-          padding: { left: 80, right: 30, top: 30, bottom: 80 }
-        }).data(data).view([{ width: width, height: height, offset: [0, 0] }]).visualize({
-          x: 'PC0',
-          y: 'PC1',
-          color: 'steelblue',
-          size: 10
-        });
-      });
-    }
-  }
-});
-// EXTERNAL MODULE: ./src/html/TimeSeries.html
-var TimeSeries = __webpack_require__("SUQ4");
-var TimeSeries_default = /*#__PURE__*/__webpack_require__.n(TimeSeries);
-
-// CONCATENATED MODULE: ./src/components/TimeSeries.js
-
-
-
-
-
-
-/* harmony default export */ var components_TimeSeries = ({
-  name: 'TimeSeries',
-  template: TimeSeries_default.a,
-  data: function data() {
-    return {
-      data: null,
-      view: null,
-      vis: null,
-      height: 0,
-      width: 0,
-      metrics: null,
-      selectedTimeDomain: null,
-      isAggregated: true,
-      showCPD: false,
-      selectedMeasure: null,
-      methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-      selectedMethod: 'AFF'
-    };
-  },
-  methods: {
-    init: function init(data) {
-      this.data = data;
-      console.log(data);
-      var visContainer = document.getElementById('vis-overview');
-      this.width = visContainer.clientWidth;
-      this.height = visContainer.clientHeight * 0.9;
-      var config = {
-        container: 'vis-overview',
-        viewport: [this.width, this.height]
-      };
-
-      this.views = [{
-        id: 'view-right',
-        width: this.width / 2,
-        height: this.height,
-        gridlines: { y: true },
-        padding: { left: 70, right: 150, top: 50, bottom: 80 },
-        offset: [this.width / 2, 0]
-      }];
-
-      this.vis = Object(p4["a" /* default */])(config).data(data).view(this.views);
+      }]);
+      return this.analyze();
     },
-    visualize: function visualize(metrics, callback) {
+    analyze: function analyze() {
       var _this = this;
 
-      this.metrics = metrics;
-      var viewSetting = {
-        gridlines: { y: true },
-        padding: { left: 70, right: 60, top: 10, bottom: 40 }
-      };
+      var baseURL = 'http://localhost:8888/analysis';
+      var dr = this.dimensionalSelected.toLowerCase();
+      var cl = this.clusteringSelected.toLowerCase();
+      var url = [baseURL, this.granularity, dr].join('/');
 
-      var collection = {};
-      var views = [];
-      metrics.forEach(function (metric, mi) {
-        collection[metric] = {};
-        collection[metric]['$' + _this.selectedMeasure] = metric;
-        var view = assign_default()({}, viewSetting);
-        view.id = 'view' + mi;
-        view.width = _this.width;
-        view.height = _this.height / metrics.length;
-        view.offset = [0, _this.height - view.height * (mi + 1)];
-        views.push(view);
+      return new promise_default.a(function (resolve, reject) {
+        axios_default.a.get(url).then(function (result) {
+          _this.metrics = keys_default()(result.data.schema);
+          var data = p4["a" /* default */].cstore().import({
+            data: result.data.data,
+            schema: result.data.schema
+          }).data();
+          _this.proc.data(data);
+          _this.visualize();
+
+          var res = {
+            schema: result.data.schema,
+            data: result.data.data,
+            granularity: _this.granularity,
+            clustering: _this.clusteringMethods.map(function (d) {
+              return d.toLowerCase();
+            })
+          };
+          if (typeof _this.oncomplete === 'function') {
+            _this.oncomplete(res);
+          }
+          resolve(res);
+        }).catch(function (err) {
+          reject(err);
+        });
       });
-
-      var firstMetric = {};
-      var firstMetricName = keys_default()(collection)[0];
-      firstMetric[firstMetricName] = collection[firstMetricName];
-
-      var vmap = {
-        mark: this.isAggregated ? 'area' : 'spline',
-        x: this.selectedTimeDomain,
-        color: 'steelblue',
-        size: 3,
-        brush: {
-          condition: { x: true, lazy: true },
-          callback: callback
-        }
-      };
-
-      var aggregation = [this.selectedTimeDomain];
-
-      if (!this.isAggregated) {
-        vmap.color = 'Peid';
-        aggregation.push('Peid');
-      }
-
-      this.vis.view(views).head().aggregate({
-        $group: aggregation,
-        $collect: collection
-      });
-
-      this.vis.visualize(metrics.map(function (metric, mi) {
-        return assign_default()({ id: 'view' + mi, y: metric }, vmap);
-      }));
     },
-    visualizeCPD: function visualizeCPD() {
-      var _this2 = this;
-
-      axios_default.a.get('http://localhost:8888/cpd', {
-        params: {
-          metrics: this.metrics
-        }
-      }).then(function (result) {
-        console.log(result);
-        var cpd_map = {
-          mark: 'line',
-          x: _this2.selectedTimeDomain,
-          color: 'red',
-          size: 3
-        };
-
-        var plot_points_index = result.data;
-        //       this.vis.visualize(
-        //           this.metrics.map((metric, mi) => {
-        //             console.log(metric, mi)
-        //            return Object.assign({id: 'view' + mi, y: metric, cpd_map})  
-        //           })
-        //         )
+    visualize: function visualize() {
+      this.proc.visualize({
+        x: 'PC0',
+        y: 'PC1',
+        color: this.clusteringSelected.toLowerCase(),
+        opacity: 0.5,
+        size: this.granularity === 'PE' ? 20 : 10
       });
     }
   }
 });
-// CONCATENATED MODULE: ./src/components/Dashboard.js
+// EXTERNAL MODULE: ./src/html/DimNet.html
+var DimNet = __webpack_require__("IB2n");
+var DimNet_default = /*#__PURE__*/__webpack_require__.n(DimNet);
+
+// CONCATENATED MODULE: ./src/components/DimNet.js
 
 
 
-//import '../css/app.css'
 
 
 
 
-
-
-
-/* harmony default export */ var components_Dashboard = ({
-  name: 'Dashboard',
-  template: Dashboard_default.a,
+/* harmony default export */ var components_DimNet = ({
+  name: 'DimNet',
+  template: DimNet_default.a,
   components: {
+    WebSocket: components_WebSocket,
     Dimensionality: components_Dimensionality,
-    TimeSeries: components_TimeSeries,
     Communication: components_Communication
   },
   data: function data() {
     return {
       appName: 'ROSS-Vis',
-      dialog: true,
-      socketError: false,
-      server: 'localhost:8888',
-      modes: ['Post Hoc', 'In Situ'],
-      defaultMode: 'Post Hoc',
       timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
       granularity: ['PE', 'KP', 'LP'],
       measures: ['avg', 'sum', 'max', 'min'],
@@ -2442,54 +2067,25 @@ var TimeSeries_default = /*#__PURE__*/__webpack_require__.n(TimeSeries);
       isAggregated: true,
       left: false,
       metrics: [],
-      checkboxs: [],
-      defaultMetrics: ['NeventProcessed', 'RbTotal', 'VirtualTimeDiff'],
-      selectedMetrics: [],
-      analyses: ['Communication', 'Dimensionality'],
-      selectedAnalysis: 'Dimensionality'
+      selectedMetrics: []
     };
   },
-  props: {
-    source: String
-  },
-  mounted: function mounted() {
-    this.selectedMetrics = this.defaultMetrics.slice();
-  },
   methods: {
-    start: function start() {},
-    init: function init() {
+    connect: function connect() {
       var _this = this;
 
-      var socket = new WebSocket('ws://' + this.server + '/websocket');
-      socket.onopen = function () {
-        _this.dialog = !_this.dialog;
-        _this.socketError = false;
-        socket.send(stringify_default()({ data: 'KpData', method: 'get' }));
-      };
-
-      socket.onerror = function (error) {
-        _this.socketError = true;
-      };
-
-      socket.onmessage = function (event) {
-        var data = JSON.parse(event.data);
-        _this.data = data.data;
-        if (data.schema.hasOwnProperty('CommData')) {
-          data.schema.CommData = 'int';
-        }
-        var cache = p4["a" /* default */].cstore({});
-        _this.metrics = keys_default()(data.schema);
-        cache.import(data);
-        cache.index('RealTs');
-        cache.index('LastGvt');
-        var tsData = cache.data();
-        _this.timeIndexes = tsData.uniqueValues;
-        _this.$refs.TimeSeries.init(tsData);
+      this.$refs.Dimensionality.init();
+      this.$refs.WebSocket.connect().then(function (dataObj) {
+        _this.$refs.Dimensionality.server = _this.$refs.WebSocket.server;
+        _this.data = dataObj.data;
+        _this.metrics = keys_default()(dataObj.schema).filter(function (k) {
+          return _this.timeDomains.indexOf(k) === -1 && !k.match(/id$/i);
+        });
         _this.reset();
-      };
+      });
     },
     reset: function reset() {
-      this.selectedMetrics = this.defaultMetrics.slice();
+      this.selectMetrics = ['NeventProcessed', 'RbTotal'];
       this.selectedTimeInterval = null;
       this.visualize();
     },
@@ -2502,30 +2098,120 @@ var TimeSeries_default = /*#__PURE__*/__webpack_require__.n(TimeSeries);
         timeIntervals: [this.selectedTimeInterval]
       });
     },
-    updateDimensionality: function updateDimensionality() {
-      this.$refs.Dimensionality.visualize();
+    visualize: function visualize() {
+      // let callback = (selection) => {
+      //   let ti = this.timeIndexes[this.selectedTimeDomain]
+      //   let start = Math.floor(selection[this.selectedTimeDomain][0])
+      //   let end = Math.ceil(selection[this.selectedTimeDomain][1])
+      //   if (end - start > 1) {
+      //     this.selectedTimeInterval = [ti[start], ti[end]]
+      //     this.updateCommunication()
+      //   }
+      // }
+      // this.updateTimeSeries(callback)
+      // this.updateCommunication()
+    }
+  }
+});
+// EXTERNAL MODULE: ./node_modules/babel-runtime/helpers/defineProperty.js
+var defineProperty = __webpack_require__("bOdI");
+var defineProperty_default = /*#__PURE__*/__webpack_require__.n(defineProperty);
+
+// EXTERNAL MODULE: ./src/html/DimTime.html
+var DimTime = __webpack_require__("td/E");
+var DimTime_default = /*#__PURE__*/__webpack_require__.n(DimTime);
+
+// CONCATENATED MODULE: ./src/components/DimTime.js
+
+
+
+
+
+
+
+/* harmony default export */ var components_DimTime = ({
+  name: 'DimTime',
+  template: DimTime_default.a,
+  components: {
+    WebSocket: components_WebSocket,
+    Dimensionality: components_Dimensionality,
+    TimeSeries: components_TimeSeries
+  },
+  data: function data() {
+    var _ref;
+
+    return _ref = {
+      appName: 'ROSS-Vis',
+      timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
+      granularity: ['PE', 'KP', 'LP'],
+      measures: ['avg', 'sum', 'max', 'min'],
+      timeIndexes: null,
+      selectedTimeDomain: 'LastGvt',
+      selectedTimeInterval: null
+    }, defineProperty_default()(_ref, 'granularity', 'PE'), defineProperty_default()(_ref, 'selectedMeasure', 'sum'), defineProperty_default()(_ref, 'isAggregated', true), defineProperty_default()(_ref, 'left', false), defineProperty_default()(_ref, 'metrics', []), defineProperty_default()(_ref, 'selectedMetrics', []), _ref;
+  },
+  methods: {
+    connect: function connect() {
+      var _this = this;
+
+      this.$refs.WebSocket.connect().then(function (dataObj) {
+        _this.$refs.Dimensionality.server = _this.$refs.WebSocket.server;
+        _this.data = dataObj.data;
+        _this.metrics = keys_default()(dataObj.schema).filter(function (k) {
+          return _this.timeDomains.indexOf(k) === -1 && !k.match(/id$/i);
+        });
+
+        _this.$refs.Dimensionality.oncomplete = function (result) {
+          _this.$refs.TimeSeries.granularity = result.granularity;
+          _this.$refs.TimeSeries.clusters = result.clustering;
+          _this.$refs.TimeSeries.colorEncoding = result.clustering[0];
+          _this.$refs.TimeSeries.enableInteraction = false;
+          if (_this.$refs.TimeSeries.vis !== null) {
+            _this.$refs.TimeSeries.destroy();
+          }
+          _this.$refs.TimeSeries.init(_this.joinData(dataObj, result));
+          _this.$refs.TimeSeries.visualize();
+        };
+        _this.$refs.Dimensionality.init();
+      });
     },
-    updateTimeSeries: function updateTimeSeries(callback) {
-      this.$refs.TimeSeries.selectedMeasure = this.selectedMeasure;
-      this.$refs.TimeSeries.isAggregated = this.isAggregated;
-      this.$refs.TimeSeries.selectedTimeDomain = this.selectedTimeDomain;
-      this.$refs.TimeSeries.visualize(this.selectedMetrics, callback);
+    joinData: function joinData(dataObj, result) {
+      var sid = result.granularity === 'PE' ? 'Peid' : 'KpGid';
+      var clusters = {};
+      result.clustering.forEach(function (clm) {
+        clusters[clm] = result.data.sort(function (a, b) {
+          return a[sid] - b[sid];
+        }).map(function (d) {
+          return d[clm];
+        });
+        dataObj.schema[clm] = 'int';
+      });
+
+      dataObj.data.forEach(function (d) {
+        result.clustering.forEach(function (clm) {
+          d[clm] = clusters[clm][d[sid]];
+        });
+      });
+
+      return dataObj;
+    },
+    reset: function reset() {
+      this.selectMetrics = ['NeventProcessed', 'RbTotal'];
+      this.selectedTimeInterval = null;
+      this.visualize();
     },
     visualize: function visualize() {
-      var _this2 = this;
-
-      var callback = function callback(selection) {
-        var ti = _this2.timeIndexes[_this2.selectedTimeDomain];
-        var start = Math.floor(selection[_this2.selectedTimeDomain][0]);
-        var end = Math.ceil(selection[_this2.selectedTimeDomain][1]);
-        if (end - start > 1) {
-          _this2.selectedTimeInterval = [ti[start], ti[end]];
-          _this2.updateCommunication();
-        }
-      };
-      this.updateTimeSeries(callback);
-      this.updateCommunication();
-      this.updateDimensionality();
+      // let callback = (selection) => {
+      //   let ti = this.timeIndexes[this.selectedTimeDomain]
+      //   let start = Math.floor(selection[this.selectedTimeDomain][0])
+      //   let end = Math.ceil(selection[this.selectedTimeDomain][1])
+      //   if (end - start > 1) {
+      //     this.selectedTimeInterval = [ti[start], ti[end]]
+      //     this.updateCommunication()
+      //   }
+      // }
+      // this.updateTimeSeries(callback)
+      // this.updateCommunication()
     }
   }
 });
@@ -2632,6 +2318,53 @@ var CommPanels_default = /*#__PURE__*/__webpack_require__.n(CommPanels);
     }
   }
 });
+// CONCATENATED MODULE: ./node_modules/babel-loader/lib!./node_modules/vue-loader/lib/selector.js?type=script&index=0!./src/components/HomePage.vue
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ var HomePage = ({
+  name: 'HomePage'
+});
+// CONCATENATED MODULE: ./node_modules/vue-loader/lib/template-compiler?{"id":"data-v-27cb0925","hasScoped":false,"transformToRequire":{"video":["src","poster"],"source":"src","img":"src","image":"xlink:href"},"buble":{"transforms":{}}}!./node_modules/vue-loader/lib/selector.js?type=template&index=0!./src/components/HomePage.vue
+var HomePage_render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',{attrs:{"id":"RossVisHome"}},[_c('p',[_c('router-link',{attrs:{"to":"/timenet"}},[_vm._v("TimeSeries + Communication Analysis")])],1),_vm._v(" "),_c('p',[_c('router-link',{attrs:{"to":"/dimtime"}},[_vm._v("Dimensionality + TimeSeries Analysis")])],1),_vm._v(" "),_c('p',[_c('router-link',{attrs:{"to":"/dimnet"}},[_vm._v("Dimensionality + Communication Analysis")])],1)])}
+var HomePage_staticRenderFns = []
+var HomePage_esExports = { render: HomePage_render, staticRenderFns: HomePage_staticRenderFns }
+/* harmony default export */ var components_HomePage = (HomePage_esExports);
+// CONCATENATED MODULE: ./src/components/HomePage.vue
+function HomePage_injectStyle (ssrContext) {
+  __webpack_require__("3ySA")
+}
+var HomePage_normalizeComponent = __webpack_require__("VU/8")
+/* script */
+
+
+/* template */
+
+/* template functional */
+var HomePage___vue_template_functional__ = false
+/* styles */
+var HomePage___vue_styles__ = HomePage_injectStyle
+/* scopeId */
+var HomePage___vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var HomePage___vue_module_identifier__ = null
+var HomePage_Component = HomePage_normalizeComponent(
+  HomePage,
+  components_HomePage,
+  HomePage___vue_template_functional__,
+  HomePage___vue_styles__,
+  HomePage___vue_scopeId__,
+  HomePage___vue_module_identifier__
+)
+
+/* harmony default export */ var src_components_HomePage = (HomePage_Component.exports);
+
 // CONCATENATED MODULE: ./src/router.js
 
 
@@ -2648,19 +2381,25 @@ vue_esm["default"].use(vuetify_default.a);
 
 
 
+
 /* harmony default export */ var router = (new vue_router_esm["a" /* default */]({
+  mode: 'history',
   routes: [{
     path: '/',
-    name: 'Dashboard',
-    component: components_Dashboard
+    name: 'HomePage',
+    component: src_components_HomePage
   }, {
-    path: '/cpd',
-    name: 'TimeSeries',
-    component: components_TimeSeries
+    path: '/dimtime',
+    name: 'DimTime',
+    component: components_DimTime
   }, {
-    path: '/pca',
-    name: 'Dimensionality',
-    component: components_Dimensionality
+    path: '/timenet',
+    name: 'TimeNet',
+    component: components_TimeNet
+  }, {
+    path: '/dimnet',
+    name: 'DimNet',
+    component: components_DimNet
   }, {
     path: '/communications',
     name: 'Communications',
@@ -2683,13 +2422,6 @@ new vue_esm["default"]({
   components: { App: src_App },
   template: '<App/>'
 });
-
-/***/ }),
-
-/***/ "NVFP":
-/***/ (function(module, exports) {
-
-module.exports = "<v-app id=\"inspire\">\n  <v-toolbar\n    color=\"blue-grey\"\n    dark\n    fixed\n    app\n    clipped-right\n  >\n    <v-toolbar-side-icon @click.stop=\"left = !left\">\n    </v-toolbar-side-icon>\n    <v-toolbar-title style=\"margin-right: 3em;\">{{ appName }}</v-toolbar-title>\n    <v-flex xs2 class=\"ma-2\">\n      <v-select \n        label=\"TimeMode\"\n        :items=\"timeDomains\"\n        v-model=\"selectedTimeDomain\"\n        :menu-props=\"{ maxHeight: '400' }\"\n        box\n        v-on:change=\"visualize()\"\n      >\n      </v-select>\n    </v-flex>\n    <v-flex xs2 class=\"ma-2\">\n        <v-select \n          label=\"Granularity\"\n          :items=\"granularity\"\n          v-model=\"selectedGran\"\n          :menu-props=\"{ maxHeight: '400' }\"\n          box\n          v-on:change=\"visualize()\"\n        >\n        </v-select>\n      </v-flex>\n    <v-spacer></v-spacer>\n    <v-flex xs2>\n      <v-select\n        label=\"Analysis Mode\"\n        :items=\"analyses\"\n        v-model=\"selectedAnalysis\"\n        box\n      ></v-select>\n    </v-flex>\n\n  </v-toolbar>\n  <v-navigation-drawer\n    v-model=\"left\"\n    temporary\n    fixed\n  >\n  </v-navigation-drawer>\n  <v-dialog v-model=\"dialog\" persistent max-width=\"600px\">\n    <v-btn slot=\"activator\" color=\"primary\" dark>Open Dialog</v-btn>\n    <v-card>\n      <v-card-title>\n        <span class=\"headline\">Server Settings</span>\n      </v-card-title>\n      <v-card-text>\n        <v-container grid-list-md>\n          <v-layout wrap>\n            <v-alert\n              :value=\"socketError\"\n              color=\"error\"\n            >\n              Cannot connect to server!\n            </v-alert>\n            <v-flex>\n              <v-select\n                :items=\"modes\"\n                label=\"App Mode\"\n                v-model=\"defaultMode\"\n                box\n              ></v-select>\n            </v-flex>\n            <v-flex xs12>\n              <v-text-field box label=\"Server Address\"  v-model=\"server\" required></v-text-field>\n            </v-flex>\n          </v-layout>\n        </v-container>\n      </v-card-text>\n      <v-card-actions>\n        <v-spacer></v-spacer>\n        <v-flex justify-cente>\n          <v-btn\n            color=\"primary\"\n            @click=\"init()\"\n          >\n          Start\n          </v-btn>\n        </v-flex>\n      </v-card-actions>\n    </v-card>\n  </v-dialog>\n\n  <v-content class=\"pa-2\">\n    <v-container fluid fill-height class=\"pa-1\">\n      <v-layout justify-center align-center>\n        <v-flex xs7 fill-height class=\"pa-1\">\n          <v-toolbar dense>\n            <v-flex xs9 class=\"ma-2\">\n              <v-select \n                label=\"Metric\"\n                :items=\"metrics\"\n                multiple\n                v-model=\"selectedMetrics\"\n                :menu-props=\"{ maxHeight: '400' }\"\n                persistent-hint\n                v-on:change=\"visualize()\"\n              >\n              </v-select>\n            </v-flex>\n            <v-flex xs2 class=\"ma-2\">\n                <v-select \n                  label=\"Measure\"\n                  :items=\"measures\"\n                  v-model=\"selectedMeasure\"\n                  v-on:change=\"visualize()\"\n                >\n                </v-select>\n              </v-flex>\n            <v-spacer></v-spacer>\n            <v-switch\n              :label=\"`Aggr`\"\n              v-model=\"isAggregated\"\n              v-on:change=\"visualize()\"\n            ></v-switch>\n            <v-btn icon>\n              <v-icon v-on:click=\"reset()\">refresh</v-icon>\n            </v-btn>\n          </v-toolbar>\n          <TimeSeries ref=\"TimeSeries\"></TimeSeries>\n        </v-flex>\n        <v-flex xs5 fill-height class=\"pa-1\">\n          <Communication  ref=\"Communication\" />\n        </v-flex>\n      </v-layout>\n    </v-container>\n  </v-content>\n  <!-- <v-footer color=\"blue-grey\" class=\"white--text\" app> -->\n    <!-- <span> VIDi Labs, University of California, Davis </span>\n    <v-spacer></v-spacer>\n    <span>&copy; 2018</span> -->\n  <!-- </v-footer> -->\n</v-app>\n";
 
 /***/ }),
 
@@ -3459,6 +3191,7 @@ function interact($p, options) {
 
     var actions = options.actions || options.events || [],
         condition = options.condition || {},
+        facet = options.facet || false,
         callback = options.callback || function() {};
 
     if($p._update) return;
@@ -3483,11 +3216,17 @@ function interact($p, options) {
         var interactor = vis.chart.svg.append("g")
             .attr("class", "selector")
 
+        if(facet === 'rows') {
+            h = $p.viewport[1] - p.bottom;
+        } else if(facet === 'columns') {
+            w = $p.viewport[0] - p.right;
+        }
+
         var rect = interactor.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("width", w)
-          .attr("height", h)
+          .attr("height", h/2)
           .attr("fill-opacity", 0)
           .attr("stroke", "none");
 
@@ -3502,9 +3241,7 @@ function interact($p, options) {
                 selection[vmap.x] = [vis.chart.x.invert(dx)];
             }
             if(vmap.y) {
-
                 selection[vmap.y] = [vis.chart.y.invert(h - dy)];
-  
             }
             return selection;
         }
@@ -3530,6 +3267,17 @@ function interact($p, options) {
                                 selection[vmap.y] = d.y;
                             }
                         }
+
+                        Object.keys(selection).forEach(k => {
+                            if ($p.uniqueValues.hasOwnProperty(k)) {
+                                let values = $p.uniqueValues[k]
+                                let start = Math.floor(selection[k][0]);
+                                let end = Math.floor(selection[k][1]);
+                                if(end === start) start -= 1;
+                                selection[k] = [values[start], values[end]];
+                            } 
+                        })
+
                         callback(selection);
                     }
                     if(condition.x && typeof(vis.chart.x.invert) == 'function')
@@ -4890,8 +4638,8 @@ function match_match($p) {
         });
 
         var viewSelections = Object.keys($p.crossfilters).filter(function(s){
-            return !$p.crossfilters[s].hasOwnProperty('$in');
-        });;
+            return !$p.crossfilters[s].hasOwnProperty('$in'); 
+        });
      
         if(filterSelections.length || viewSelections.length){
             filterControls = new Array(fieldCount).fill(0);
@@ -7231,7 +6979,6 @@ function visualize($p) {
                 if($p.fields.indexOf(vmap.y) > -1) {
                     visDomain[vmap.y][0] = 0;
                 }
-                console.log(visDomain[vmap.y])
             } 
 
             // pv.domains = Object.keys(visDomain).map(f=>visDomain[f]);
@@ -7340,13 +7087,12 @@ function visualize($p) {
                 let response = {};
                 let viewId = vmap.id || $p.views[viewIndex].id;
                 response[viewId] = vmap[action];
-                $p.interactions.push({
+                let interactOptions = Object.assign({
                     event: action,
-                    condition: vmap[action].condition,
                     from: viewId,
                     response: response,
-                    callback: vmap[action].callback
-                })
+                }, vmap[action])
+                $p.interactions.push(interactOptions)
             })
         }
     }
@@ -7487,28 +7233,29 @@ function compile($p, fields, spec) {
         let vmaps;
         if(vmap.facets) {
             let facet = vmap.facets;
-            let sortOpt = Object.keys(facet.sortBy)[0];
-            let sortAttr = facet.sortBy[sortOpt];
-            let result = $p.exportResult('row');
             let spec = facet.rows || facet.columns;
-            let sorted = spec[sortAttr].map((fields) => {
-                let values = result.map(r => r[fields])
-                let min = 0;
-                let max = Math.max(...values);
-                let normalizedValues = values.map( val => (val - min) / (max - min) )
-                if (sortOpt === 'var') sortOpt = 'variance';
-                let opt = typeof(arrays[sortOpt]) === 'function' ? sortOpt : 'avg'
-                return {
-                    name: fields,
-                    value: arrays[opt](normalizedValues)
-                }
-            })
-            .sort((a, b) => b.value - a.value )
-            .map(r => r.name);
-            spec[sortAttr] = sorted;
+            if(facet.sortBy !== undefined) {
+                let sortOpt = Object.keys(facet.sortBy)[0];
+                let sortAttr = facet.sortBy[sortOpt];
+                let result = $p.exportResult('row');
+                let sorted = spec[sortAttr].map((fields) => {
+                    let values = result.map(r => r[fields])
+                    let min = Math.min(...values);
+                    let max = Math.max(...values);
+                    let normalizedValues = values.map( val => (val - min) / (max - min) )
+                    if (sortOpt === 'var') sortOpt = 'variance';
+                    let opt = typeof(arrays[sortOpt]) === 'function' ? sortOpt : 'avg'
+                    return {
+                        name: fields,
+                        value: arrays[opt](normalizedValues)
+                    }
+                })
+                .sort((a, b) => b.value - a.value )
 
+                console.log(sorted)
+                spec[sortAttr] = sorted.map(r => r.name);;
+            }
             let encodings = Object.keys(vmap).filter(k => k !== 'facets')
-
             let variables = Object.keys(spec)
             let minLoopCount = Math.min(...variables.map(v => spec[v].length))
 
@@ -7523,19 +7270,24 @@ function compile($p, fields, spec) {
                     rule[code] = spec[variables[vi]][i]
                     }
                 })
-                vmaps[i] = rule
+                vmaps[i] = rule;
+                if(facet.brush && i === 0) {
+                    vmaps[i].brush = facet.brush;
+                    vmaps[i].brush.facet = 'rows'
+                }
             }
         } else {
             vmaps = Array.isArray(vmap) ? vmap : [vmap];
         }
 
         if($p.grid.views.length < vmaps.length) {
-            $p.grid.reset();
+            $p.grid.reset();  
             $p.views = $p.grid.generateViews({
                 count: vmaps.length, 
                 width: $p.viewport[0],
                 height: $p.viewport[1],
-                padding: $p.padding
+                padding: $p.padding,
+                gridlines: vmap.gridlines
             })
         }
         vmaps.forEach( (vmap, vi) => {
@@ -7785,21 +7537,24 @@ class spline_Spline extends plot_Plot {
             .x( d => this.scales.x(d[vmap.x]) )
             .y( d => this.scales.y(d[vmap.y]) );
     
-       
+
         let datum = this.data.json;
-        let color = () => vmap.color
-        if(this.data.fields.indexOf(vmap.color) !== -1) {
+        let color = () => vmap.color;
+       
+        let series =  vmap.by || vmap.color;
+        if(this.data.fields.indexOf(series) !== -1) {
             let result = {}
             this.data.json.forEach(function(d){
-                if(result.hasOwnProperty(d[vmap.color])) {
-                    result[d[vmap.color]].push(d)
+                if(result.hasOwnProperty(d[series])) {
+                    result[d[series]].push(d)
                 } else {
-                    result[d[vmap.color]] = [];
+                    result[d[series]] = [];
                 }
             })
             datum = result;
-
-            color = Object(src["c" /* scaleOrdinal */])(d3_scale_chromatic_src["schemeCategory10"]);
+            if(this.data.fields.indexOf(vmap.color) !== -1) {
+                color = Object(src["c" /* scaleOrdinal */])(d3_scale_chromatic_src["schemeCategory10"]);
+            }
         }
 
         if(Array.isArray(datum)) {
@@ -7819,27 +7574,28 @@ class spline_Spline extends plot_Plot {
                 .style("stroke", color(sample))
                 .style("stroke-width", vmap.size)
             
-                let legendWidth = Math.min(15, this.padding.right/2);
-                let legendPosY = (di + 1) * Math.min(30, this.width / series.length);
-                this.svg.main.append('rect')
-                    .attr('x', this.width + 10)
-                    .attr('y', legendPosY)
-                    .attr('width', legendWidth)
-                    .attr('height', 6)
-                    .style('fill', color(sample))
-                
-                this.svg.main.append('text')
-                    .attr('x', this.width + 15 + legendWidth)
-                    .attr('y', legendPosY + 6)
-                    .text(sample)
-
-                if(di == 0){
+                if (this.data.fields.indexOf(vmap.color) !== -1) {
+                    let legendWidth = Math.min(15, this.padding.right/2);
+                    let legendPosY = (di + 1) * Math.min(30, this.width / series.length);
+                    this.svg.main.append('rect')
+                        .attr('x', this.width + 10)
+                        .attr('y', legendPosY)
+                        .attr('width', legendWidth)
+                        .attr('height', 6)
+                        .style('fill', color(sample))
+                    
                     this.svg.main.append('text')
-                        .attr('x', this.width + 10 + legendWidth/2)
-                        .attr('y', 6)
-                        .text(vmap.color)
+                        .attr('x', this.width + 15 + legendWidth)
+                        .attr('y', legendPosY + 6)
+                        .text(sample)
+    
+                    if(di == 0){
+                        this.svg.main.append('text')
+                            .attr('x', this.width + 10 + legendWidth/2)
+                            .attr('y', 6)
+                            .text(vmap.color)
+                    }
                 }
-
             })
 
 
@@ -8302,12 +8058,13 @@ class Grid {
         count = 1,
         width = 640,
         height = 480,
-        padding = {left: 0, right: 0, top: 0, bottom: 0}
+        padding = {left: 0, right: 0, top: 0, bottom: 0},
+        gridlines = {x: false, y: false}
     }) {
         let views = new Array(count)
         let calcOffset
-        height -= padding.top + padding.bottom;
-        width -= padding.left + padding.right;
+        // height -= padding.top + padding.bottom;
+        // width -= padding.left + padding.right;
         if (layout == 'rows') {
             height = height / count
             calcOffset = (index) => [0, index * height]
@@ -8317,7 +8074,7 @@ class Grid {
         }
         for (let i = 0; i < count; i++) {
             let offset = calcOffset(i)
-            views[i] = {width, height, padding, offset}
+            views[i] = {width, height, padding, offset, gridlines}
         }
         this.views = views;
         return views;
@@ -8544,6 +8301,7 @@ function p4(options) {
                 actions: interaction.event,
                 view: interaction.from,
                 condition: interaction.condition,
+                facet: interaction.facet,
                 callback: callback  
             })
         })
@@ -9025,14 +8783,14 @@ function vectorAvg(vectors) {
 /***/ "SUQ4":
 /***/ (function(module, exports) {
 
-module.exports = "<v-flex fill-height>\n  <v-card class=\"fill-height\" id=\"vis-overview\"></v-card>\n</v-flex>\n";
+module.exports = "<v-flex fill-height>\n  <v-toolbar dense>\n    <v-flex xs3 class=\"ma-2\">\n      <v-select \n        label=\"TimeMode\"\n        :items=\"timeDomains\"\n        v-model=\"selectedTimeDomain\"\n        v-on:change=\"visualize()\"\n      > </v-select>\n    </v-flex>\n    <!-- <v-flex xs3 class=\"ma-2\">\n      <v-select \n        label=\"Measure\"\n        :items=\"measures\"\n        v-model=\"selectedMeasure\"\n        v-on:change=\"visualize()\"\n      >\n      </v-select>\n    </v-flex> -->\n    <v-flex xs2 class=\"ma-2\">\n      <v-select\n        label=\"Granularity\"\n        :items=\"granularities\"\n        v-model=\"granularity\"\n        v-on:change=\"visualize()\"\n      >\n      </v-select>\n    </v-flex>\n    <v-flex v-if=\"clusters\" xs2 class=\"ma-2\">\n      <v-select\n        label=\"Color by\"\n        :items=\"clusters\"\n        v-model=\"colorEncoding\"\n        v-on:change=\"visualize()\"\n      >\n      </v-select>\n    </v-flex>\n    <v-spacer></v-spacer>\n    <v-btn icon>\n      <v-icon v-on:click=\"reset()\">refresh</v-icon>\n    </v-btn>\n  </v-toolbar>\n  <v-card class=\"fill-height\" id=\"RossVisTimeSeries\"></v-card>\n</v-flex>\n";
 
 /***/ }),
 
 /***/ "XMpN":
 /***/ (function(module, exports) {
 
-module.exports = "<v-flex fill-height>\n    <v-toolbar dense>\n      Method:\n    <v-overflow-btn\n      dense\n      style=\"max-width: 180px;\"\n      label=\"Analytical Method\"\n      :items=\"methods\"\n      v-model=\"selectedMethod\"\n    ></v-overflow-btn>\n    <v-spacer></v-spacer>\n  \n    </v-toolbar>\n    <v-card height=\"45%\">\n      <div id=\"stats-view\"></div>\n    </v-card>\n  </v-flex>\n  ";
+module.exports = "<v-flex fill-height>\n    <v-toolbar dense>\n      <v-spacer></v-spacer>\n      <v-flex xs2 class=\"ma-2\">\n        <v-select\n          label=\"Granularity\"\n          :items=\"granularities\"\n          v-model=\"granularity\"\n          v-on:change=\"init()\"\n        >\n        </v-select>\n      </v-flex>\n      <v-flex xs3 class=\"ma-2\">\n        <v-select \n          label=\"Dimensional Reduction\"\n          :items=\"dimensionalMethods\"\n          v-model=\"dimensionalSelected\"\n          v-on:change=\"analyze()\"\n        >\n        </v-select>\n      </v-flex>\n      <v-flex xs3 class=\"ma-2\">\n        <v-select \n          label=\"Clustering Method\"\n          :items=\"clusteringMethods\"\n          v-model=\"clusteringSelected\"\n          v-on:change=\"visualize()\"\n        >\n        </v-select>\n      </v-flex>\n\n    </v-toolbar>\n    <v-card class=\"fill-height\">\n      <div ref=\"Vis\"></div>\n    </v-card>\n  </v-flex>\n  ";
 
 /***/ }),
 
@@ -9114,89 +8872,10 @@ module.exports = [{"name":"Kosovo","code":"-99","id":"-99"},{"name":"Somaliland"
 
 /***/ }),
 
-/***/ "ZuFV":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ "ZtXa":
+/***/ (function(module, exports) {
 
-"use strict";
- 
-class Transpiler {
-  constructor(attributes, categories) {
-   this.attributes = attributes
-  }
-
-  transpile (rules) {
-    let spec = []
-    for (let rule of rules) {
-      let opt = Object.keys(rule)[0]
-      if(opt == '$aggregate') {
-        spec.push({$aggregate: this.aggregate(rule[opt])})
-      // } else if(opt == '$visualize') {
-      //   spec.push({$visualize: this.visualize(rule[opt])})
-      } else {
-        spec.push(Object.assign({}, rule))
-      }
-    }
-    return spec
-  }
-
-  aggregate (rule) {
-    let includes = rule.$include || this.attributes
-    let excludes = rule.$exclude || []
-    let calculates = rule.$calculate || []
-    let fields = includes.filter(attr => excludes.indexOf(attr) === -1)
-    let collection = {}
-
-    for (let opt of calculates) {
-      if (opt === 'count') {
-        collection['count'] = {$count: '*'}
-      } else {
-        fields.forEach( field => {
-          let metric = [opt, field].join('.');
-          collection[metric] = {}
-          collection[metric]['$'+opt] = field
-        })
-      }
-    }
-    return Object.assign({$collect: collection}, rule)
-  }
-
-  visualize (rule) {
-    let facets = rule.facets || rule.facet
-
-    if (facets === undefined) return rule
-
-    let rows = facets.rows || facets.row
-    let columns = facets.columns || facets.column
-    let spec = rows || columns
-
-    let encodings = Object.keys(rule).filter(k => k !== 'facets')
-
-    let variables = Object.keys(spec)
-
-    let minLoopCount = Math.min(...variables.map(v => spec[v].length))
-
-    let vmaps = new Array(minLoopCount)
-    for(let i = 0; i < minLoopCount; i++) {
-      let vmap = {}
-      encodings.forEach(code => {
-        let vi = variables.indexOf(rule[code])
-        if(vi < 0) {
-          vmap[code] = rule[code]     
-        } else {
-          vmap[code] = spec[variables[vi]][i]
-        }
-      })
-      vmaps[i] = vmap
-    }
-    vmaps.facets = facets
-    vmaps.order = facets.order
-    vmaps.sortBy = facets.sortBy
-    return vmaps
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Transpiler;
-
-
+module.exports = "<v-dialog v-model=\"dialog\" persistent max-width=\"600px\">\n  <v-btn slot=\"activator\" color=\"primary\" dark>Open Dialog</v-btn>\n  <v-card>\n    <v-card-title>\n      <span class=\"headline\">Server Settings</span>\n    </v-card-title>\n    <v-card-text>\n      <v-container grid-list-md>\n        <v-layout wrap>\n          <v-alert :value=\"socketError\" color=\"error\">\n            Cannot connect to server!\n          </v-alert>\n          <v-flex>\n            <v-select\n              :items=\"modes\"\n              label=\"App Mode\"\n              v-model=\"defaultMode\"\n              box\n            ></v-select>\n          </v-flex>\n          <v-flex xs12>\n            <v-text-field box label=\"Server Address\"  v-model=\"server\" required></v-text-field>\n          </v-flex>\n        </v-layout>\n      </v-container>\n    </v-card-text>\n    <v-card-actions>\n      <v-spacer></v-spacer>\n      <v-flex justify-center>\n        <v-btn color=\"primary\" @click=\"$emit('connect')\">Start</v-btn>\n      </v-flex>\n    </v-card-actions>\n  </v-card>\n</v-dialog>";
 
 /***/ }),
 
@@ -11159,6 +10838,13 @@ module.exports = function join(dataLeft, dataRight) {
 
 /***/ }),
 
+/***/ "td/E":
+/***/ (function(module, exports) {
+
+module.exports = "<v-app id=\"inspire\">\n  <WebSocket ref=\"WebSocket\" @connect=\"connect\" />\n  <v-toolbar\n    color=\"blue-grey\"\n    dark\n    fixed\n    app\n    clipped-right\n  >\n    <v-toolbar-side-icon @click.stop=\"left = !left\">\n    </v-toolbar-side-icon>\n    <v-toolbar-title style=\"margin-right: 3em;\">{{ appName }}</v-toolbar-title>\n    <v-spacer></v-spacer>\n  </v-toolbar>\n  <v-content class=\"pa-2\">\n    <v-container fluid style=\"height: 90%\" class=\"pa-2\">\n      <v-layout fill-height row>\n          <v-flex xs5 fill-height class=\"pa-1\">\n            <Dimensionality ref=\"Dimensionality\"></Dimensionality>\n          </v-flex>\n          <v-flex xs7 fill-height class=\"pa-1\">\n            <TimeSeries  ref=\"TimeSeries\" />\n          </v-flex>\n      </v-layout>\n    </v-container>\n  </v-content>\n</v-app>\n";
+
+/***/ }),
+
 /***/ "vsA5":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -11681,4 +11367,4 @@ function ColumnStore(arg){
 /***/ })
 
 },["NHnr"]);
-//# sourceMappingURL=app.d13913d023814e997772.js.map
+//# sourceMappingURL=app.45e0f4dcb976a9a88996.js.map

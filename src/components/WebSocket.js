@@ -30,7 +30,9 @@ export default {
           if (dataObj.schema.hasOwnProperty('CommData')) {
             dataObj.schema.CommData = 'int'
           }
-
+          dataObj.data.forEach(d => {
+            d.RbPrim = d.RbTotal - d.RbSec
+          })
           resolve({data: dataObj.data, schema: dataObj.schema})
         }
       })
