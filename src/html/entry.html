@@ -46,12 +46,12 @@
             </v-btn>
             <v-flex xs12 class="ma-1">
                 <v-select label="1st Plot Metric" :items="metrics" v-model="plotMetric1"
-                    :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="changePlotMetric1()">
+                    :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="updatePlotMetric1()">
                 </v-select>
             </v-flex>
             <v-flex xs12 class="ma-1">
               <v-select label="2nd Plot Metric" :items="metrics" v-model="plotMetric2"
-                  :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="changePlotMetric2()">
+                  :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="updatePlotMetric2()">
               </v-select>
             </v-flex>
             <v-flex xs12 class="ma-1">

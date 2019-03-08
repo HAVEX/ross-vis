@@ -202,7 +202,8 @@ export default {
     clear() {
       this.$refs.TimeSeries.clearVis(this.normal_result)
       this.$refs.Dimensionality.clearVis(this.pca_result)
-      his.$refs.Causality.clear(this.causality_result)
+      this.$refs.Causality.clear(this.causality_result)
+      this.visualize
     },
 
     reset(){
@@ -235,10 +236,10 @@ export default {
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
       this.$refs.TimeSeries.timeAttribute = 'time'
       this.$refs.TimeSeries.visualize(this.cpd, this.cluster_mapping, [this.plotMetric], callback) 
-      this.updateDimensionality()
     },
 
     visualize() {
+
       let callback = (selection) => {
         let ti = this.timeIndexes[this.timeDomain]
         let start = Math.floor(selection[this.timeDomain][0])
@@ -249,6 +250,7 @@ export default {
       }
 
       this.updateTimeSeries(callback)
+      this.updateDimensionality()
     }
   }
 }

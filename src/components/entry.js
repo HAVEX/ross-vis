@@ -49,6 +49,15 @@ export default {
     play: 1,
   }),
 
+  watch: {
+    plotMetric2: function() {
+      return this.plotMetric1
+    },
+    plotMetric1: function() {
+      return this.plotMetric2
+    }
+  },
+
   mounted: function () {
     //this.selectedMetrics = this.defaultMetrics.slice()
   },
@@ -90,6 +99,7 @@ export default {
 
     updateView() {
       console.log('[Update view]')
+      console.log(this.plotMetric1, this.plotMetric2)
       this.$refs.StreamBoard.update(this.data)
       
     },
@@ -115,15 +125,12 @@ export default {
     updatePlotMetric1() {
       this.clear()
       console.log("Change in metric detected : [", this.plotMetric1, "]")
-      this.count = 0
-      this.fetchTsData()
     },
 
     updatePlotMetric2() {
+      console.log("Change in metric detected : [", this.plotMetric2, "]")
       this.clear()
-      console.log("Change in metric detected : [", this.plotMetric1, "]")
-      this.count = 0
-      this.fetchTsData()
+      this.updateView()      
     },
 
     updateAnalysis() {

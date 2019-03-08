@@ -70,6 +70,7 @@ export default {
     },
 
     update(data) {  
+      console.log(this.plotMetric1, this.plotMetric2)
       this.plotData1 = data[this.plotMetric1]
       this.plotData2 = data[this.plotMetric2]
       this.$refs.TimeDimCorrPanel1.tick()
