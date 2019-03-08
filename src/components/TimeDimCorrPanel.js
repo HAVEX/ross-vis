@@ -170,7 +170,6 @@ export default {
         else{
           this.stream_count = this.stream_count + 1
           let result = data['result']
-
           // Check if the results have come. 
           if(Object.keys(result[0]).length == 1){
             console.log("There are no results yet. So doing nothing")

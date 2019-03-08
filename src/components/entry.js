@@ -44,6 +44,7 @@ export default {
     count: 0,
     analysis: ['Case_study-1', 'Case_study-2'],
     selectedAnalysis: 'Case_study-1',
+    calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'VirtualTimeDiff'],
     socket: null,
     play: 1,
   }),
@@ -145,7 +146,7 @@ export default {
         this.socket.send(JSON.stringify({
           data: this.selectedGranularity + 'Data',
           granularity: this.selectedGranID,
-          metric: [this.plotMetric1, this.plotMetric2],
+          metric: this.calcMetrics,
           timeDomain: this.selectedTimeDomain,
           method: this.method,
           stream_count: this.count,
@@ -158,7 +159,7 @@ export default {
       this.socket.send(JSON.stringify({
         data: this.selectedGranularity + 'Data',
         granularity: this.selectedGranID,
-        metric: [this.plotMetric1, this.plotMetric2],
+        metric: this.calcMetrics,
         timeDomain: this.selectedTimeDomain,
         method: this.method,
         stream_count: this.count,

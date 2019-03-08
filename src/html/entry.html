@@ -19,10 +19,11 @@
         <v-btn outline fab small color="white" v-on:click="updateStop">
             <v-icon>stop</v-icon>
         </v-btn>
-        <v-btn outline fab small color="white" v-on:click="updatePlay">
+        <v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePlay">
             <v-icon>play_arrow</v-icon>
         </v-btn>
-        <v-btn outline fab small color="white" v-on:click="updatePause">
+        <v-btn outline fab small color="white" v-if="play == 1" v-on:click="updatePause">
+      
             <v-icon>pause</v-icon>
         </v-btn>
         <v-spacer></v-spacer>

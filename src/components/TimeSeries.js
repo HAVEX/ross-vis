@@ -1,6 +1,5 @@
 import p4 from 'p4'
 import template from '../html/TimeSeries.html'
-import axios from 'axios'
 
 export default {
   name: 'TimeSeries',
@@ -30,7 +29,7 @@ export default {
     init () {
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth 
-      this.height = window.innerHeight/2 - 60
+      this.height = window.innerHeight/2 - 100
       this.config = {
         container: this.id,
         viewport: [this.width, this.height]
@@ -42,14 +41,14 @@ export default {
         gridlines: {y: true},
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0],
-        "color": {
-          "range": ["steelblue",
-          "red",
-          "teal",
-          "orange",
-          "purple"],
-          "interpolate": false
-        }
+        // "color": {
+        //   "range": ["steelblue",
+        //   "red",
+        //   "teal",
+        //   "orange",
+        //   "purple"],
+        //   "interpolate": false
+        // }
       }]
     },
     
@@ -111,10 +110,11 @@ export default {
       let aggregation = [this.timeAttribute]
 
       if(!this.isAggregated) {
-        vmap.color = {
-          field: clusters,
-          "interpolate": false
-        }
+        // vmap.color = {
+        //   field: id,
+        //   "interpolate": false
+        // }
+        vmap.color = 'id'
         aggregation.push('id')
       
       // let matchSpec = {}
