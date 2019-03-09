@@ -1,5 +1,4 @@
 import tpl from '../html/entry.html'
-
 import StreamBoard from './StreamBoard'
 import HocBoard from './HocBoard'
 
@@ -88,22 +87,6 @@ export default {
      this.play = -1
     },
 
-    initView() {
-      if (this.selectedMode == 'Post Hoc') {
-        this.$refs.HocBoard.init(this.tsData)
-      }
-      else {
-        this.$refs.StreamBoard.init(this.data)
-      }
-    },
-
-    updateView() {
-      console.log('[Update view]')
-      console.log(this.plotMetric1, this.plotMetric2)
-      this.$refs.StreamBoard.update(this.data)
-      
-    },
-
     updateGran() {
       this.clear()
       console.log("Change in granularity detected : [", this.selectedGranularity, "]")
@@ -125,6 +108,7 @@ export default {
     updatePlotMetric1() {
       this.clear()
       console.log("Change in metric detected : [", this.plotMetric1, "]")
+      this.updateView()
     },
 
     updatePlotMetric2() {
@@ -138,32 +122,29 @@ export default {
     },
 
     updateMode() {
-
+      if(this.selectedMode == 'Post Hoc'){
+        console.log("Changing to Post Hoc mode")
+        this.method = 'stream'
+        this.play = 0
+      }
+      else{
+        console.log("Changing to In situ mode")
+        this.method = 'get-count'
+      }
+      console.log(this.selectedMode)
+      console.log("Stopping the streamBoard at ", this.count)
+      this.fetchAllData(this.count)
     },
 
     clear() {
       this.$refs.StreamBoard.clear()
     },
 
-    fetchTsData() {
-     if(this.count == 0){
-      this.socket.onopen = () => {
-        this.socketError = false
-        console.log('Requesting ', this.count, ' stream.')
-        this.socket.send(JSON.stringify({
-          data: this.selectedGranularity + 'Data',
-          granularity: this.selectedGranID,
-          metric: this.calcMetrics,
-          timeDomain: this.selectedTimeDomain,
-          method: this.method,
-          stream_count: this.count,
-          play: this.play
-        }))
+    getJSONrequest(count){
+      if(!count){
+        count = this.count
       }
-     } 
-
-     else{
-      this.socket.send(JSON.stringify({
+      let obj = {
         data: this.selectedGranularity + 'Data',
         granularity: this.selectedGranID,
         metric: this.calcMetrics,
@@ -171,7 +152,43 @@ export default {
         method: this.method,
         stream_count: this.count,
         play: this.play
-      }))
+      }
+      console.log("Request", obj)
+      return JSON.stringify(obj)
+    },
+
+    fetchAllData(count) {
+      console.log("Fetching all data till", count)
+      let json = this.getJSONrequest(count)
+      this.socket.send(json)
+
+      this.socket.onmessage = (event) => {
+        let data = JSON.parse(event.data)
+        this.metrics = Object.keys(data.schema)
+        if (data.schema.hasOwnProperty('CommData')) {
+          data.schema.CommData = 'int'
+        }
+        let cache = p4.cstore({})
+        cache.import(data)
+        cache.index('LastGvt')
+        let tsData = cache.data()
+        this.timeIndexes = tsData.uniqueValues
+        console.log(tsData)
+        this.$refs.HocBoard.init(tsData)
+      }
+    },
+
+    fetchTsData() {
+     if(this.count == 0){
+      this.socket.onopen = () => {
+        this.socketError = false
+        console.log('Requesting ', this.count, ' stream.')
+        this.socket.send(this.getJSONrequest())
+      }
+     } 
+
+     else{
+      this.socket.send(this.getJSONrequest())
      }
 
       this.socket.onerror = (error) => {
@@ -185,13 +202,10 @@ export default {
         console.log("Incoming data: ", this.count, d)
         this.data = data
         if (this.count == 1) {
-          this.initView()
-        }
-        if (this.count <= 100) {
-          this.updateView()
+          this.$refs.StreamBoard.init(this.data)
         }
         else {
-          socket.close()
+          this.$refs.StreamBoard.update(this.data)
         }
         this.count += 1
 
@@ -199,7 +213,6 @@ export default {
           this.fetchTsData()
         }
       }
-
     },
   }
 }

@@ -16,6 +16,7 @@ export default {
     selectedTimeDomain: null,
     showCPD: false,
     selectedMeasure: null,
+    colorBy: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
     selectedMethod :'AFF',
     colors: ['teal', 'purple', 'orange', 'steelblue'],
@@ -54,6 +55,7 @@ export default {
     
     initVis (ts){
       this.data = ts
+      console.log(ts)
       this.vis = p4(this.config).data(ts).view(this.views)
     },
 
@@ -71,7 +73,7 @@ export default {
       this.initVis(ts)
     },
 
-    visualize (cpd, clusters, metrics, callback) { 
+    visualize (metrics, cpd, clusters, callback) { 
       this.metrics = metrics
       if(cpd == 1){
         this.cpds.push(this.$parent.stream_count - 1)
@@ -114,9 +116,9 @@ export default {
         //   field: id,
         //   "interpolate": false
         // }
-        vmap.color = 'id'
-        aggregation.push('id')
-      
+        vmap.color = this.colorBy
+        aggregation.push(this.colorBy)
+
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 
       // domain = this.selectedTimeDomain

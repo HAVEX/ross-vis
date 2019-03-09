@@ -225,6 +225,7 @@ export default {
 
     updateDimensionality() {
       this.$refs.Dimensionality.selectedMetrics = this.plotMetric
+      this.$refs.Dimensionality.colorBy = 'cluster'
       this.$refs.Dimensionality.visualize()
     },
 
@@ -234,8 +235,9 @@ export default {
       this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
+      this.$refs.TimeSeries.colorBy = 'id'
       this.$refs.TimeSeries.timeAttribute = 'time'
-      this.$refs.TimeSeries.visualize(this.cpd, this.cluster_mapping, [this.plotMetric], callback) 
+      this.$refs.TimeSeries.visualize([this.plotMetric], this.cpd, this.cluster_mapping, callback) 
     },
 
     visualize() {

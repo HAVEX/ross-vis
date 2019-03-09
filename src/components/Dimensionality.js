@@ -13,6 +13,7 @@ export default {
     methods: ['prog_inc_PCA', 'inc_PCA', 'PCA', 'tsne'],
     selectedMethod: 'prog_inc_PCA',
     vis: null,
+    colorBy: null,
   }),
   mounted() {
     this.id = this._uid + '-overview'
@@ -59,7 +60,7 @@ export default {
       this.vis.visualize({
         x: 'PC0',
         y: 'PC1',
-        color: 'cluster',
+        color: this.colorBy,
         size: 10
       })
     }
