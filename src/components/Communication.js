@@ -6,6 +6,7 @@ export default {
   name: 'Communication',
   template,
   data: () => ({
+    id: null,
     drawer: false,
     data: null,
     timeDomain: null,
@@ -26,6 +27,9 @@ export default {
     thresholdValue: function() {
       return (this.threshold / 100 * this.maxLinkValue).toFixed(0)
     }
+  },
+  mounted () {
+    this.id = this._uid +'-overview'
   },
   methods: {
     updateLink () {
@@ -48,7 +52,6 @@ export default {
       clusterIds = [],
       clusterColors = this.colors
     }) {
-      console.log('a')
       if(data !== undefined && Array.isArray(data)) {
         this.data = data
         if (processIds.length > 0) {
@@ -60,6 +63,12 @@ export default {
       this.rings = new Array(timeIntervals.length)
       let colorDomains = new Array(metrics.length + 1)
       let container = this.$refs.container
+      this.width = container.clientWidth 
+      this.height = window.innerHeight/3
+      this.config = {
+        container: this.id,
+        viewport: [this.width, this.height]
+      }
       container.innerHTML = ''
       if (timeIntervals.length > 1) {
         this.isComparisonMode = true
@@ -206,8 +215,8 @@ export default {
           config: {
             container: div,
             legend: (tii === timeIntervals.length - 1),
-            width: radius,
-            height: radius
+            width: this.height,
+            height: this.height
           },
           layers: layers
         })
@@ -224,7 +233,7 @@ export default {
           }
         })
       })
-      this.maxLinkValue = colorDomains[0][1]
+     this.maxLinkValue = colorDomains[0][1]
       if(timeIntervals.length > 1) {
         this.rings.forEach(ringLayers=> {
           ringLayers.forEach((ringLayer,rii) => {

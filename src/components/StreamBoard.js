@@ -14,7 +14,7 @@ export default {
     Communication,
     Overview
   },
-  props: ['plotMetric1', 'plotMetric2', 'granularity', 'timeDomain', 'measure'],
+  props: ['plotMetric1', 'plotMetric2', 'granularity', 'timeDomain', 'measure', 'commData'],
   data: () => ({
     server: 'localhost:8888',
     isTsDataLoaded: false,
@@ -22,9 +22,9 @@ export default {
     plotData2: null,
     timeIndexes: null, 
     timeIntervals:  [
-      [204471, 238514],
-      [242484, 263715],
-      [280495, 363079],
+      // [204471, 238514],
+      // [242484, 263715],
+      // [280495, 363079],
       // [365019, 366747],
       // [380636, 393968]  
     ],
@@ -41,6 +41,7 @@ export default {
       [188, 189, 34],
       [23, 190, 207],
       [127, 127, 127]],
+    prev_comm_time: null,
   }),
 
   watch: {
@@ -59,9 +60,9 @@ export default {
         Vue.nextTick(() => {
           this.$refs.TimeDimCorrPanel1.init()
           this.$refs.TimeDimCorrPanel2.init()
+          this.processCommData()
         });
       }
-      //this.getCommData()
     },
 
     clear() {
@@ -70,16 +71,16 @@ export default {
     },
 
     update(data) {  
-      console.log(this.plotMetric1, this.plotMetric2)
       this.plotData1 = data[this.plotMetric1]
       this.plotData2 = data[this.plotMetric2]
       this.$refs.TimeDimCorrPanel1.tick()
       this.$refs.TimeDimCorrPanel2.tick()
+      this.processCommData()
     },
 
     updateCommunication() {
       this.$refs.Communication.visualize({
-        data: this.data,
+        data: this.comm_data,
         measure: this.measure,
         timeDomain: this.timeDomain,
         metrics: this.metrics,
@@ -95,30 +96,27 @@ export default {
       this.update()
     },
 
-    getCommData() {
-      let socket = new WebSocket('ws://' + this.server + '/websocket')
-      socket.onopen = () => {
-        this.dialog = !this.dialog
-        this.socketError = false
-        socket.send(JSON.stringify({ method: 'get', data: 'KpData' }))
-      }
-
-      socket.onerror = (error) => {
-        this.socketError = true
-      }
-
-      socket.onmessage = (event) => {
-        let data = JSON.parse(event.data)
-        data.data.forEach(d => {
+    processCommData() {
+      let comm_obj = this.commData
+      if(comm_obj != null && Object.keys(comm_obj).length !== 1){
+        this.comm_data = comm_obj['data']
+        let comm_schema = comm_obj['schema']
+        let comm_time = comm_obj['time']
+        if(this.prev_comm_time == null){
+          this.prev_comm_time = 0
+        }
+        this.comm_data.forEach(d => {
           d.RbPrim = d.RbTotal - d.RbSec
         })
-        this.data = data.data
-        if (data.schema.hasOwnProperty('CommData')) {
-          data.schema.CommData = 'int'
+        if (comm_schema.hasOwnProperty('CommData')) {
+          comm_schema.CommData = 'int'
         }
-        this.$refs.Communication.allMetrics = Object.keys(data.schema).filter(k => k.slice(-2) !== 'id' && k.slice(-2) !== 'Id')
+        let data = {}
+        this.timeIntervals = []
+        console.log([this.prev_comm_time, comm_time])
+        this.timeIntervals.push([this.prev_comm_time, comm_time])
+        this.$refs.Communication.allMetrics = Object.keys(comm_schema).filter(k => k.slice(-2) !== 'id' && k.slice(-2) !== 'Id')
         let params = data.params || {}
-        console.log(this.$refs.Communication.allMetrics)
         this.metrics = [this.plotMetric1, this.plotMetric2]
         if (params.timeIntervals) this.timeIntervals = params.timeIntervals
         if (params.timeMetric) this.timeDomain = params.timeMetric
@@ -130,6 +128,7 @@ export default {
         if (params.clusterIds) this.clusterIds = params.clusterIds
         if (params.clusterColors) this.clusterColors = params.clusterColors.map(c => 'rgb(' + c.join(',') + ')')
         this.updateCommunication()
+        this.prev_comm_time = comm_time
       }
     }
   }

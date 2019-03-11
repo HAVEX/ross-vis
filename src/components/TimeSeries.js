@@ -55,7 +55,6 @@ export default {
     
     initVis (ts){
       this.data = ts
-      console.log(ts)
       this.vis = p4(this.config).data(ts).view(this.views)
     },
 
@@ -73,7 +72,7 @@ export default {
       this.initVis(ts)
     },
 
-    visualize (metrics, cpd, clusters, callback) { 
+    visualize (metrics, callback, cpd, clusters) { 
       this.metrics = metrics
       if(cpd == 1){
         this.cpds.push(this.$parent.stream_count - 1)
@@ -112,12 +111,14 @@ export default {
       let aggregation = [this.timeAttribute]
 
       if(!this.isAggregated) {
-        // vmap.color = {
+        aggregation.push(this.colorBy)
+      }
+      // vmap.color = {
         //   field: id,
         //   "interpolate": false
         // }
-        vmap.color = this.colorBy
-        aggregation.push(this.colorBy)
+        
+      vmap.color = this.colorBy
 
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 
@@ -134,10 +135,6 @@ export default {
       })
 
       this.vis.visualize(
-        // colors.map((color, mi) => {
-        //   return Object.assign({color:  })
-        // })
-
         metrics.map((metric, mi) => {
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })
@@ -158,4 +155,4 @@ export default {
     }
   }
 }
-}
+

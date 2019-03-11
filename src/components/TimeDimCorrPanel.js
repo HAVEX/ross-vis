@@ -237,7 +237,7 @@ export default {
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
       this.$refs.TimeSeries.colorBy = 'id'
       this.$refs.TimeSeries.timeAttribute = 'time'
-      this.$refs.TimeSeries.visualize([this.plotMetric], this.cpd, this.cluster_mapping, callback) 
+      this.$refs.TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping, ) 
     },
 
     visualize() {

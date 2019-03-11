@@ -115,7 +115,9 @@
           v-bind:plot-metric2="plotMetric2" 
           v-bind:granularity="selectedGranularity"
           v-bind:time-domain="selectedTimeDomain"
-          v-bind:measure="selectedMeasure" v-if="selectedMode == 'In Situ'"/>
+          v-bind:measure="selectedMeasure" 
+          v-if="selectedMode == 'In Situ'"
+          v-bind:comm-data="commData"/>
         <HocBoard ref="HocBoard" 
           v-bind:plot-metric1="plotMetric1"
           v-bind:plot-metric2="plotMetric2" 

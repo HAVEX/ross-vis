@@ -1,6 +1,7 @@
 import tpl from '../html/entry.html'
 import StreamBoard from './StreamBoard'
 import HocBoard from './HocBoard'
+import Vue from 'vue'
 
 export default {
   name: 'entry',
@@ -46,6 +47,7 @@ export default {
     calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'VirtualTimeDiff'],
     socket: null,
     play: 1,
+    commData: null
   }),
 
   watch: {
@@ -114,7 +116,9 @@ export default {
     updatePlotMetric2() {
       console.log("Change in metric detected : [", this.plotMetric2, "]")
       this.clear()
-      this.updateView()      
+      Vue.nextTick(() => {
+        this.$refs.StreamBoard.update(this.data)
+      })     
     },
 
     updateAnalysis() {
@@ -199,6 +203,7 @@ export default {
         let data = JSON.parse(event.data)
         let d = data
         this.metrics = Object.keys(d['RbSec'].schema)
+        this.commData = d.comm
         console.log("Incoming data: ", this.count, d)
         this.data = data
         if (this.count == 1) {

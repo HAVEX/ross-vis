@@ -73,7 +73,7 @@ export default {
       this.$refs.TimeSeries.isAggregated = this.isAggregated
       this.$refs.TimeSeries.selectedTimeDomain = this.selectedTimeDomain
       this.$refs.TimeSeries.colorBy = 'KpGid'
-      this.$refs.TimeSeries.visualize(this.selectedMetrics, callback)
+      //this.$refs.TimeSeries.visualize(this.selectedMetrics, callback)
     },
 
     visualize() {
