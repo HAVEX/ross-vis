@@ -68,7 +68,7 @@
                 </v-select>
             </v-flex>
             <v-flex xs12 class="ma-1">
-                <v-select label="Clustering" :items="clustering" v-model="selectedClustering" v-on:change="visualize()">
+                <v-select label="Cluster by Metric" :items="clusterMetrics" v-model="selectedClusterMetric" v-on:change="updateClusterMetric()">
                 </v-select>
             </v-flex>
     
@@ -111,14 +111,17 @@
   <v-content class="pt-auto" fill-height id="dashboard">
     <v-flex>
         <StreamBoard ref="StreamBoard"
+          v-bind:stream-data="streamData"
           v-bind:plot-metric1="plotMetric1"
           v-bind:plot-metric2="plotMetric2" 
           v-bind:granularity="selectedGranularity"
           v-bind:time-domain="selectedTimeDomain"
           v-bind:measure="selectedMeasure" 
+          v-bind:cluster-metric="selectedClusterMetric"
           v-if="selectedMode == 'In Situ'"
           v-bind:comm-data="commData"/>
         <HocBoard ref="HocBoard" 
+          v-bind:hoc-data="hocData"
           v-bind:plot-metric1="plotMetric1"
           v-bind:plot-metric2="plotMetric2" 
           v-if="selectedMode == 'Post Hoc'" />

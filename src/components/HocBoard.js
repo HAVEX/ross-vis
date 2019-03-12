@@ -12,7 +12,7 @@ export default {
     TimeSeries,
     Communication
   },
-  props: ['plotMetric1', 'plotMetric2'],
+  props: ['plotMetric1', 'plotMetric2', 'hocData'],
   data: () => ({
     appName: 'ROSS-Vis',
     dialog: true,

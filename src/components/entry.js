@@ -11,8 +11,10 @@ export default {
     HocBoard
   },
   data: () => ({
-    results: [],
-    stream: [],
+    socket: null,
+    streamData: null,
+    commData: null,
+    hocData: null,
     appName: 'ROSS-Vis',
     dialog: true,
     socketError: false,
@@ -44,11 +46,11 @@ export default {
     count: 0,
     analysis: ['Case_study-1', 'Case_study-2'],
     selectedAnalysis: 'Case_study-1',
-    calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'VirtualTimeDiff'],
-    socket: null,
     play: 1,
-    commData: null
-  }),
+    calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'VirtualTimeDiff'],
+    clusterMetrics: ['RbSec', 'NeventProcessed'],
+    selectedClusterMetric: 'RbSec' 
+   }),
 
   watch: {
     plotMetric2: function() {
@@ -117,8 +119,12 @@ export default {
       console.log("Change in metric detected : [", this.plotMetric2, "]")
       this.clear()
       Vue.nextTick(() => {
-        this.$refs.StreamBoard.update(this.data)
+        this.$refs.StreamBoard.update()
       })     
+    },
+
+    updateClusterMetric() {
+
     },
 
     updateAnalysis() {
@@ -175,10 +181,9 @@ export default {
         let cache = p4.cstore({})
         cache.import(data)
         cache.index('LastGvt')
-        let tsData = cache.data()
-        this.timeIndexes = tsData.uniqueValues
-        console.log(tsData)
-        this.$refs.HocBoard.init(tsData)
+        this.hocData = cache.data()
+        this.timeIndexes = this.hocData.uniqueValues
+        this.$refs.HocBoard.init()
       }
     },
 
@@ -205,12 +210,12 @@ export default {
         this.metrics = Object.keys(d['RbSec'].schema)
         this.commData = d.comm
         console.log("Incoming data: ", this.count, d)
-        this.data = data
+        this.streamData = data
         if (this.count == 1) {
-          this.$refs.StreamBoard.init(this.data)
+          this.$refs.StreamBoard.init()
         }
-        else {
-          this.$refs.StreamBoard.update(this.data)
+        else if(this.count > 2) {
+          this.$refs.StreamBoard.update()
         }
         this.count += 1
 

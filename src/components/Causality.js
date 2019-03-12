@@ -13,10 +13,10 @@ export default {
       bordered: true,
       hover: true,
       fields: [
+        { key: 'metric', sortable: false },
         { key: 'IR_1', sortable: true },
         { key: 'VD_1', sortable: true },
-        { key: 'C', sortable: true },
-        { key: 'metric', sortable: false }
+        { key: 'Causality', sortable: true },
       ],
       to_items: [],
       from_items: [],
