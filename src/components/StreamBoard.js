@@ -45,6 +45,7 @@ export default {
       [23, 190, 207],
       [127, 127, 127]],
     prev_comm_time: null,
+    clusterMap: {},
   }),
 
   watch: {
@@ -123,11 +124,11 @@ export default {
         this.plotData2 = stream_obj[this.plotMetric2]
 
         // Create this.processIds, this.clusterIds for Communication panel
-        let clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
-        for(let id in clusterMap){
-          if(clusterMap.hasOwnProperty(id)){
-            this.processIds.push(id)
-            this.clusterIds.push(clusterMap[id])
+        this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
+        for(let id in this.clusterMap){
+          if(this.clusterMap.hasOwnProperty(id)){
+            this.processIds.push(parseInt(id))
+            this.clusterIds.push(parseInt(this.clusterMap[id]))
           }
         }
       }

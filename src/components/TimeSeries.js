@@ -40,16 +40,13 @@ export default {
         width: this.width / 2,
         height: this.height,
         gridlines: {y: true},
+        enableInteraction: true,
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0],
-        // "color": {
-        //   "range": ["steelblue",
-        //   "red",
-        //   "teal",
-        //   "orange",
-        //   "purple"],
-        //   "interpolate": false
-        // }
+        color: ['green', 'red', 'teal', 'orange'],
+        clusters: null,
+        colorEncoding: 'cluster', 
+        colorSet: ['green', 'orange', 'purple', 'steelblue', 'red']
       }]
     },
     
@@ -86,6 +83,7 @@ export default {
       metrics.forEach((metric, mi) => {
         collection[metric] = {}
         collection[metric]['$' + this.selectedMeasure] = metric
+        collection['cluster'] = {$max: 'cluster'}
         let view = Object.assign({}, viewSetting)
         view.id = 'view' + mi
         view.width = this.width
@@ -94,31 +92,51 @@ export default {
         this.current_views.push(view)
       })
 
-
       let firstMetric = {}
       let firstMetricName = Object.keys(collection)[0]
       firstMetric[firstMetricName] = collection[firstMetricName]
+
       let vmap = {
         mark: this.isAggregated ? 'area' : 'line',
         x: this.timeAttribute,
         color: 'colors',
-        size: 3,
-        brush: {
-          condition: {x: true, lazy: true},
-          callback
+        size: 1,
+        gridlines: { y: true},
+        opacity: 0.5,
+        facets: {
+          rows: {
+            metrics: metrics,
+            colors: this.colors
+          }
         }
       }
+
+      if (this.enableInteraction) {
+        vmap.facets.brush = {
+          condition: {x: true, lazy: true},
+          callback: (selection) => {
+            this.callback(selection[this.selectedTimeDomain])
+          }
+        }
+      }
+
+        vmap.color = {
+          field: this.colorEncoding,
+          range: this.colorSet,
+          "interpolate": false
+        }
+    
       let aggregation = [this.timeAttribute]
 
       if(!this.isAggregated) {
-        aggregation.push(this.colorBy)
+        aggregation.push(this.groupBy)
       }
-      // vmap.color = {
-        //   field: id,
-        //   "interpolate": false
-        // }
+      vmap.color = {
+        field: this.colorEncoding,
+        range: this.colorset,
+        "interpolate": false
+      }
         
-      vmap.color = this.colorBy
 
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 

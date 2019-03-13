@@ -9,7 +9,14 @@ import { throws } from 'assert';
 
 export default {
   name: 'TimeDimCorrPanel',
-  props: ['plotMetric', 'granularity', 'timeDomain', 'plotData', 'measure'],
+  props: [
+    'plotMetric', 
+    'granularity', 
+    'timeDomain', 
+    'plotData', 
+    'measure',
+    'clusterMap'
+  ],
   template: template,
   components: {
     ControlPanel,
@@ -28,7 +35,6 @@ export default {
     stream_count: null,
     initVis: false,
     timeAttribute: 'time',
-    cluster_mapping: null,
   }),
   methods: {
     init() {
@@ -39,7 +45,7 @@ export default {
       //this.$refs.ControlPanel.init()
     },
 
-    processPCAData (data, cluster_mapping){
+    processPCAData (data){
       let ret = {}
       ret.data = []
       let colnames = ['KpGid', 'PC0', 'PC1','cluster']
@@ -55,7 +61,7 @@ export default {
             ret.data[i] = {}
           }
           if(colnames[j] == 'cluster'){
-            ret.data[i]['cluster'] = cluster_mapping[data[i]['KpGid']]
+            ret.data[i]['cluster'] = this.clusterMap[data[i]['KpGid']]
           }
           else{
             ret.data[i][colnames[j]] = data[i][colnames[j]]
@@ -69,7 +75,6 @@ export default {
     processClusterData (data, clusterType) {
       let ret = {}
       ret.data = []
-      let cluster_mapping = {}
       if (clusterType == 'normal'){
         ret.schema = {
           ts : 'float',
@@ -92,9 +97,8 @@ export default {
         let _cluster = zero_index_data[clusterType + '_clusters'][i]
         for(let time = 0; time < _data.length; time += 1){
           let current_time = zero_index_data[clusterType + '_times'][time]
+          let id = zero_index_data['ids'][i]
           if(clusterType == 'normal'){
-            let id = zero_index_data['ids'][i]
-            cluster_mapping[id] = _cluster
             ret.data.push({
               'time' : _data[time],
               'cluster': _cluster,
@@ -111,12 +115,7 @@ export default {
           }
         }
       }
-      if(clusterType == 'normal'){
-        return [ret, cluster_mapping]
-      }
-      else{
-        return ret
-      }
+      return ret
     },
 
     processCausalityData (data) {
@@ -175,12 +174,10 @@ export default {
             console.log("There are no results yet. So doing nothing")
           }
           else{
-            let temp = this.processClusterData(result, 'normal')
-            let normal_result = temp[0]
-            this.cluster_mapping = temp[1]
+            let normal_result = this.processClusterData(result, 'normal')
             this.normal_result = this.create_cstore(normal_result, this.timeAttribute)
-    
-            let pca_result = this.processPCAData(result, this.cluster_mapping)
+            console.log(this.normal_result)
+            let pca_result = this.processPCAData(result)
             this.pca_result = this.create_cstore(pca_result)
     
             this.cpd = result[0]['cpd']
@@ -235,7 +232,8 @@ export default {
       this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
-      this.$refs.TimeSeries.colorBy = 'id'
+      //this.$refs.TimeSeries.clustering = this.clusterMap
+      this.$refs.TimeSeries.groupBy = 'id'
       this.$refs.TimeSeries.timeAttribute = 'time'
       this.$refs.TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping, ) 
     },
