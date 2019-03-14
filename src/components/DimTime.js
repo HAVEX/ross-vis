@@ -34,6 +34,8 @@ export default {
         this.metrics = Object.keys(dataObj.schema).filter(k => this.timeDomains.indexOf(k) === -1 && !k.match(/id$/i))
         
         this.$refs.Dimensionality.oncomplete = (result) => {
+          
+          this.$refs.TimeSeries.colorSet = ['green', 'orange', 'purple', 'steelblue', 'red']
           this.$refs.TimeSeries.granularity = result.granularity
           this.$refs.TimeSeries.clusters = result.clustering
           this.$refs.TimeSeries.colorEncoding = result.clustering[0]

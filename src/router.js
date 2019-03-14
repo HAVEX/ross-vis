@@ -14,6 +14,8 @@ import DimTime from './components/DimTime'
 import CommPanels from './components/CommPanels'
 import HomePage from './components/HomePage'
 
+import Timelines from './dashboards/Timelines'
+
 export default new Router({
   mode: 'history',
   routes: [
@@ -41,6 +43,11 @@ export default new Router({
       path: '/communications',
       name: 'Communications',
       component: CommPanels
+    },
+    {
+      path: '/timelines',
+      name: 'Timelines',
+      component: Timelines
     }  
   ]
 })

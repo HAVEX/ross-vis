@@ -67,7 +67,7 @@ export default {
       }
       let aggregation = []
       let collection = {}
-      let views = []
+
       let metrics = this.selectedMetrics
       metrics.forEach((metric, mi) => {
         collection[metric] = {}
@@ -91,8 +91,17 @@ export default {
             metrics: metrics,
             colors: this.colors
           },
-          sortBy: {var: 'metrics'}
+          // sortBy: {var: 'metrics'}
         },
+      }
+
+      if(this.granularity === 'PE') {
+        vmap.by = 'Peid'
+        aggregation = [this.selectedTimeDomain, 'Peid']
+      } else if (this.granularity === 'KP') {
+        aggregation = [this.selectedTimeDomain, 'KpGid']
+      } else {
+        aggregation = [this.selectedTimeDomain]
       }
 
       if (this.enableInteraction) {
@@ -108,25 +117,19 @@ export default {
         this.clusters.forEach(cluster => {
           collection[cluster] = {$max: cluster}
         })
-        if(this.colorEncoding) {
-          vmap.color = {
-            field: this.colorEncoding,
-            range: this.colorSet,
-            "interpolate": false
-          }
-        }
-      }
-      
-      if(this.granularity === 'PE') {
-        vmap.by = 'Peid'
-        aggregation = [this.selectedTimeDomain, 'Peid']
-      } else if (this.granularity === 'KP') {
-        aggregation = [this.selectedTimeDomain, 'KpGid']
-      } else {
-        aggregation = [this.selectedTimeDomain]
       }
 
-      this.vis.view(views).head()
+      if(this.colorEncoding) {
+        vmap.color = this.colorEncoding
+        vmap.colors = {
+          range: this.colorSet,
+          interpolate: false
+        }
+
+        collection[this.colorEncoding] = {$max: this.colorEncoding}
+      }
+
+      let t = this.vis.view([]).head()
       .aggregate({
         $group: aggregation,
         $collect: collection

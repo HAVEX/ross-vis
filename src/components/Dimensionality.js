@@ -19,7 +19,7 @@ export default {
     granularity: 'PE',
     proc: null,
     oncomplete: null,
-    colorSet: ['teal', 'purple', 'orange', 'steelblue']
+    colorSet: ['green', 'orange', 'purple', 'steelblue', 'red']
   }),
   methods: {
     init() {
