@@ -14,19 +14,19 @@
       </v-select>
     </v-flex>
     <v-spacer></v-spacer>
-    <v-flex xs4 dense>
+    <v-flex xs6 dense>
         <v-spacer></v-spacer>
-        <v-btn outline fab small color="white" v-on:click="updateStop">
-            <v-icon>stop</v-icon>
+        <v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePrevStep">
+            <v-icon>skip_previous</v-icon>
         </v-btn>
         <v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePlay">
             <v-icon>play_arrow</v-icon>
         </v-btn>
         <v-btn outline fab small color="white" v-if="play == 1" v-on:click="updatePause">
-      
             <v-icon>pause</v-icon>
         </v-btn>
         <v-spacer></v-spacer>
+        
     </v-flex>
     <v-spacer></v-spacer>
     <v-flex xs2>

@@ -47,7 +47,7 @@ export default {
     analysis: ['Case_study-1', 'Case_study-2'],
     selectedAnalysis: 'Case_study-1',
     play: 1,
-    calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'VirtualTimeDiff'],
+    calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec'],
     clusterMetrics: ['RbSec', 'NeventProcessed'],
     selectedClusterMetric: 'RbSec' 
    }),
@@ -80,6 +80,7 @@ export default {
 
     updatePlay() {
       this.play = 1
+      this.update = 1
       this.fetchTsData()
     },
 
@@ -87,8 +88,12 @@ export default {
       this.play = 0
     },
 
-    updateStop() {
-     this.play = -1
+    updatePrevStep() {
+      this.play = 1
+      this.update = -1
+      console.log("Removing ", this.count)
+      this.fetchTsData()
+      
     },
 
     updateGran() {
@@ -161,7 +166,8 @@ export default {
         timeDomain: this.selectedTimeDomain,
         method: this.method,
         stream_count: this.count,
-        play: this.play
+        play: this.play,
+        update: this.update,
       }
       console.log("Request", obj)
       return JSON.stringify(obj)
@@ -217,8 +223,15 @@ export default {
         else if(this.count > 2) {
           this.$refs.StreamBoard.update()
         }
-        this.count += 1
-
+        if(this.update == -1){
+          this.update = 1
+          this.count -= 1
+          this.play = 0
+        }
+        else{
+          this.count += 1
+        }
+        
         if(this.play == 1){
           this.fetchTsData()
         }

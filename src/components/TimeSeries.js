@@ -30,7 +30,7 @@ export default {
     init () {
       let visContainer = document.getElementById(this.id)
       this.width = visContainer.clientWidth 
-      this.height = window.innerHeight/3
+      this.height = window.innerHeight/3 - 20 
       this.config = {
         container: this.id,
         viewport: [this.width, this.height]
@@ -101,7 +101,7 @@ export default {
         x: this.timeAttribute,
         color: 'colors',
         size: 1,
-        gridlines: { y: true},
+        gridlines: { y: true },
         opacity: 0.5,
         facets: {
           rows: {
@@ -113,22 +113,23 @@ export default {
 
       if (this.enableInteraction) {
         vmap.facets.brush = {
-          condition: {x: true, lazy: true},
+          condition: { x: true, lazy: true },
           callback: (selection) => {
             this.callback(selection[this.selectedTimeDomain])
           }
         }
       }
 
-        vmap.color = {
-          field: this.colorEncoding,
-          range: this.colorSet,
-          "interpolate": false
-        }
-    
+
+      vmap.color = {
+        field: this.colorEncoding,
+        range: this.colorSet,
+        "interpolate": false
+      }
+
       let aggregation = [this.timeAttribute]
 
-      if(!this.isAggregated) {
+      if (!this.isAggregated) {
         aggregation.push(this.groupBy)
       }
       vmap.color = {
@@ -136,7 +137,7 @@ export default {
         range: this.colorset,
         "interpolate": false
       }
-        
+
 
       // let matchSpec = {}
       // matchSpec[this.selectedTimeDomain] = 

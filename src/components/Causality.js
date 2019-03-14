@@ -37,11 +37,13 @@ export default {
     },
 
     initVis(data) {
+      console.log(data)
       this.from_items = data['from']
       this.to_items = data['to']
     },
 
     clear(data) {
+      console.log(data)
       this.from_items = data['from']
       this.to_items = data['to']
     },
