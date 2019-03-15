@@ -102,6 +102,7 @@ export default {
         mark: this.isAggregated ? 'area' : 'line',
         x: this.timeAttribute,
         color: 'colors',
+
         size: 1,
         gridlines: { y: true },
         opacity: 0.5,
@@ -133,6 +134,8 @@ export default {
         collection[this.colorEncoding] = {$max: this.colorEncoding}
       }
 
+      let aggregation = [this.timeAttribute]
+
       if (!this.isAggregated) {
         aggregation.push(this.groupBy)
       }
@@ -142,7 +145,8 @@ export default {
         "interpolate": false
       }
 
-      collection['cluster'] = {$min: 'cluster'}
+      collection['cluster'] = {$max: 'cluster'}
+
 
       this.vis.view(this.current_views).head()
       .aggregate({
@@ -156,18 +160,18 @@ export default {
       )
 
 
-      this.vis.annotate({
-        id: this.id,
-        mark: 'vline',
-        size: 3,
-        color: 'red',
-        brush: {
-          callback: function(s) {
-            console.log(s)
-          }
-        },
-        position: {values: this.cpds} // this set the positions of the vlines
-      })
+      // this.vis.annotate({
+      //   id: this.id,
+      //   mark: 'vline',
+      //   size: 3,
+      //   color: 'red',
+      //   brush: {
+      //     callback: function(s) {
+      //       console.log(s)
+      //     }
+      //   },
+      //   position: {values: this.cpds} // this set the positions of the vlines
+      // })
     }
   }
 }
