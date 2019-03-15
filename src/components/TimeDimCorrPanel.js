@@ -68,6 +68,7 @@ export default {
           }
         }
       }
+      console.log('PCA', ret)
       return ret
     },
 
@@ -115,6 +116,7 @@ export default {
           }
         }
       }
+      console.log('TimeSeries', ret)
       return ret
     },
 
@@ -232,7 +234,7 @@ export default {
       this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
-      //this.$refs.TimeSeries.clustering = this.clusterMap
+      this.$refs.TimeSeries.clusters = 'cluster'
       this.$refs.TimeSeries.groupBy = 'id'
       this.$refs.TimeSeries.timeAttribute = 'time'
       this.$refs.TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping, ) 

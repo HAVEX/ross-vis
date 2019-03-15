@@ -10,6 +10,8 @@ export default {
     data: null,
     view: null,
     vis: null,
+    container: null,
+    enableInteraction: true,
     height: 0,
     width: 0,
     metrics: null,
@@ -43,10 +45,9 @@ export default {
         enableInteraction: true,
         padding: {left: 70, right: 150, top: 50, bottom: 80},
         offset: [this.width / 2, 0],
-        color: ['green', 'red', 'teal', 'orange'],
         clusters: null,
         colorEncoding: 'cluster', 
-        colorSet: ['green', 'orange', 'purple', 'steelblue', 'red']
+        colorSet: ['green', 'orange', 'purple', 'steelblue']
       }]
     },
     
@@ -74,6 +75,7 @@ export default {
       if(cpd == 1){
         this.cpds.push(this.$parent.stream_count - 1)
       }
+
       let viewSetting = {
         gridlines: {y: true},
         padding: {left: 70, right: 60, top: 10, bottom: 30},
@@ -121,43 +123,38 @@ export default {
       }
 
 
-      vmap.color = {
-        field: this.colorEncoding,
-        range: this.colorSet,
-        "interpolate": false
-      }
+      if(this.colorEncoding) {
+        vmap.color = this.colorEncoding
+        vmap.colors = {
+          range: this.colorSet,
+          interpolate: false
+        }
 
-      let aggregation = [this.timeAttribute]
+        collection[this.colorEncoding] = {$max: this.colorEncoding}
+      }
 
       if (!this.isAggregated) {
         aggregation.push(this.groupBy)
       }
-      vmap.color = {
-        field: this.colorEncoding,
+      vmap.color = 'cluster'
+      vmap.colors = {
         range: this.colorset,
         "interpolate": false
       }
 
-
-      // let matchSpec = {}
-      // matchSpec[this.selectedTimeDomain] = 
-      // domain = this.selectedTimeDomain
-
-      // .match({
-      //   lastGvt: [1000, 2000]       
-      // })
+      collection['cluster'] = {$min: 'cluster'}
 
       this.vis.view(this.current_views).head()
       .aggregate({
         $group: aggregation,
         $collect: collection
       })
-
-      this.vis.visualize(
+      .visualize(
         metrics.map((metric, mi) => {
           return Object.assign({id: 'view' + mi, y: metric}, vmap)
         })
-      )   
+      )
+
 
       this.vis.annotate({
         id: this.id,

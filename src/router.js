@@ -9,26 +9,14 @@ import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 import entry from './components/entry'
-import TimeSeries from './components/TimeSeries'
-import Dimensionality from './components/Dimensionality'
-
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
       name: 'entry',
       component: entry
-    },
-    {
-      path: '/cpd',
-      name: 'TimeSeries',
-      component: TimeSeries
-    },
-    {
-      path: '/pca',
-      name: 'Dimensionality',
-      component: Dimensionality
-    }      
+    }
   ]
 })

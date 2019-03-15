@@ -14,6 +14,7 @@ export default {
     selectedMethod: 'prog_inc_PCA',
     vis: null,
     colorBy: null,
+    colorSet: ['red', 'orange', 'purple', 'steelblue']
   }),
   mounted() {
     this.id = this._uid + '-overview'
@@ -32,6 +33,10 @@ export default {
         width: this.width,
         height: this.height,
         gridlines: { y: true },
+        color: {
+          range: this.colorSet,
+          interpolate: false
+        },
         padding: { left: 80, top: 10, right: 30, bottom: 30 },
         offset: [0, 0]
       }]
@@ -63,7 +68,19 @@ export default {
         color: this.colorBy,
         size: 10
       })
-    }
+    },
+
+    // visualize () {
+    //   this.vis.visualize({
+    //     x: 'PC0',
+    //     y: 'PC1',
+    //     color:  this.clusteringSelected.toLowerCase(),
+    //     opacity: 0.5,
+    //     size: (this.granularity === 'PE' ) ? 20 : 10
+    //   })
+
+
+    // }
   }
 }
 
