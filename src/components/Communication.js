@@ -64,7 +64,7 @@ export default {
       let colorDomains = new Array(metrics.length + 1)
       let container = this.$refs.container
       this.width = container.clientWidth 
-      this.height = window.innerHeight/3
+      this.height = window.innerHeight/3 - 20
       this.config = {
         container: this.id,
         viewport: [this.width, this.height]

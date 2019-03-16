@@ -14,7 +14,6 @@ export default {
     selectedMethod: 'prog_inc_PCA',
     vis: null,
     colorBy: null,
-    colorSet: ['red', 'orange', 'purple', 'steelblue']
   }),
   mounted() {
     this.id = this._uid + '-overview'
@@ -60,27 +59,17 @@ export default {
       this.initVis(ts)
     },
 
+    
+
     visualize() {
-      //this.vis = p4(this.config).data(ts).view(this.views)
-      this.vis.visualize({
+      let vmap = {
         x: 'PC0',
         y: 'PC1',
         color: this.colorBy,
         size: 10
-      })
+      }
+      this.vis.visualize(vmap)
     },
-
-    // visualize () {
-    //   this.vis.visualize({
-    //     x: 'PC0',
-    //     y: 'PC1',
-    //     color:  this.clusteringSelected.toLowerCase(),
-    //     opacity: 0.5,
-    //     size: (this.granularity === 'PE' ) ? 20 : 10
-    //   })
-
-
-    // }
   }
 }
 

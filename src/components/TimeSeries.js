@@ -18,10 +18,8 @@ export default {
     selectedTimeDomain: null,
     showCPD: false,
     selectedMeasure: null,
-    colorBy: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
     selectedMethod :'AFF',
-    colors: ['teal', 'purple', 'orange', 'steelblue'],
     current_views: [],
     cpds: []
   }),
@@ -47,7 +45,6 @@ export default {
         offset: [this.width / 2, 0],
         clusters: null,
         colorEncoding: 'cluster', 
-        colorSet: ['green', 'orange', 'purple', 'steelblue']
       }]
     },
     
@@ -102,14 +99,13 @@ export default {
         mark: this.isAggregated ? 'area' : 'line',
         x: this.timeAttribute,
         color: 'colors',
-
         size: 1,
         gridlines: { y: true },
         opacity: 0.5,
         facets: {
           rows: {
             metrics: metrics,
-            colors: this.colors
+            colors: this.colorSet
           }
         }
       }
@@ -122,7 +118,6 @@ export default {
           }
         }
       }
-
 
       if(this.colorEncoding) {
         vmap.color = this.colorEncoding
@@ -160,18 +155,18 @@ export default {
       )
 
 
-      // this.vis.annotate({
-      //   id: this.id,
-      //   mark: 'vline',
-      //   size: 3,
-      //   color: 'red',
-      //   brush: {
-      //     callback: function(s) {
-      //       console.log(s)
-      //     }
-      //   },
-      //   position: {values: this.cpds} // this set the positions of the vlines
-      // })
+      this.vis.annotate({
+        id: this.id,
+        mark: 'vline',
+        size: 3,
+        color: 'red',
+        brush: {
+          callback: function(s) {
+            console.log(s)
+          }
+        },
+        position: {values: this.cpds} // this set the positions of the vlines
+      })
     }
   }
 }

@@ -5,7 +5,6 @@ import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 import ControlPanel from './ControlPanel'
 import Causality from './Causality'
-import { throws } from 'assert';
 
 export default {
   name: 'TimeDimCorrPanel',
@@ -35,6 +34,9 @@ export default {
     stream_count: null,
     initVis: false,
     timeAttribute: 'time',
+    timeCluster: {},
+    PCACluster: {},
+    colorSet : ['teal', 'purple', 'orange'],
   }),
   methods: {
     init() {
@@ -62,13 +64,13 @@ export default {
           }
           if(colnames[j] == 'cluster'){
             ret.data[i]['cluster'] = this.clusterMap[data[i]['KpGid']]
+            this.PCACluster[data[i]['KpGid']] = this.clusterMap[data[i]['KpGid']]
           }
           else{
             ret.data[i][colnames[j]] = data[i][colnames[j]]
           }
         }
       }
-      console.log('PCA', ret)
       return ret
     },
 
@@ -95,10 +97,12 @@ export default {
       let zero_index_data = data[0]
       for(let i = 0; i < zero_index_data[clusterType].length; i += 1){
         let _data = zero_index_data[clusterType][i]
-        let _cluster = zero_index_data[clusterType + '_clusters'][i]
+        let id = zero_index_data['ids'][i]
+        let _cluster = this.clusterMap[id]
+        
+        this.timeCluster[id] = _cluster
         for(let time = 0; time < _data.length; time += 1){
           let current_time = zero_index_data[clusterType + '_times'][time]
-          let id = zero_index_data['ids'][i]
           if(clusterType == 'normal'){
             ret.data.push({
               'time' : _data[time],
@@ -116,7 +120,6 @@ export default {
           }
         }
       }
-      console.log('TimeSeries', ret)
       return ret
     },
 
@@ -126,8 +129,8 @@ export default {
       ret.from = []
       for(let i = 0; i < data['from_metrics'].length; i += 1){
         ret.from.push({
-          'IR_1': parseFloat(data['from_IR_1'][i]).toFixed(2),
-          'VD_1': parseFloat(data['from_VD_1'][i]).toFixed(2), 
+          'IR': parseFloat(data['from_IR_1'][i]).toFixed(2),
+          'VD': parseFloat(data['from_VD_1'][i]).toFixed(2), 
           'causality': data['from_causality'][i],
           'metric': data['from_metrics'][i],
         })
@@ -136,8 +139,8 @@ export default {
       ret.to = []
       for(let i = 0; i < data['from_metrics'].length; i += 1){
         ret.to.push({
-          'IR_1': parseFloat(data['to_IR_1'][i]).toFixed(2),
-          'VD_1': parseFloat(data['from_VD_1'][i]).toFixed(2), 
+          'IR': parseFloat(data['to_IR_1'][i]).toFixed(2),
+          'VD': parseFloat(data['from_VD_1'][i]).toFixed(2), 
           'causality': data['from_causality'][i],
           'metric': data['from_metrics'][i],
         })
@@ -192,8 +195,22 @@ export default {
     
             this.causality_result = this.processCausalityData(data['result'])
             this.reset()
+
+            this.checkClustering()
           }
-         
+        }
+      }
+    },
+
+    checkClustering() {
+      for(let KpGid in this.timeCluster){
+        if(this.timeCluster.hasOwnProperty(KpGid)){
+          if(this.timeCluster[KpGid] == this.PCACluster[KpGid]){
+            console.log("Matches")
+          }
+          else{
+            console.log("Bug")
+          }
         }
       }
     },
@@ -224,6 +241,7 @@ export default {
 
     updateDimensionality() {
       this.$refs.Dimensionality.selectedMetrics = this.plotMetric
+      this.$refs.Dimensionality.colorSet = this.colorSet
       this.$refs.Dimensionality.colorBy = 'cluster'
       this.$refs.Dimensionality.visualize()
     },
@@ -235,6 +253,7 @@ export default {
       this.$refs.TimeSeries.selectedMetrics = this.plotMetric
       this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
       this.$refs.TimeSeries.clusters = 'cluster'
+      this.$refs.TimeSeries.colorSet = this.colorSet
       this.$refs.TimeSeries.groupBy = 'id'
       this.$refs.TimeSeries.timeAttribute = 'time'
       this.$refs.TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping, ) 

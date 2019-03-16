@@ -18,7 +18,7 @@ export default {
     appName: 'ROSS-Vis',
     dialog: true,
     socketError: false,
-    server: 'localhost:8888',
+    server: 'localhost:8899',
     modes: ['Post Hoc', 'In Situ'],
     selectedMode: 'In Situ',
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTs'],
@@ -49,7 +49,10 @@ export default {
     play: 1,
     calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec'],
     clusterMetrics: ['RbSec', 'NeventProcessed'],
-    selectedClusterMetric: 'RbSec' 
+    selectedClusterMetric: 'RbSec',
+    commThreshold: 0,
+    thresholdValue: 0,
+    showIntraComm: false,
    }),
 
   watch: {
@@ -129,6 +132,10 @@ export default {
     },
 
     updateClusterMetric() {
+
+    },
+
+    updateLink() {
 
     },
 
