@@ -7,7 +7,7 @@ export default {
     props: [],
     data: () => ({
         id: null,
-        data: null,
+        ts: null,
         config: null,
         vis: null,
         colorBy: null,
@@ -64,6 +64,7 @@ export default {
             this.yDom = [0, 0]
 
             this.brush = d3.brush()
+                .on('brush', this.brush)
                 .on("end", this.brushended)
 
             // set the transition
@@ -78,15 +79,16 @@ export default {
         },
 
         visualize(ts) {
+            this.ts = ts
             this.svg.append('g')
                 .attr('class', 'brush')
                 .call(this.brush)
-            
+
             this.xMin = 0
             this.xMax = 0
             this.yMin = 0
             this.yMax = 0
-            for (let [id, res] of Object.entries(ts)) {
+            for (let [id, res] of Object.entries(this.ts)) {
                 let x = res['PC0'][0]
                 let y = res['PC1'][0]
 
@@ -102,7 +104,6 @@ export default {
                 if (y > this.yMax) {
                     this.yMax = y
                 }
-
             }
 
             this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
@@ -110,10 +111,6 @@ export default {
 
             d3.selectAll('.circle' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
-                this.data = this.svg.append('circle')
-                    .attrs({
-                        'class': 'circle' + this.id,
-                    })
 
                 let time = res['time']
                 let data = res['ts']
@@ -126,48 +123,77 @@ export default {
                     .call(this.yAxis)
 
                 let self = this
-                this.data
+                this.data = this.svg.append('circle')
                     .datum(res)
                     .attrs({
+                        'class': (d) => { return 'circle' + this.id },
                         stroke: this.colorSet[cluster],
                         r: 3,
                         'stroke-width': 1.0,
                         fill: this.colorSet[cluster],
-                        cx: function (d) { return self.x(d['PC0'][0]) },
-                        cy: function (d) { return self.y(d['PC1'][0]) },
+                        'id': (d) => { return id },
+                        cx: (d) => { return self.x(d['PC0'][0]) },
+                        cy: (d) => { return self.y(d['PC1'][0]) },
                     })
             }
         },
 
+        findIdsInRegion(xMin, xMax, yMin, yMax) {
+            let ret = []
+            console.log(xMin, xMax, yMin, yMax)
+            for (let [idx, res] of Object.entries(this.ts)) {
+                let xVal = this.x(res['PC0'][0])
+                let yVal = this.y(res['PC1'][0])
+                console.log(xVal, yVal)
+                if (xVal >= xMin && xVal <= xMax && yVal >= yMin && yVal <= yMax) {
+                    ret.push(idx)
+                }
+            }
+            console.log(ret)
+            return ret
+        },
+
+        brush() {
+            if(d3.event.selection != null ) {
+                let coords = d3.brushSelection(this)
+                console.log(coords)
+                this.selectedIds = this.findIdsInRegion(
+                    coords[0][0], coords[0][1], coords[1][0], coords[1][1]
+                )
+
+            }
+        },
+
         brushended() {
-            let idleDelay = 350;
-            let s = d3.event.selection;
+            let idleDelay = 350
+            let s = d3.event.selection
             if (!s) {
-                if (!this.idleTimeout) 
-                    return this.idleTimeout = setTimeout(this.idled, idleDelay);
-                this.x.domain([2.0 * xMin, 2.0 * xMax]);
-                this.y.domain([2.0 * yMin, 2.0 * yMax]);
-            } 
+                if (!this.idleTimeout)
+                    return this.idleTimeout = setTimeout(this.idled, idleDelay)
+                this.x.domain([2.0 * xMin, 2.0 * xMax])
+                this.y.domain([2.0 * yMin, 2.0 * yMax])
+            }
             else {
                 this.xAxis = d3.axisBottom(this.x)
-                .tickPadding(10)
+                    .tickPadding(10)
 
-            this.yAxis = d3.axisLeft(this.y)
-                .tickPadding(10)
+                this.yAxis = d3.axisLeft(this.y)
+                    .tickPadding(10)
 
                 // set the scale domains based on selection
-                this.x.domain([s[0][0], s[1][0]].map(this.x.invert, this.x));
-                this.y.domain([s[1][1], s[0][1]].map(this.y.invert, this.y));
-                
+                this.x.domain([s[0][0], s[1][0]].map(this.x.invert, this.x))
+                this.y.domain([s[1][1], s[0][1]].map(this.y.invert, this.y))
+
                 // https://github.com/d3/d3-brush/issues/10
-                if (!d3.event.sourceEvent) return;
-                
+                if (!d3.event.sourceEvent) return
+
                 // to set the brush movement to null. But doesnt do the required trick.
                 // Reason: maybe webpack
                 // https://github.com/d3/d3-brush/issues/10
-                d3.select(".brush").call(this.brush.move, null);
+                d3.select(".brush").call(this.brush.move, null)
             }
-            this.zoom();
+            this.zoom()
+            this.select()
         },
 
         idled() {
@@ -177,24 +203,24 @@ export default {
         zoom() {
             // for unzoom button; Needs fix
             this.zoomed = true
-            
+
             // adjust the scales
-            this.svg.select(".x-axis").transition(this.t).call(this.xAxis);
-            this.svg.select(".y-axis").transition(this.t).call(this.yAxis);
-            
+            this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
+            this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
+
             // Put circles back in view
             let self = this
             this.svg.selectAll(".circle" + this.id).transition(this.t)
-                .attr("cx", function (d) { return self.x(d['PC0'][0]); })
-                .attr("cy", function (d) { return self.y(d['PC1'][0]); });
-            
+                .attr("cx", function (d) { return self.x(d['PC0'][0]) })
+                .attr("cy", function (d) { return self.y(d['PC1'][0]) })
+
             // Clear brush selection box
             this.svg.selectAll(".selection")
                 .attrs({
-                    x:0,
-                    y:0,
+                    x: 0,
+                    y: 0,
                     width: 0,
-                    height:0
+                    height: 0
                 })
         },
 
@@ -205,16 +231,20 @@ export default {
             // reset the scale domains
             this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
             this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
-            
+
             // adjust the scale
-            this.svg.select(".x-axis").transition(this.t).call(this.xAxis);
-            this.svg.select(".y-axis").transition(this.t).call(this.yAxis);
-            
+            this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
+            this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
+
             // Put circles back
             let self = this
             this.svg.selectAll(".circle" + this.id).transition(this.t)
-                .attr("cx", function (d) { return self.x(d['PC0'][0]); })
-                .attr("cy", function (d) { return self.y(d['PC1'][0]); });
+                .attr("cx", function (d) { return self.x(d['PC0'][0]) })
+                .attr("cy", function (d) { return self.y(d['PC1'][0]) })
+        },
+
+        select() {
+            this.$parent.selectedIds = this.selectedIds
         }
 
     },
