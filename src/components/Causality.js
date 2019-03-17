@@ -16,7 +16,6 @@ export default {
         { key: 'metric', sortable: false },
         { key: 'IR', sortable: true },
         { key: 'VD', sortable: true },
-        { key: 'Causality', sortable: true },
       ],
       to_items: [],
       from_items: [],
@@ -32,18 +31,38 @@ export default {
   },
 
   methods: {
-    init(data) {
+    init () {
+
+    },
     
+    preprocess(data) {
+      for(let i = 0; i < data['from'].length; i++){
+        if(data['from'][i]['Causality'] == 1){
+          data['from'][i]['_rowVariant'] = 'success'
+        }
+        else {
+          data['from'][i]['_rowVariant'] = 'danger'
+        }
+      }
+      for(let i = 0; i < data['to'].length; i++){
+        if(data['to'][i]['Causality'] == 1){
+          data['to'][i]['_rowVariant'] = 'success'
+        }
+        else{
+          data['to'][i]['_rowVariant'] = 'danger'
+        }
+      }
+      return data
     },
 
     initVis(data) {
-      console.log(data)
+      data = this.preprocess(data)
       this.from_items = data['from']
       this.to_items = data['to']
     },
 
     clear(data) {
-      console.log(data)
+      this.preprocess(data)
       this.from_items = data['from']
       this.to_items = data['to']
     },

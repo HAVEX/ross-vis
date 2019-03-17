@@ -49,7 +49,7 @@ export default {
     },
     
     initVis (ts){
-      this.data = ts
+      console.log(ts)
       this.vis = p4(this.config).data(ts).view(this.views)
     },
 
@@ -59,12 +59,18 @@ export default {
       }
     },
 
+
+
     clearVis (ts){
-      let container = document.getElementById(this.id)
+      console.log(ts)
+
+    let container = document.getElementById(this.id)
       this.removeVis(container.querySelectorAll('.p6-viz'))
       this.vis = null
       this.current_views = []
       this.initVis(ts)
+      //this.vis.head().updateData(ts)
+     
     },
 
     visualize (metrics, callback, cpd, clusters) { 
