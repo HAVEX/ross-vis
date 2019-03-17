@@ -78,6 +78,11 @@ export default {
                 .call(this.yAxis);
 
             this.yDom = [0, 0]
+
+            this.brush = d3.brushX()
+                .extent([0, 0], [this.width, this.height])
+                .on('start', this.brushStart)
+                .on('end', this.brushEnd)
         },
 
         clearVis(ts) {
@@ -85,6 +90,10 @@ export default {
         },
 
         visualize(ts) {
+            this.brushSvg = this.svg.append('g')
+                .attr('class', 'brush')
+                .call(this.brush)
+
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
                 this.data = this.svg.append('path')
@@ -115,6 +124,33 @@ export default {
                         transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     })
             }
+        },
+
+        brushStart() {
+            x.domain(brush.empty() ? x2.domain() : brush.extent());
+            focus.select(".area").attr("d", area);
+            focus.select(".line").attr("d", line);
+            focus.select(".x.axis").call(xAxis);
+            // Reset zoom scale's domain
+            zoom.x(x);
+            updateDisplayDates();
+            setYdomain();
+        },
+
+
+        brushEnd() {
+            if (!d3.event.sourceEvent) return; // Only transition after input.
+            if (!d3.event.selection) return; // Ignore empty selections.
+            var d0 = d3.event.selection.map(this.x.invert),
+                d1 = d0.map(d3.timeDay.round);
+
+            // // If empty when rounded, use floor & ceil instead.
+            // if (d1[0] >= d1[1]) {
+            //     d1[0] = d3.timeDay.floor(d0[0]);
+            //     d1[1] = d3.timeDay.offset(d1[0]);
+            // }
+
+            d3.select(this).transition().call(d3.event.target.move, d1.map(this.x));
         },
     }
 }
