@@ -18,15 +18,52 @@ export default {
         height: 0,
         width: 0,
         metrics: null,
-        selectedTimeDomain: null,
         showCPD: false,
         selectedMeasure: null,
         methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
         selectedMethod: 'AFF',
         current_views: [],
+        selectedIds: [],
         cpds: [],
+        cluster: {},
+        yMin: 0,
+        yMax: 0,
+        isLabelled: false,
         colorSet: ["#F8A51F", "#F8394E", "#517FB2"]
     }),
+    watch: {
+        selectedIds: function (val) {
+            if (val.length == 1) {
+                d3.selectAll('path')
+                    .attrs({
+                        opacity: 1,
+                        'stroke-width': 1,
+                    })
+                for (let i = 0; i < val.length; i += 1) {
+                    d3.selectAll('[id="line' + val[i] + '"]')
+                        .attrs({
+                            opacity: 1,
+                            'stroke-width': 1
+                        })
+                }
+            }
+
+            d3.selectAll('.line')
+                .attrs({
+                    opacity: 0.5,
+                    'stroke-width': 0.5,
+                    stroke: 'rgba(0, 0, 0, 0.3)'
+                })
+            for (let i = 0; i < val.length; i += 1) {
+                d3.selectAll('[id="line' + val[i] + '"]')
+                    .attrs({
+                        opacity: 1,
+                        'stroke-width': 1.5,
+                        stroke: this.colorSet[this.cluster[val[i]]],
+                    })
+            }
+        }
+    },
     mounted() {
         this.id = 'time-overview' + this._uid
     },
@@ -35,31 +72,18 @@ export default {
             let visContainer = document.getElementById(this.id)
             this.width = visContainer.clientWidth
             this.height = window.innerHeight / 3 - 20
-            this.padding = { left: 50, top: 0, right: 60, bottom: 30 }
-            this.x = d3.scaleLinear().range([0, this.width - this.padding.right]);
+            this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
+            this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
             this.y = d3.scaleLinear().range([this.height - this.padding.bottom, 0]);
         },
 
-        initVis(ts) {
+        axis() {
             this.xAxis = d3.axisBottom(this.x)
                 .tickPadding(10)
-                .tickFormat(d3.format('0.1s'))
 
             this.yAxis = d3.axisLeft(this.y)
                 .tickPadding(10)
                 .tickFormat(d3.format('0.1s'))
-
-
-            this.line = d3.line()
-                .x((d, i) => this.x(i))
-                .y(d => this.y(d));
-
-            this.svg = d3.select('#' + this.id).append('svg')
-                .attrs({
-                    width: this.width,
-                    height: this.height,
-                    transform: 'translate(0, 0)'
-                })
 
             this.xAxisSVG = this.svg.append('g')
                 .attrs({
@@ -78,18 +102,82 @@ export default {
                 .call(this.yAxis);
 
             this.yDom = [0, 0]
+        },
 
+        label() {
+            this.isLabelled = true
+            this.svg.append("text")
+                .attr("transform", "translate(" + (this.width / 2) + " ," + (this.height + this.padding.top) + ")")
+                .style("text-anchor", "middle")
+                .text(this.selectedTimeDomain);
+
+            this.svg.append("g")
+                .attr("transform", "translate(" + (3) + " ," + (this.height / 2) + ")")
+                .append('text')
+                .attr("transform", "rotate(90)")
+                .style("text-anchor", "middle")
+                .text(this.plotMetric)
+        },
+
+        initLine() {
+            this.line = d3.line()
+                .x((d, i) => this.x(this.actualTime[i]))
+                .y((d) => this.y(d));
+        },
+
+        initBrush() {
             this.brush = d3.brushX()
-                .extent([0, 0], [this.width, this.height])
-                .on('start', this.brushStart)
+                .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
                 .on('end', this.brushEnd)
+        },
+
+        initVis(ts) {
+            this.initLine()
+            this.initBrush()
+            this.svg = d3.select('#' + this.id).append('svg')
+                .attrs({
+                    width: this.width,
+                    height: this.height,
+                    transform: 'translate(0, 0)'
+                })
+
+            this.axis()
+
+            
         },
 
         clearVis(ts) {
             this.visualize(ts)
         },
 
+        preprocess(data) {
+            let ret = []
+            for (let [id, res] of Object.entries(data)) {
+                if (ret[id] == undefined) {
+                    ret[id] = []
+                }
+                ret[id].push(res['time'])
+                ret[id].push(res['ts'])
+                ret[id].push(res['cluster'][0])
+                ret[id].push(id)
+
+                let max = Math.max.apply(null, res['time'])
+                if (max > this.yMax) {
+                    this.yMax = max
+                }
+
+                let min = Math.min.apply(null, res['time'])
+                if (min < this.yMin) {
+                    this.yMin = yMin
+                }
+            }
+            return ret
+        },
+
         visualize(ts) {
+            if (!this.isLabelled) {
+                this.label()
+            }
             this.brushSvg = this.svg.append('g')
                 .attr('class', 'brush')
                 .call(this.brush)
@@ -97,12 +185,14 @@ export default {
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
                 this.data = this.svg.append('path')
-                    .attr('class', 'line' + this.id);
+                    .attr('class', 'line line' + this.id);
 
                 let time = res['time']
+                this.actualTime = res[this.plotMetric]
                 let data = res['ts']
                 let cluster = res['cluster'][0]
-                this.x.domain([0, data.length - 1])
+                this.cluster[id] = res['cluster'][0]
+                this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
                 let yDomTemp = d3.extent(data)
                 if (yDomTemp[1] > this.yDom[1])
                     this.yDom[1] = yDomTemp[1]
@@ -117,6 +207,7 @@ export default {
                 this.data
                     .datum(data)
                     .attrs({
+                        'id': 'line' + id,
                         d: this.line,
                         stroke: this.colorSet[cluster],
                         'stroke-width': 1.0,
@@ -126,31 +217,20 @@ export default {
             }
         },
 
-        brushStart() {
-            x.domain(brush.empty() ? x2.domain() : brush.extent());
-            focus.select(".area").attr("d", area);
-            focus.select(".line").attr("d", line);
-            focus.select(".x.axis").call(xAxis);
-            // Reset zoom scale's domain
-            zoom.x(x);
-            updateDisplayDates();
-            setYdomain();
-        },
-
-
         brushEnd() {
             if (!d3.event.sourceEvent) return; // Only transition after input.
             if (!d3.event.selection) return; // Ignore empty selections.
-            var d0 = d3.event.selection.map(this.x.invert),
-                d1 = d0.map(d3.timeDay.round);
+            let d0 = d3.event.selection.map(this.x.invert)
+            let d1 = d3.event.selection.map(this.y)
 
+            console.log(d0, d1)
             // // If empty when rounded, use floor & ceil instead.
             // if (d1[0] >= d1[1]) {
             //     d1[0] = d3.timeDay.floor(d0[0]);
             //     d1[1] = d3.timeDay.offset(d1[0]);
             // }
 
-            d3.select(this).transition().call(d3.event.target.move, d1.map(this.x));
+            //d3.select(this).transition().call(d3.event.target.move, d1.map(this.x));
         },
     }
 }

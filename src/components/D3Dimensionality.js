@@ -1,5 +1,7 @@
 import * as d3 from 'd3'
+import { lasso } from './lasso';
 import template from '../html/D3Dimensionality.html'
+import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
 
 export default {
     name: 'D3Dimensionality',
@@ -13,6 +15,10 @@ export default {
         colorBy: null,
         colorSet: ["#F8A51F", "#F8394E", "#517FB2"],
         zoomed: false,
+        xMin: 0,
+        xMax: 0,
+        yMin: 0,
+        yMax: 0,
     }),
     mounted() {
         this.id = 'dim-overview' + this._uid
@@ -27,9 +33,7 @@ export default {
             this.y = d3.scaleLinear().range([this.height, 0]);
         },
 
-        initVis(ts) {
-            this.prefix = d3.formatPrefix(1.21e9);
-
+        axis(){
             this.xAxis = d3.axisBottom(this.x)
                 .tickPadding(10)
                 .tickFormat(d3.format('0.1s'))
@@ -38,57 +42,55 @@ export default {
                 .tickPadding(10)
                 .tickFormat(d3.format('0.1s'))
 
+            this.yDom = [0, 0]
+            
+            // this.xAxisSVG = this.svg.append('g')
+            //     .attrs({
+            //         transform: `translate(${this.padding.left}, ${this.height - this.padding.bottom})`,
+            //         class: 'x-axis',
+            //         'stroke-width': '2px'
+            //     })
+            //     .call(this.xAxis);
+
+            // this.yAxisSVG = this.svg.append('g')
+            //     .attrs({
+            //         transform: `translate(${this.padding.left}, ${this.padding.top})`,
+            //         class: 'y-axis',
+            //         'stroke-width': '2px'
+            //     })
+            //     .call(this.yAxis);
+
+        },
+
+        initVis(ts) {
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
                     width: this.width,
                     height: this.height,
                     transform: 'translate(0, 0)'
                 })
-
-            this.xAxisSVG = this.svg.append('g')
-                .attrs({
-                    transform: `translate(${this.padding.left}, ${this.height - this.padding.bottom})`,
-                    class: 'x-axis',
-                    'stroke-width': '2px'
-                })
-                .call(this.xAxis);
-
-            this.yAxisSVG = this.svg.append('g')
-                .attrs({
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`,
-                    class: 'y-axis',
-                    'stroke-width': '2px'
-                })
-                .call(this.yAxis);
-
-            this.yDom = [0, 0]
-
-            this.brush = d3.brush()
-                .on('brush', this.brush)
-                .on("end", this.brushended)
+                .style('stroke-width', 1)
+                .style('stroke', '#aaaaaa')
 
             // set the transition
             this.t = this.svg
                 .transition()
                 .duration(750);
-
         },
 
         clearVis(ts) {
             this.visualize(ts)
         },
 
-        visualize(ts) {
-            this.ts = ts
-            this.svg.append('g')
-                .attr('class', 'brush')
-                .call(this.brush)
+        preprocess(data) {
+            let ret = []
+            for (let [id, res] of Object.entries(data)) {
+                ret[id] = []
+                ret[id].push(res['PC0'][0])
+                ret[id].push(res['PC1'][0])
+                ret[id].push(res['cluster'][0])
+                ret[id].push(id)
 
-            this.xMin = 0
-            this.xMax = 0
-            this.yMin = 0
-            this.yMax = 0
-            for (let [id, res] of Object.entries(this.ts)) {
                 let x = res['PC0'][0]
                 let y = res['PC1'][0]
 
@@ -104,64 +106,127 @@ export default {
                 if (y > this.yMax) {
                     this.yMax = y
                 }
-            }
 
+            }
+            return ret
+        },
+
+        visualize(ts) {
+            this.data = this.preprocess(ts)
             this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
             this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
 
+            // this.xAxisSVG
+            //     .call(this.xAxis)
+
+            // this.yAxisSVG
+            //     .call(this.yAxis)
+
             d3.selectAll('.circle' + this.id).remove()
-            for (let [id, res] of Object.entries(ts)) {
+            let self = this
+            this.circles = this.svg.selectAll('circle')
+                .data(this.data)
+                .enter()
+                .append('circle')
+                .attrs({
+                    class: (d) => { return 'dot' + d[3] + ' circle' + this.id },
+                    stroke: (d) => { return self.colorSet[d[2]] },
+                    r: 3,
+                    'stroke-width': 1.0,
+                    fill: (d) => { return self.colorSet[d[2]] },
+                    id: (d) => { return 'dot' + d[3] },
+                    cx: (d) => { return self.x(d[0]) },
+                    cy: (d) => { return self.y(d[1]) },
+                })
 
-                let time = res['time']
-                let data = res['ts']
-                let cluster = res['cluster'][0]
+            this.lasso = lasso()
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(this.circles)
+                .targetArea(this.svg)
+                .on("start", this.lassoStart)
+                .on("draw", this.lassoDraw)
+                .on("end", this.lassoEnd);
 
-                this.xAxisSVG
-                    .call(this.xAxis)
+            this.svg.call(this.lasso)
+        },
 
-                this.yAxisSVG
-                    .call(this.yAxis)
+        // ====================================
+        // Interaction functions
+        // ====================================
+        lassoStart() {
+            this.lasso.items()
+                .attr("r", 3) // reset size
+                .classed("not_possible", true)
+                .classed("selected", false);
+        },
 
-                let self = this
-                this.data = this.svg.append('circle')
-                    .datum(res)
+        lassoDraw() {
+            // Style the possible dots
+            this.lasso.possibleItems()
+                .classed("not_possible", false)
+                .classed("possible", true);
+
+            // Style the not possible dot
+            this.lasso.notPossibleItems()
+                .classed("not_possible", true)
+                .classed("possible", false);
+        },
+
+        lassoEnd() {
+            d3.selectAll('circle')
+                .attrs({
+                    opacity: 0.5,
+                })
+
+            this.selectedIds = []
+            // Reset the color of all dots
+            this.lasso.items()
+                .classed("not_possible", false)
+                .classed("possible", false)
+
+            // Style the selected dots
+            this.lasso.selectedItems()
+                .classed("selected", true)
+                .attr("r", 3)
+                .attr("id", (d) => { this.selectedIds.push(d[3]) })
+                .attr("opacity", 1)
+
+            // Reset the style of the not selected dots
+            this.lasso.notSelectedItems()
+                .attr("r", 3)
+                .attr("opacity", 0.5);
+
+            this.$parent.selectedIds = this.selectedIds
+
+            for (let i = 0; i < this.selectedIds.length - 1; i += 1) {
+                d3.selectAll('[class="dot' + this.selectedIds[i] + '"]')
+                    .classed('selected', true)
                     .attrs({
-                        'class': (d) => { return 'circle' + this.id },
-                        stroke: this.colorSet[cluster],
-                        r: 3,
-                        'stroke-width': 1.0,
-                        fill: this.colorSet[cluster],
-                        'id': (d) => { return id },
-                        cx: (d) => { return self.x(d['PC0'][0]) },
-                        cy: (d) => { return self.y(d['PC1'][0]) },
+                        opacity: 1,
                     })
             }
         },
 
+        //==================================
+        // Not used
+        //==================================
         findIdsInRegion(xMin, xMax, yMin, yMax) {
             let ret = []
             console.log(xMin, xMax, yMin, yMax)
+            xMin = this.x(xMin)
+            xMax = this.x(xMax)
+            yMin = this.y(yMin)
+            yMax = this.y(yMax)
             for (let [idx, res] of Object.entries(this.ts)) {
-                let xVal = this.x(res['PC0'][0])
-                let yVal = this.y(res['PC1'][0])
-                console.log(xVal, yVal)
+                let xVal = res['PC0'][0]
+                let yVal = res['PC1'][0]
                 if (xVal >= xMin && xVal <= xMax && yVal >= yMin && yVal <= yMax) {
                     ret.push(idx)
                 }
             }
             console.log(ret)
             return ret
-        },
-
-        brush() {
-            if(d3.event.selection != null ) {
-                let coords = d3.brushSelection(this)
-                console.log(coords)
-                this.selectedIds = this.findIdsInRegion(
-                    coords[0][0], coords[0][1], coords[1][0], coords[1][1]
-                )
-
-            }
         },
 
         brushended() {
@@ -174,15 +239,20 @@ export default {
                 this.y.domain([2.0 * yMin, 2.0 * yMax])
             }
             else {
-                this.xAxis = d3.axisBottom(this.x)
-                    .tickPadding(10)
+                let d0 = s.map(this.x.invert)
+                let d1 = s.map(this.y.invert)
 
-                this.yAxis = d3.axisLeft(this.y)
-                    .tickPadding(10)
+                console.log(d0, d1)
+
+                this.selectedIds = this.findIdsInRegion(d0[0], d0[1], d1[0], d1[1])
+
 
                 // set the scale domains based on selection
                 this.x.domain([s[0][0], s[1][0]].map(this.x.invert, this.x))
                 this.y.domain([s[1][1], s[0][1]].map(this.y.invert, this.y))
+
+
+                // console.log(d3.brushSelection(this.brushSvg.node()))
 
                 // https://github.com/d3/d3-brush/issues/10
                 if (!d3.event.sourceEvent) return
@@ -242,11 +312,6 @@ export default {
                 .attr("cx", function (d) { return self.x(d['PC0'][0]) })
                 .attr("cy", function (d) { return self.y(d['PC1'][0]) })
         },
-
-        select() {
-            this.$parent.selectedIds = this.selectedIds
-        }
-
     },
 }
 

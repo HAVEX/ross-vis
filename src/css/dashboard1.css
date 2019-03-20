@@ -9,3 +9,38 @@
 .resultContainer {
   height: 350px;
 }
+
+.lasso path {
+  stroke: rgb(80,80,80);
+  stroke-width:2px;
+}
+
+.lasso .drawn {
+  fill-opacity:.05 ;
+}
+
+.lasso .loop_close {
+  fill:none;
+  stroke-dasharray: 4,4;
+}
+
+.lasso .origin {
+  fill:#3399FF;
+  fill-opacity:.5;
+}
+
+.not_possible {
+  fill: rgb(200,200,200);
+  opacity: 0.5;
+}
+
+.possible {
+  stroke: #EC888C;
+  opacity: 0.5;
+}
+
+.selected {
+  stroke: black;
+  stroke-width: 1px;
+  opacity: 1;
+}

@@ -39,11 +39,6 @@ export default {
       [23, 190, 207],
       [127, 127, 127]
     ],
-    clusterColors: [
-      [227, 119, 194],
-      [188, 189, 34],
-      [23, 190, 207],
-      [127, 127, 127]],
     prev_comm_time: null,
     clusterMap: {},
   }),

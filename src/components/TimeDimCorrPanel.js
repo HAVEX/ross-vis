@@ -8,7 +8,6 @@ import D3Dimensionality from './D3Dimensionality'
 
 import ControlPanel from './ControlPanel'
 import Causality from './Causality'
-import { ifError } from 'assert';
 
 export default {
   name: 'TimeDimCorrPanel',
@@ -42,9 +41,19 @@ export default {
     timeAttribute: 'time',
     timeCluster: {},
     PCACluster: {},
-    colorSet: ['teal', 'purple', 'orange', 'red', 'green', 'black'],
+    selectedIds: [],
     useD3: true,
   }),
+  watch: {
+    selectedIds: function (val) {
+      if(this.useD3){
+        this.$refs.D3TimeSeries.selectedIds = val
+      }
+      else{
+        this.$refs.TimeSeries.selectedIds = val
+      }
+    }
+  },
   methods: {
     init() {
       console.log('Init ', this.plotMetric, this.timeDomain, this.granularity)
@@ -118,17 +127,17 @@ export default {
           let current_time = zero_index_data[clusterType + '_times'][time]
           if (clusterType == 'normal') {
             ret.data.push({
-              'time': _data[time],
+              'ts': _data[time],
               'cluster': _cluster,
-              'index': current_time,
+              'time': current_time,
               'id': id
             })
           }
           else {
             ret.data.push({
-              'time': _data[time],
+              'ts': _data[time],
               'cluster': _cluster,
-              'index': current_time
+              'time': current_time
             })
           }
         }
@@ -198,38 +207,8 @@ export default {
             ret[keyUp_data][key].push(_data)
           }
         }
+        ret[keyUp_data][this.plotMetric] = cstore.uniqueValues.time
       }
-      return ret
-    },
-
-    processD3Dimensionality(cstore, mapBy){ 
-      let ret = {}
-
-      let cstore_id = {}
-      for (let i = 0; i < cstore.keys.length; i += 1) {
-        let key = cstore.keys[i]
-        cstore_id[key] = i
-      }
-
-      let keyUp = mapBy
-      for(let i = 0; i < cstore.size; i += 1){
-        let keyUp_index = cstore_id[keyUp]
-        let keyUp_data = cstore[keyUp_index][i]
-        if (ret[keyUp_data] == undefined) {
-          ret[keyUp_data] = {}
-        }
-        for (let key in cstore_id) {
-          if (cstore_id.hasOwnProperty(key) && key != keyUp) {
-            if (ret[keyUp_data][key] == undefined) {
-              ret[keyUp_data][key] = []
-            }
-            let _index = cstore_id[key]
-            let _data = cstore[_index][i]
-            ret[keyUp_data][key].push(_data)
-          }
-        }
-      }
-
       return ret
     },
 
@@ -305,13 +284,22 @@ export default {
         this.$refs.TimeSeries.clearVis(this.normal_result)
         this.$refs.Dimensionality.clearVis(this.pca_result)
       }
-      this.$refs.Causality.clear(this.causality_result)
+      // this.$refs.Causality.clear(this.causality_result)
       this.visualize
     },
 
     reset() {
+      this.$refs.D3TimeSeries.selectedMeasure = this.$parent.measure
+      this.$refs.D3TimeSeries.isAggregated = this.$parent.isAggregated
+      this.$refs.D3TimeSeries.selectedMetrics = this.plotMetric
+      this.$refs.D3TimeSeries.plotMetric = this.plotMetric
+      this.$refs.D3TimeSeries.selectedTimeDomain = this.timeDomain
+      this.$refs.D3TimeSeries.clusters = 'cluster'
+      this.$refs.D3TimeSeries.groupBy = 'id'
+      this.$refs.D3TimeSeries.timeAttribute = 'time'
+      this.$refs.D3TimeSeries.count = this.stream_count
+
       if (!this.initVis) {
-        console.log('initializing vis', this.plotMetric)
         if (this.useD3) {
           this.$refs.D3TimeSeries.initVis(this.normal_result)
           this.$refs.D3Dimensionality.initVis(this.pca_result)
@@ -320,7 +308,7 @@ export default {
           this.$refs.TimeSeries.initVis(this.normal_result)
           this.$refs.Dimensionality.initVis(this.pca_result)
         }
-        this.$refs.Causality.initVis(this.causality_result)
+        // this.$refs.Causality.initVis(this.causality_result)
         this.initVis = true
       }
       else {
@@ -333,7 +321,7 @@ export default {
           this.$refs.TimeSeries.clearVis(this.normal_result)
           this.$refs.Dimensionality.clearVis(this.pca_result)
         }
-        this.$refs.Causality.clear(this.causality_result)
+        // this.$refs.Causality.clear(this.causality_result)
         this.selectedTimeInterval = null
         this.visualize()
       }
@@ -357,30 +345,14 @@ export default {
 
 
     updateTimeSeries(callback) {
-      if (this.useD3) {
-        this.$refs.D3TimeSeries.selectedMeasure = this.$parent.measure
-        this.$refs.D3TimeSeries.isAggregated = this.$parent.isAggregated
-        this.$refs.D3TimeSeries.selectedMetrics = this.plotMetric
-        this.$refs.D3TimeSeries.plotMetric = this.plotMetric
-        this.$refs.D3TimeSeries.selectedTimeDomain = this.timeDomain
-        this.$refs.D3TimeSeries.clusters = 'cluster'
-        this.$refs.D3TimeSeries.colorSet = this.colorSet
-        this.$refs.D3TimeSeries.groupBy = 'id'
-        this.$refs.D3TimeSeries.timeAttribute = 'time'
-        this.$refs.D3TimeSeries.count = this.stream_count
-        this.$refs.D3TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping)
-      }
-      else {
-        this.$refs.TimeSeries.selectedMeasure = this.$parent.measure
-        this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
-        this.$refs.TimeSeries.selectedMetrics = this.plotMetric
-        this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
-        this.$refs.TimeSeries.clusters = 'cluster'
-        this.$refs.TimeSeries.colorSet = this.colorSet
-        this.$refs.TimeSeries.groupBy = 'id'
-        this.$refs.TimeSeries.timeAttribute = 'time'
-        this.$refs.TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping)
-      }
+      this.$refs.TimeSeries.selectedMeasure = this.$parent.measure
+      this.$refs.TimeSeries.isAggregated = this.$parent.isAggregated
+      this.$refs.TimeSeries.selectedMetrics = this.plotMetric
+      this.$refs.TimeSeries.selectedTimeDomain = this.timeDomain
+      this.$refs.TimeSeries.clusters = 'cluster'
+      this.$refs.TimeSeries.groupBy = 'id'
+      this.$refs.TimeSeries.timeAttribute = 'time'
+      this.$refs.TimeSeries.visualize([this.plotMetric], callback, this.cpd, this.cluster_mapping)
     },
 
 
@@ -398,6 +370,7 @@ export default {
         this.updateTimeSeries(callback)
         this.updateDimensionality()
       }
+      
     }
   }
 }
