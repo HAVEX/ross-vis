@@ -131,7 +131,7 @@ export default {
                 .on('end', this.brushEnd)
         },
 
-        initVis(ts) {
+        initVis(ts) { 
             this.initLine()
             this.initBrush()
             this.svg = d3.select('#' + this.id).append('svg')
@@ -141,9 +141,7 @@ export default {
                     transform: 'translate(0, 0)'
                 })
 
-            this.axis()
-
-            
+            this.axis()  
         },
 
         clearVis(ts) {
@@ -220,10 +218,16 @@ export default {
         brushEnd() {
             if (!d3.event.sourceEvent) return; // Only transition after input.
             if (!d3.event.selection) return; // Ignore empty selections.
-            let d0 = d3.event.selection.map(this.x.invert)
-            let d1 = d3.event.selection.map(this.y)
 
-            console.log(d0, d1)
+            // There is some bug here, it does not return the correct this.x.invert
+            let d0 = d3.event.selection.map(this.x.invert)
+            let correction = 4824.0
+            
+            d0[0] = d0[0] - correction
+            d0[1] = d0[1] - correction*1.5
+            this.$parent.addBrushTime.push(d0)
+
+
             // // If empty when rounded, use floor & ceil instead.
             // if (d1[0] >= d1[1]) {
             //     d1[0] = d3.timeDay.floor(d0[0]);

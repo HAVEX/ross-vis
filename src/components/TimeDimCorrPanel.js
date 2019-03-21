@@ -43,6 +43,7 @@ export default {
     PCACluster: {},
     selectedIds: [],
     useD3: true,
+    addBrushTime: [],
   }),
   watch: {
     selectedIds: function (val) {
@@ -52,7 +53,11 @@ export default {
       else{
         this.$refs.TimeSeries.selectedIds = val
       }
-    }
+    },
+    addBrushTime: function(val) {
+      this.$parent.newCommPanel = true
+      this.$parent.timeIntervals.push([val[0][0], val[0][1]])
+    } 
   },
   methods: {
     init() {
@@ -308,7 +313,7 @@ export default {
           this.$refs.TimeSeries.initVis(this.normal_result)
           this.$refs.Dimensionality.initVis(this.pca_result)
         }
-        // this.$refs.Causality.initVis(this.causality_result)
+        this.$refs.Causality.initVis(this.causality_result)
         this.initVis = true
       }
       else {
@@ -321,7 +326,7 @@ export default {
           this.$refs.TimeSeries.clearVis(this.normal_result)
           this.$refs.Dimensionality.clearVis(this.pca_result)
         }
-        // this.$refs.Causality.clear(this.causality_result)
+        this.$refs.Causality.clear(this.causality_result)
         this.selectedTimeInterval = null
         this.visualize()
       }

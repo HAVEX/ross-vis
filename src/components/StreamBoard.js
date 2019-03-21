@@ -41,6 +41,7 @@ export default {
     ],
     prev_comm_time: null,
     clusterMap: {},
+    newCommPanel: false ,
   }),
 
   watch: {
@@ -49,6 +50,14 @@ export default {
     },
     plotData1: function() {
       return this.plotData2
+    },
+    timeIntervals: function() {
+      console.log(this.timeIntervals, this.newCommPanel)
+      if(this.newCommPanel){
+        console.log('a')
+        this.updateCommunication()
+        this.newCommPanel = false
+      }
     }
   },
 
