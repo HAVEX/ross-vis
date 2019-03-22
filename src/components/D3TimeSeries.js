@@ -29,7 +29,8 @@ export default {
         yMin: 0,
         yMax: 0,
         isLabelled: false,
-        colorSet: ["#F8A51F", "#F8394E", "#517FB2"]
+        colorSet: ["#F8A51F", "#F8394E", "#517FB2"], 
+        brushes: [],
     }),
     watch: {
         selectedIds: function (val) {
@@ -125,15 +126,19 @@ export default {
                 .y((d) => this.y(d));
         },
 
-        initBrush() {
+        initBrushes() {
             this.brush = d3.brushX()
                 .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
                 .on('end', this.brushEnd)
+
+            this.brushSvg = this.svg.append('g')
+                .attr('class', 'brushes')
+
+            this.newBrush()
         },
 
         initVis(ts) { 
             this.initLine()
-            this.initBrush()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
                     width: this.width,
@@ -141,6 +146,7 @@ export default {
                     transform: 'translate(0, 0)'
                 })
 
+            this.initBrushes()
             this.axis()  
         },
 
@@ -172,14 +178,46 @@ export default {
             return ret
         },
 
+        newBrush(){
+            this.brushes.push({id: this.brushes.length, brush: this.brush})
+        },
+
+        drawBrushes(){
+
+            let brushSelection = this.brushSvg
+                .selectAll('.brush')
+                .data(this.brushes, (d) => d.id)
+
+            brushSelection.enter()
+                .insert("g", ".brush")
+                .attr("class", "brush")
+                .attr("id", (brush) => "brush-"+ brush.id)
+                .each( (brushObj) => { brushObj.brush(d3.select(this)) })
+
+            brushSelection.each( (brushObj) =>{
+                d3.select(this)
+                    .attr('class', 'brush')
+                    .selectAll('.overlay')
+                    .style('pointer-events', () => {
+                        let brush = brushObj.brush
+                        if (brushObj.id == brushes.length - 1 && brush !== undefined){
+                            return 'all'
+                        }
+                        else{
+                            return 'none'
+                        }
+                    })
+            })
+
+            brushSelection.exit()
+                .remove()
+        },  
+
         visualize(ts) {
             if (!this.isLabelled) {
                 this.label()
             }
-            this.brushSvg = this.svg.append('g')
-                .attr('class', 'brush')
-                .call(this.brush)
-
+            
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
                 this.data = this.svg.append('path')
@@ -219,6 +257,17 @@ export default {
             if (!d3.event.sourceEvent) return; // Only transition after input.
             if (!d3.event.selection) return; // Ignore empty selections.
 
+            // check if the latest brush has a selection.
+            let lastBrushID = this.brushes[this.brushes.length - 1].id
+            let lastBrush = document.getElementById('brush' + lastBrushID)
+            let selection = d3.brushSelection(lastBrush)
+
+            if(selection && selection[0] !== selection[1]){
+                this.newBrush()
+            }
+
+            drawBrushes()
+
             // There is some bug here, it does not return the correct this.x.invert
             let d0 = d3.event.selection.map(this.x.invert)
             let correction = 4824.0
@@ -226,7 +275,6 @@ export default {
             d0[0] = d0[0] - correction
             d0[1] = d0[1] - correction*1.5
             this.$parent.addBrushTime.push(d0)
-
 
             // // If empty when rounded, use floor & ceil instead.
             // if (d1[0] >= d1[1]) {
