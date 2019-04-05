@@ -62,6 +62,10 @@ export default {
 
         },
 
+        label() {
+            
+        },
+
         initVis(ts) {
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
@@ -78,7 +82,7 @@ export default {
                 .duration(750);
         },
 
-        clearVis(ts) {
+        reset(ts) {
             this.visualize(ts)
         },
 

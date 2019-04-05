@@ -4,6 +4,8 @@ import "d3-selection-multi";
 import template from '../html/D3TimeSeries.html'
 export { selection };
 
+// References: http://bl.ocks.org/ludwigschubert/0236fa8594c4b02711b2606a8f95f605
+
 export default {
     name: 'D3TimeSeries',
     template: template,
@@ -31,6 +33,7 @@ export default {
         isLabelled: false,
         colorSet: ["#F8A51F", "#F8394E", "#517FB2"], 
         brushes: [],
+        cpds: [],
     }),
     watch: {
         selectedIds: function (val) {
@@ -127,17 +130,14 @@ export default {
         },
 
         initBrushes() {
-            this.brush = d3.brushX()
-                .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
-                .on('end', this.brushEnd)
-
             this.brushSvg = this.svg.append('g')
                 .attr('class', 'brushes')
 
             this.newBrush()
+            this.drawBrushes();
         },
 
-        initVis(ts) { 
+        initVis() { 
             this.initLine()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
@@ -150,8 +150,8 @@ export default {
             this.axis()  
         },
 
-        clearVis(ts) {
-            this.visualize(ts)
+        reset(ts, cpd) {
+            this.visualize(ts, cpd)
         },
 
         preprocess(data) {
@@ -179,23 +179,33 @@ export default {
         },
 
         newBrush(){
-            this.brushes.push({id: this.brushes.length, brush: this.brush})
+            let id = this.brushes.length
+            let brush = d3.brushX()
+                .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
+                .on('end', this.brushEnd)
+            this.brushes.push({id, brush})            
         },
 
         drawBrushes(){
 
             let brushSelection = this.brushSvg
                 .selectAll('.brush')
-                .data(this.brushes, (d) => d.id)
+                .data(this.brushes)
 
+            let brush = d3.brushX()
+                .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
+                .on('end', this.brushEnd)
+
+                
             brushSelection.enter()
                 .insert("g", ".brush")
                 .attr("class", "brush")
                 .attr("id", (brush) => "brush-"+ brush.id)
-                .each( (brushObj) => { brushObj.brush(d3.select(this)) })
+                // .each( (brushObj) => { brushObj.brush(d3.select('#brush' + brushObj.id)) })
+                .call(brush)
 
             brushSelection.each( (brushObj) =>{
-                d3.select(this)
+                d3.select('#brush' + brushObj.id)
                     .attr('class', 'brush')
                     .selectAll('.overlay')
                     .style('pointer-events', () => {
@@ -209,19 +219,42 @@ export default {
                     })
             })
 
-            brushSelection.exit()
-                .remove()
+            // brushSelection.exit()
+                // .remove()
         },  
 
-        visualize(ts) {
-            if (!this.isLabelled) {
+        drawCPDs(){
+            d3.selectAll('.cpdline').remove()
+
+            let xPoints = [];
+            for(let i = 0; i < this.cpds.length; i += 1){
+                xPoints.push(this.actualTime[this.cpds[i]])
+            }
+            console.log(xPoints)
+            this.svg.append('line')
+                .data(xPoints)
+                .attr('class', 'cpdline')
+                .attr('x1', (d) => { return this.x(d) })
+                .attr('y1', 0)
+                .attr('x2', (d) => { return this.x(d) })
+                .attr('y2', 20)
+        },
+
+        visualize(ts, cpd) {
+            if (!this.isLabelled && !this.updateLabels) {
                 this.label()
             }
+
+            if(cpd == 1){
+                this.cpds.push(this.$parent.stream_count - 1)
+            }
             
+            this.drawCPDs()
+
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
                 this.data = this.svg.append('path')
-                    .attr('class', 'line line' + this.id);
+                    .attr('class', 'line line' + this.id)
 
                 let time = res['time']
                 this.actualTime = res[this.plotMetric]
@@ -259,14 +292,14 @@ export default {
 
             // check if the latest brush has a selection.
             let lastBrushID = this.brushes[this.brushes.length - 1].id
-            let lastBrush = document.getElementById('brush' + lastBrushID)
+            let lastBrush = document.getElementById('brush-' + lastBrushID)
             let selection = d3.brushSelection(lastBrush)
 
-            if(selection && selection[0] !== selection[1]){
+            // if(selection && selection[0] !== selection[1]){
                 this.newBrush()
-            }
+            // }
 
-            drawBrushes()
+            this.drawBrushes()
 
             // There is some bug here, it does not return the correct this.x.invert
             let d0 = d3.event.selection.map(this.x.invert)

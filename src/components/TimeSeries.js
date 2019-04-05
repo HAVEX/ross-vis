@@ -19,18 +19,18 @@ export default {
     showCPD: false,
     selectedMeasure: null,
     methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-    selectedMethod :'AFF',
+    selectedMethod: 'AFF',
     current_views: [],
     cpds: []
   }),
-  mounted () {
-    this.id = this._uid +'-overview'
+  mounted() {
+    this.id = this._uid + '-overview'
   },
   methods: {
-    init () {
+    init() {
       let visContainer = document.getElementById(this.id)
-      this.width = visContainer.clientWidth 
-      this.height = window.innerHeight/3 - 20 
+      this.width = visContainer.clientWidth
+      this.height = window.innerHeight / 3 - 20
       this.config = {
         container: this.id,
         viewport: [this.width, this.height]
@@ -39,61 +39,55 @@ export default {
         id: 'view-right',
         width: this.width / 2,
         height: this.height,
-        gridlines: {y: true},
+        gridlines: { y: true },
         enableInteraction: true,
-        padding: {left: 70, right: 150, top: 50, bottom: 80},
+        padding: { left: 70, right: 150, top: 50, bottom: 80 },
         offset: [this.width / 2, 0],
         clusters: null,
-        colorEncoding: 'cluster', 
+        colorEncoding: 'cluster',
       }]
     },
-    
-    initVis (ts){
-      console.log(ts)
+
+    initVis(ts) {
       this.vis = p4(this.config).data(ts).view(this.views)
     },
 
     removeVis(elms) {
-      for(let i=0; i < elms.length; i++){
+      for (let i = 0; i < elms.length; i++) {
         elms[i].remove()
       }
     },
 
-
-
-    clearVis (ts){
-      console.log(ts)
-
-    let container = document.getElementById(this.id)
+    reset(ts) {
+      let container = document.getElementById(this.id)
       this.removeVis(container.querySelectorAll('.p6-viz'))
       this.vis = null
       this.current_views = []
       this.initVis(ts)
       //this.vis.head().updateData(ts)
-     
     },
 
-    visualize (metrics, callback, cpd, clusters) { 
+    visualize(metrics, callback, cpd, clusters) {
       this.metrics = metrics
-      if(cpd == 1){
+      if (cpd == 1) {
         this.cpds.push(this.$parent.stream_count - 1)
       }
 
       let viewSetting = {
-        gridlines: {y: true},
-        padding: {left: 70, right: 60, top: 10, bottom: 30},
+        gridlines: { y: true },
+        padding: { left: 70, right: 60, top: 10, bottom: 30 },
       }
 
       let collection = {}
       metrics.forEach((metric, mi) => {
         collection[metric] = {}
         collection[metric]['$' + this.selectedMeasure] = metric
-        collection['cluster'] = {$max: 'cluster'}
+        collection['cluster'] = { $max: 'cluster' }
         let view = Object.assign({}, viewSetting)
         view.id = 'view' + mi
         view.width = this.width
         view.height = this.height / metrics.length
-        view.offset = [0, this.height - view.height * (mi+1)]
+        view.offset = [0, this.height - view.height * (mi + 1)]
         this.current_views.push(view)
       })
 
@@ -125,14 +119,14 @@ export default {
         }
       }
 
-      if(this.colorEncoding) {
+      if (this.colorEncoding) {
         vmap.color = this.colorEncoding
         vmap.colors = {
           range: this.colorSet,
           interpolate: false
         }
 
-        collection[this.colorEncoding] = {$max: this.colorEncoding}
+        collection[this.colorEncoding] = { $max: this.colorEncoding }
       }
 
       let aggregation = [this.timeAttribute]
@@ -146,19 +140,19 @@ export default {
         "interpolate": false
       }
 
-      collection['cluster'] = {$max: 'cluster'}
+      collection['cluster'] = { $max: 'cluster' }
 
 
       this.vis.view(this.current_views).head()
-      .aggregate({
-        $group: aggregation,
-        $collect: collection
-      })
-      .visualize(
-        metrics.map((metric, mi) => {
-          return Object.assign({id: 'view' + mi, y: metric}, vmap)
+        .aggregate({
+          $group: aggregation,
+          $collect: collection
         })
-      )
+        .visualize(
+          metrics.map((metric, mi) => {
+            return Object.assign({ id: 'view' + mi, y: metric }, vmap)
+          })
+        )
 
 
       this.vis.annotate({
@@ -167,11 +161,11 @@ export default {
         size: 3,
         color: 'red',
         brush: {
-          callback: function(s) {
+          callback: function (s) {
             console.log(s)
           }
         },
-        position: {values: this.cpds} // this set the positions of the vlines
+        position: { values: this.cpds } // this set the positions of the vlines
       })
     }
   }

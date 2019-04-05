@@ -164,7 +164,7 @@ export default {
             ignoreDiagonal: !this.showIntraComm,
             size: 2,
             vmap: { color: 'CommData' },
-            colors: ['steelblue', 'red'],
+            colors: ['teal', 'orange'],
             colorDomain: colorDomains[0]
           },
         ]
@@ -189,6 +189,8 @@ export default {
           layerSpec.vmap = {color: 'clusterId'}
         }
 
+
+        console.log(result)
         metrics.forEach( (metric, mi) => {
           let layer = Object.assign({}, layerSpec)
           layer.data = metricData

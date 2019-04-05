@@ -52,9 +52,7 @@ export default {
       return this.plotData2
     },
     timeIntervals: function() {
-      console.log(this.timeIntervals, this.newCommPanel)
       if(this.newCommPanel){
-        console.log('a')
         this.updateCommunication()
         this.newCommPanel = false
       }

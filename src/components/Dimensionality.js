@@ -1,6 +1,5 @@
 import p4 from 'p4'
 import template from '../html/Dimensionality.html'
-import axios from 'axios'
 
 export default {
   name: 'Dimensionality',
@@ -51,7 +50,7 @@ export default {
       }
     },
 
-    clearVis (ts){
+    reset (ts){
       let container = document.getElementById(this.id)
       this.removeVis(container.querySelectorAll('.p6-viz'))
       this.vis = null

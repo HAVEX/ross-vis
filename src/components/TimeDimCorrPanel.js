@@ -282,15 +282,14 @@ export default {
 
     clear() {
       if (this.useD3) {
-        this.$refs.D3TimeSeries.clearVis(this.normal_result)
-        this.$refs.D3Dimensionality.clearVis(this.pca_result)
+        this.$refs.D3TimeSeries.reset(this.normal_result, this.cpd)
+        this.$refs.D3Dimensionality.reset(this.pca_result)
       }
       else {
-        this.$refs.TimeSeries.clearVis(this.normal_result)
-        this.$refs.Dimensionality.clearVis(this.pca_result)
+        this.$refs.TimeSeries.reset(this.normal_result)
+        this.$refs.Dimensionality.reset(this.pca_result)
       }
-      // this.$refs.Causality.clear(this.causality_result)
-      this.visualize
+      this.$refs.Causality.clear(this.causality_result)
     },
 
     reset() {
@@ -306,7 +305,7 @@ export default {
 
       if (!this.initVis) {
         if (this.useD3) {
-          this.$refs.D3TimeSeries.initVis(this.normal_result)
+          this.$refs.D3TimeSeries.initVis(this.normal_result, this.cpd)
           this.$refs.D3Dimensionality.initVis(this.pca_result)
         }
         else {
@@ -318,20 +317,18 @@ export default {
       }
       else {
         if (this.useD3) {
-          this.$refs.D3TimeSeries.clearVis(this.normal_result)
-          this.$refs.D3Dimensionality.clearVis(this.pca_result)
-
+          this.$refs.D3TimeSeries.reset(this.normal_result, this.cpd)
+          this.$refs.D3Dimensionality.reset(this.pca_result)
         }
         else {
-          this.$refs.TimeSeries.clearVis(this.normal_result)
-          this.$refs.Dimensionality.clearVis(this.pca_result)
+          this.$refs.TimeSeries.reset(this.normal_result)
+          this.$refs.Dimensionality.reset(this.pca_result)
         }
         this.$refs.Causality.clear(this.causality_result)
         this.selectedTimeInterval = null
         this.visualize()
       }
     },
-
 
     updateDimensionality() {
       if (this.useD3) {

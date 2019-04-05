@@ -120,12 +120,16 @@ export default {
     updatePlotMetric1() {
       this.clear()
       console.log("Change in metric detected : [", this.plotMetric1, "]")
-      this.updateView()
+      this.$refs.D3TimeSeries.updateLabels = true;
+      Vue.nextTick(() => {
+        this.$refs.StreamBoard.update()
+      })
     },
 
     updatePlotMetric2() {
       console.log("Change in metric detected : [", this.plotMetric2, "]")
       this.clear()
+      this.$refs.D3TimeSeries.updateLabels = true;
       Vue.nextTick(() => {
         this.$refs.StreamBoard.update()
       })     
