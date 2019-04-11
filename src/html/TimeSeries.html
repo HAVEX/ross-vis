@@ -37,6 +37,12 @@
     </v-flex>
     <v-spacer></v-spacer>
     <v-btn icon>
+      <v-icon v-on:click="backward()">skip_previous</v-icon>
+    </v-btn>
+    <v-btn icon>
+      <v-icon v-on:click="forward()">skip_next</v-icon>
+    </v-btn>
+    <v-btn icon>
       <v-icon v-on:click="reset()">refresh</v-icon>
     </v-btn>
   </v-toolbar>

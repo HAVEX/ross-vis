@@ -14,6 +14,8 @@ export default {
     width: 0,
     metrics: [],
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
+    timeRange: [0, 10],
+    timeValues: null,
     granularities: ['System', 'PE', 'KP'],
     measures: ['avg', 'sum', 'max', 'min'],
     selectedTimeDomain: 'LastGvt',
@@ -54,11 +56,24 @@ export default {
         padding: {left: 100, right: 20, top: 20, bottom: 50},
       }
       this.vis = p4(config).data(this.data)
+      this.timeValues = this.data.uniqueValues;
     },
 
     destroy () {
       this.vis = null
       this.container.innerHTML = ''
+    },
+
+    forward() {
+      this.timeRange[1] += 5;
+      this.$emit('update', [this.timeValues[this.selectedTimeDomain][0], this.timeValues[this.selectedTimeDomain][this.timeRange[1]]])
+      this.visualize();
+    },
+
+    backward() {
+      this.timeRange[1] -= 5;
+      this.$emit('update', [this.timeValues[this.selectedTimeDomain][0], this.timeValues[this.selectedTimeDomain][this.timeRange[1]]])
+      this.visualize();
     },
 
     visualize (callback) {
@@ -134,7 +149,12 @@ export default {
         $group: aggregation,
         $collect: collection
       })
-      .visualize(vmap)
+
+      if(Array.isArray(this.timeRange)) {
+        t.match({LastGvt: this.timeRange})
+      }
+
+      t.visualize(vmap)
 
       this.selectedMetrics = vmap.facets.rows.metrics
     }
