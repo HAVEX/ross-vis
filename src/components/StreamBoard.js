@@ -15,21 +15,21 @@ export default {
     Overview
   },
   props: [
-   'plotMetric1',
-   'plotMetric2', 
-   'granularity', 
-   'timeDomain', 
-   'measure', 
-   'commData', 
-   'clusterMetric',
-   'streamData'
-],
+    'plotMetric1',
+    'plotMetric2',
+    'granularity',
+    'timeDomain',
+    'measure',
+    'commData',
+    'clusterMetric',
+    'streamData'
+  ],
   data: () => ({
     server: 'localhost:8888',
     isTsDataLoaded: false,
     plotData1: null,
     plotData2: null,
-    timeIndexes: null, 
+    timeIndexes: null,
     timeIntervals: [],
     processIds: [],
     clusterIds: [],
@@ -41,22 +41,22 @@ export default {
     ],
     prev_comm_time: null,
     clusterMap: {},
-    newCommPanel: false ,
+    newCommPanel: false,
   }),
 
   watch: {
-    plotData2: function() {
+    plotData2: function () {
       return this.plotData1
     },
-    plotData1: function() {
+    plotData1: function () {
       return this.plotData2
     },
-    timeIntervals: function() {
-      if(this.newCommPanel){
+    timeIntervals: function () {
+      if (this.newCommPanel) {
         this.updateCommunication()
         this.newCommPanel = false
       }
-    }
+    },
   },
 
   methods: {
@@ -76,14 +76,12 @@ export default {
     },
 
     update() {
-      this.processStreamData()
-      this.processCommData()
-      this.$refs.TimeDimCorrPanel1.tick()
-      this.$refs.TimeDimCorrPanel2.tick()
+        this.processStreamData()
+        this.processCommData()
     },
 
     updateCommunication() {
-      if(this.clusterIds.length != 0 && this.processIds.length != 0){
+      if (this.clusterIds.length != 0 && this.processIds.length != 0) {
         this.$refs.Communication.visualize({
           data: this.comm_data,
           measure: this.measure,
@@ -93,11 +91,11 @@ export default {
           processIds: this.processIds,
           clusterIds: this.clusterIds,
           clusterColors: this.clusterColors
-        })  
+        })
       }
     },
 
-    updateMetrics (metrics) {
+    updateMetrics(metrics) {
       this.metrics = metrics
       this.update()
     },
@@ -122,13 +120,15 @@ export default {
     processStreamData() {
       let stream_obj = this.streamData
       if (stream_obj != null && Object.keys(stream_obj).length !== 1) {
+        console.log(this.plotMetric1)
         this.plotData1 = stream_obj[this.plotMetric1]
         this.plotData2 = stream_obj[this.plotMetric2]
+        console.log('processing', this.plotData1)
 
         // Create this.processIds, this.clusterIds for Communication panel
         this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
-        for(let id in this.clusterMap){
-          if(this.clusterMap.hasOwnProperty(id)){
+        for (let id in this.clusterMap) {
+          if (this.clusterMap.hasOwnProperty(id)) {
             this.processIds.push(parseInt(id))
             this.clusterIds.push(parseInt(this.clusterMap[id]))
           }
@@ -138,11 +138,11 @@ export default {
 
     processCommData() {
       let comm_obj = this.commData
-      if(comm_obj != null && Object.keys(comm_obj).length !== 1){
+      if (comm_obj != null && Object.keys(comm_obj).length !== 1) {
         this.comm_data = comm_obj['data']
         let comm_schema = comm_obj['schema']
         let comm_time = comm_obj['time']
-        if(this.prev_comm_time == null){
+        if (this.prev_comm_time == null) {
           this.prev_comm_time = 0
         }
         this.comm_data.forEach(d => {

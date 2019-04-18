@@ -1,6 +1,8 @@
 import tpl from '../html/entry.html'
 import StreamBoard from './StreamBoard'
 import HocBoard from './HocBoard'
+import EventHandler from './EventHandler'
+
 import Vue from 'vue'
 
 export default {
@@ -53,13 +55,13 @@ export default {
     commThreshold: 0,
     thresholdValue: 0,
     showIntraComm: false,
-   }),
+  }),
 
   watch: {
-    plotMetric2: function() {
+    plotMetric2: function () {
       return this.plotMetric1
     },
-    plotMetric1: function() {
+    plotMetric1: function () {
       return this.plotMetric2
     }
   },
@@ -96,47 +98,57 @@ export default {
       this.update = -1
       console.log("Removing ", this.count)
       this.fetchTsData()
-      
+
     },
 
     updateGran() {
-      this.clear()
-      console.log("Change in granularity detected : [", this.selectedGranularity, "]")
-      this.selectedGranID = this.selectedGranularity + 'id'
-      if (this.selectedGranularity == 'Kp') {
-        this.selectedGranID = 'KpGid'
-      }
-      this.count = 0
-      this.fetchTsData()
+      Vue.nextTick(() => {
+        this.clear()
+        console.log("Change in granularity detected : [", this.selectedGranularity, "]")
+        this.selectedGranID = this.selectedGranularity + 'id'
+        if (this.selectedGranularity == 'Kp') {
+          this.selectedGranID = 'KpGid'
+        }
+        this.count = 0
+        this.fetchTsData()
+      })
+      
     },
 
     updateTimeDomain() {
-      this.clear()
-      console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
-      this.count = 0
-      this.fetchTsData()
+      Vue.nextTick( () => {
+        this.clear()
+        console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
+        this.count = 0
+        this.fetchTsData()
+      })
     },
 
     updatePlotMetric1() {
-      this.clear()
-      console.log("Change in metric detected : [", this.plotMetric1, "]")
-      this.$refs.D3TimeSeries.updateLabels = true;
       Vue.nextTick(() => {
+        console.log("Change in metric detected : [", this.plotMetric1, "]")
+        this.clear()
+        EventHandler.$emit('change_label')
         this.$refs.StreamBoard.update()
       })
     },
 
     updatePlotMetric2() {
-      console.log("Change in metric detected : [", this.plotMetric2, "]")
-      this.clear()
-      this.$refs.D3TimeSeries.updateLabels = true;
       Vue.nextTick(() => {
+        console.log("Change in metric detected : [", this.plotMetric2, "]")
+        this.clear()
+        EventHandler.$emit('change_label')
         this.$refs.StreamBoard.update()
-      })     
+      })
     },
 
     updateClusterMetric() {
-
+      Vue.nextTick(() => {
+        console.log("Change in metric detected : [", this.selectedClusterMetric, "]")
+        this.clear()
+        this.$refs.StreamBoard.updateLabels = true;
+        this.$refs.StreamBoard.update()
+      })
     },
 
     updateLink() {
@@ -148,12 +160,12 @@ export default {
     },
 
     updateMode() {
-      if(this.selectedMode == 'Post Hoc'){
+      if (this.selectedMode == 'Post Hoc') {
         console.log("Changing to Post Hoc mode")
         this.method = 'stream'
         this.play = 0
       }
-      else{
+      else {
         console.log("Changing to In situ mode")
         this.method = 'get-count'
       }
@@ -166,8 +178,8 @@ export default {
       this.$refs.StreamBoard.clear()
     },
 
-    getJSONrequest(count){
-      if(!count){
+    getJSONrequest(count) {
+      if (!count) {
         count = this.count
       }
       let obj = {
@@ -205,17 +217,17 @@ export default {
     },
 
     fetchTsData() {
-     if(this.count == 0){
-      this.socket.onopen = () => {
-        this.socketError = false
-        console.log('Requesting ', this.count, ' stream.')
+      if (this.count == 0) {
+        this.socket.onopen = () => {
+          this.socketError = false
+          console.log('Requesting ', this.count, ' stream.')
+          this.socket.send(this.getJSONrequest())
+        }
+      }
+
+      else {
         this.socket.send(this.getJSONrequest())
       }
-     } 
-
-     else{
-      this.socket.send(this.getJSONrequest())
-     }
 
       this.socket.onerror = (error) => {
         this.socketError = true
@@ -231,19 +243,19 @@ export default {
         if (this.count == 1) {
           this.$refs.StreamBoard.init()
         }
-        else if(this.count > 2) {
+        else if (this.count > 2) {
           this.$refs.StreamBoard.update()
         }
-        if(this.update == -1){
+        if (this.update == -1) {
           this.update = 1
           this.count -= 1
           this.play = 0
         }
-        else{
+        else {
           this.count += 1
         }
-        
-        if(this.play == 1){
+
+        if (this.play == 1) {
           this.fetchTsData()
         }
       }

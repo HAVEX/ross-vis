@@ -1,8 +1,7 @@
 import * as d3 from 'd3'
-import { selection } from "d3-selection";
+// import { selection } from "d3-selection";
 import "d3-selection-multi";
 import template from '../html/D3TimeSeries.html'
-export { selection };
 
 // References: http://bl.ocks.org/ludwigschubert/0236fa8594c4b02711b2606a8f95f605
 
@@ -66,10 +65,10 @@ export default {
                         stroke: this.colorSet[this.cluster[val[i]]],
                     })
             }
-        }
+        },
     },
     mounted() {
-        this.id = 'time-overview' + this._uid
+        this.id = 'time-overview' + this._uid        
     },
     methods: {
         init() {
@@ -108,19 +107,26 @@ export default {
             this.yDom = [0, 0]
         },
 
+        clearLabel(){
+            d3.select('#'+ this.id).selectAll(".axis-labels").remove()
+
+        },
+
         label() {
             this.isLabelled = true
             this.svg.append("text")
+                .attr("class", "axis-labels")
                 .attr("transform", "translate(" + (this.width / 2) + " ," + (this.height + this.padding.top) + ")")
                 .style("text-anchor", "middle")
                 .text(this.selectedTimeDomain);
 
             this.svg.append("g")
+                .attr("class", "axis-labels")
                 .attr("transform", "translate(" + (3) + " ," + (this.height / 2) + ")")
                 .append('text')
                 .attr("transform", "rotate(90)")
                 .style("text-anchor", "middle")
-                .text(this.plotMetric)
+                .text(this.$parent.plotMetric)
         },
 
         initLine() {
@@ -241,7 +247,7 @@ export default {
         },
 
         visualize(ts, cpd) {
-            if (!this.isLabelled && !this.updateLabels) {
+            if (!this.isLabelled) {
                 this.label()
             }
 
@@ -261,6 +267,7 @@ export default {
                 let data = res['ts']
                 let cluster = res['cluster'][0]
                 this.cluster[id] = res['cluster'][0]
+                
                 this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
                 let yDomTemp = d3.extent(data)
                 if (yDomTemp[1] > this.yDom[1])

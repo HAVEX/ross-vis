@@ -190,7 +190,6 @@ export default {
         }
 
 
-        console.log(result)
         metrics.forEach( (metric, mi) => {
           let layer = Object.assign({}, layerSpec)
           layer.data = metricData
