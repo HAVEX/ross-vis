@@ -55,10 +55,10 @@
                   :menu-props="{ maxHeight: '200' }" persistent-hint v-on:change="updatePlotMetric2()">
               </v-select>
             </v-flex>
-            <v-flex xs12 class="ma-1">
+            <!-- <v-flex xs12 class="ma-1">
                 <v-select label="Change Point Detection" :items="cpd" v-model="selectedcpd" v-on:change="visualize()">
                 </v-select>
-            </v-flex>
+            </v-flex> -->
             <!-- <v-flex xs12 class="ma-1">
                 <v-select label="Dimensionality reduction" :items="dimred" v-model="selectedDimred" v-on:change="visualize()">
                 </v-select>
@@ -72,10 +72,10 @@
                 <v-select label="Cluster by Metric" :items="clusterMetrics" v-model="selectedClusterMetric" v-on:change="updateClusterMetric()">
                 </v-select>
             </v-flex>
-            <v-flex xs12 class="ma-1">
+            <!-- <v-flex xs12 class="ma-1">
                 <v-slider v-model="commThreshold" :thumb-size="24" :min=0 v-on:input="updateLink" label="link threshold"></v-slider>
                 <span>{{thresholdValue}}</span>
-            </v-flex>
+            </v-flex> -->
         </v-layout>
     </v-card>
   </v-navigation-drawer>

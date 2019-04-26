@@ -13,7 +13,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bootstrap": "^4.3.1",
-    "bootstrap-vue": "^2.0.0-rc.14",
+    "bootstrap-vue": "^2.0.0-rc.19",
     "chai": "^4.2.0",
     "d3": "^5.9.2",
     "d3-axis": "^1.0.12",
@@ -25,6 +25,7 @@
     "d3-selection": "^1.4.0",
     "d3-selection-multi": "^1.0.1",
     "d3-shape": "^1.2.2",
+    "d3-zoom": "^1.7.3",
     "flatbuffers": "^1.10.2",
     "install": "^0.12.2",
     "jStat": "^1.7.1",

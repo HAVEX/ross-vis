@@ -19,6 +19,8 @@ export default {
       ],
       to_items: [],
       from_items: [],
+      causality: ['from', 'to'],
+      selectedCausality: 'to',
   }),
   methods: {
     rowClass(item, type) {
@@ -37,15 +39,16 @@ export default {
     
     preprocess(data) {
       for(let i = 0; i < data['from'].length; i++){
-        if(data['from'][i]['Causality'] == 1){
+        if(data['from'][i]['causality'] == "true"){
           data['from'][i]['_rowVariant'] = 'success'
+          data['from']['metric'][i] = data['from']['metric'] + "*" 
         }
         else {
-          data['from'][i]['_rowVariant'] = 'danger'
+          data['from'][i]['_rowVariant'] = 'success'
         }
       }
       for(let i = 0; i < data['to'].length; i++){
-        if(data['to'][i]['Causality'] == 1){
+        if(data['to'][i]['causality'] == 1){
           data['to'][i]['_rowVariant'] = 'success'
         }
         else{

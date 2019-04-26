@@ -139,7 +139,7 @@ export default {
     processCommData() {
       let comm_obj = this.commData
       if (comm_obj != null && Object.keys(comm_obj).length !== 1) {
-        this.comm_data = comm_obj['data']
+        this.comm_data = comm_obj['df']
         let comm_schema = comm_obj['schema']
         let comm_time = comm_obj['time']
         if (this.prev_comm_time == null) {

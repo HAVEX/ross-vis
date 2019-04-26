@@ -74,7 +74,8 @@ export default {
         init() {
             let visContainer = document.getElementById(this.id)
             this.width = visContainer.clientWidth
-            this.height = window.innerHeight / 3 - 20
+            this.height = (window.innerHeight / 3 - 20)
+            
             this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
             this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
             this.y = d3.scaleLinear().range([this.height - this.padding.bottom, 0]);
@@ -120,10 +121,9 @@ export default {
                 .style("text-anchor", "middle")
                 .text(this.selectedTimeDomain);
 
-            this.svg.append("g")
+            this.svg.append("text")
                 .attr("class", "axis-labels")
                 .attr("transform", "translate(" + (3) + " ," + (this.height / 2) + ")")
-                .append('text')
                 .attr("transform", "rotate(90)")
                 .style("text-anchor", "middle")
                 .text(this.$parent.plotMetric)
@@ -236,7 +236,7 @@ export default {
             for(let i = 0; i < this.cpds.length; i += 1){
                 xPoints.push(this.actualTime[this.cpds[i]])
             }
-            console.log(xPoints)
+
             this.svg.append('line')
                 .data(xPoints)
                 .attr('class', 'cpdline')

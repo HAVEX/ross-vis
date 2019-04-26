@@ -169,21 +169,29 @@ export default {
 			data = data[0]
 			ret.from = []
 			for (let i = 0; i < data['from_metrics'].length; i += 1) {
+				let causality = false
+				if(data['from_causality'][i] == 1){
+					causality = true
+				}
 				ret.from.push({
 					'IR': parseFloat(data['from_IR_1'][i]).toFixed(2),
 					'VD': parseFloat(data['from_VD_1'][i]).toFixed(2),
-					'causality': data['from_causality'][i],
+					'causality': causality,
 					'metric': data['from_metrics'][i],
 				})
 			}
 
 			ret.to = []
 			for (let i = 0; i < data['from_metrics'].length; i += 1) {
+				let causality = false
+				if(data['to_causality'][i] == 1){
+					causality = true
+				}
 				ret.to.push({
 					'IR': parseFloat(data['to_IR_1'][i]).toFixed(2),
-					'VD': parseFloat(data['from_VD_1'][i]).toFixed(2),
-					'causality': data['from_causality'][i],
-					'metric': data['from_metrics'][i],
+					'VD': parseFloat(data['to_VD_1'][i]).toFixed(2),
+					'causality': causality,
+					'metric': data['to_metrics'][i],
 				})
 			}
 			return ret

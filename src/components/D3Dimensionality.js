@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import { zoom }  from 'd3-zoom'
 import { lasso } from './lasso';
 import template from '../html/D3Dimensionality.html'
 import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
@@ -31,6 +32,8 @@ export default {
             this.padding = { left: 50, top: 0, right: 50, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.width]);
             this.y = d3.scaleLinear().range([this.height, 0]);
+            // this.d3zoom = d3.zoom()
+            //     .on("zoom", this.zoom())
         },
 
         axis(){
@@ -142,6 +145,7 @@ export default {
                     cx: (d) => { return self.x(d[0]) },
                     cy: (d) => { return self.y(d[1]) },
                 })
+                .call(this.d3zoom)
 
             this.lasso = lasso()
                 .closePathSelect(true)
@@ -212,6 +216,49 @@ export default {
             }
         },
 
+        zoom() {
+            // for unzoom button; Needs fix
+            this.zoomed = true
+
+            // // adjust the scales
+            // this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
+            // this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
+
+            // Put circles back in view
+            let self = this
+            this.svg.selectAll(".circle" + this.id).transition(this.t)
+                .attr("cx", function (d) { return self.x(d['PC0'][0]) })
+                .attr("cy", function (d) { return self.y(d['PC1'][0]) })
+
+            // Clear brush selection box
+            this.svg.selectAll(".selection")
+                .attrs({
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0
+                })
+        },
+
+        unzoom() {
+            // Untoggle the unzoom button.
+            this.zoomed = false
+
+            // reset the scale domains
+            this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
+            this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
+
+            // // adjust the scale
+            // this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
+            // this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
+
+            // Put circles back
+            let self = this
+            this.svg.selectAll(".circle" + this.id).transition(this.t)
+                .attr("cx", function (d) { return self.x(d['PC0'][0]) })
+                .attr("cy", function (d) { return self.y(d['PC1'][0]) })
+        },
+
         //==================================
         // Not used
         //==================================
@@ -229,7 +276,6 @@ export default {
                     ret.push(idx)
                 }
             }
-            console.log(ret)
             return ret
         },
 
@@ -274,48 +320,7 @@ export default {
             this.idleTimeout = null;
         },
 
-        zoom() {
-            // for unzoom button; Needs fix
-            this.zoomed = true
-
-            // adjust the scales
-            this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
-            this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
-
-            // Put circles back in view
-            let self = this
-            this.svg.selectAll(".circle" + this.id).transition(this.t)
-                .attr("cx", function (d) { return self.x(d['PC0'][0]) })
-                .attr("cy", function (d) { return self.y(d['PC1'][0]) })
-
-            // Clear brush selection box
-            this.svg.selectAll(".selection")
-                .attrs({
-                    x: 0,
-                    y: 0,
-                    width: 0,
-                    height: 0
-                })
-        },
-
-        unzoom() {
-            // Untoggle the unzoom button.
-            this.zoomed = false
-
-            // reset the scale domains
-            this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
-            this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
-
-            // adjust the scale
-            this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
-            this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
-
-            // Put circles back
-            let self = this
-            this.svg.selectAll(".circle" + this.id).transition(this.t)
-                .attr("cx", function (d) { return self.x(d['PC0'][0]) })
-                .attr("cy", function (d) { return self.y(d['PC1'][0]) })
-        },
+        
     },
 }
 

@@ -1,6 +1,25 @@
 <v-card flex fill-height id="correlation-view">
     <!-- <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="to_items" :fields="fields" :tbody-tr-class="rowClass"/>
     <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="from_items" :fields="fields" :tbody-tr-class="rowClass"/> -->
-    <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="to_items" :fields="fields" />
-    <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="from_items" :fields="fields" />
+    <!-- <b-dropdown 
+        id="dropdown-1" 
+        text="To/From" 
+        class="m-md-3">
+            <b-dropdown-item>To metrics</b-dropdown-item>
+            <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item>From metrics</b-dropdown-item>
+    </b-dropdown> -->
+
+    <b-table 
+        v-if="selectedCausality == 'to'"
+        :sort-by.sync="sortBy" 
+        :sort-desc.sync="sortDesc" 
+        :items="to_items" 
+        :fields="fields" />
+    <b-table 
+        v-if="selectedCausality == 'from'"
+        :sort-by.sync="sortBy" 
+        :sort-desc.sync="sortDesc" 
+        :items="from_items" 
+        :fields="fields" />
 </v-card>
