@@ -18,7 +18,6 @@ export default {
     commData: null,
     hocData: null,
     appName: 'ROSS-Vis',
-    dialog: true,
     socketError: false,
     server: 'localhost:8899',
     modes: ['Post Hoc', 'In Situ'],
@@ -26,8 +25,9 @@ export default {
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTs'],
     selectedTimeDomain: 'LastGvt',
     granularity: ['Pe', 'Kp', 'Lp'],
-    selectedGranularity: 'Kp',
+    selectedGranularity: 'Pe',
     GranID: ['Peid', 'KpGid', 'Lpid'],
+    selectedGranID: null,
     plotMetric1: 'RbSec',
     plotMetric2: 'NeventProcessed',
     similarity: ['euclidean'],
@@ -67,20 +67,28 @@ export default {
   },
 
   mounted: function () {
-    //this.selectedMetrics = this.defaultMetrics.slice()
+    this.init()
   },
 
   methods: {
     init() {
       //set initial variables.
-      this.dialog = !this.dialog
       this.socket = new WebSocket('ws://' + this.server + '/websocket')
       this.method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
-      this.selectedGranID = this.selectedGranularity + 'id'
-      if (this.selectedGranularity == 'Kp') {
-        this.selectedGranID = 'KpGid'
-      }
+      this.selectedGranID = this.correctGranID()
       this.fetchTsData()
+    },
+
+    // Take incorrect id and add correct post-id
+    correctGranID(){
+      let ret = ''
+      if (this.selectedGranularity == 'Kp') {
+        ret = this.selectedGranularity + 'Gid'
+      }
+      else{
+        ret = this.selectedGranularity + 'id'
+      }
+      return ret
     },
 
     updatePlay() {
@@ -105,10 +113,7 @@ export default {
       Vue.nextTick(() => {
         this.clear()
         console.log("Change in granularity detected : [", this.selectedGranularity, "]")
-        this.selectedGranID = this.selectedGranularity + 'id'
-        if (this.selectedGranularity == 'Kp') {
-          this.selectedGranID = 'KpGid'
-        }
+        this.selectedGranID = this.correctGranID()
         this.count = 0
         this.fetchTsData()
       })

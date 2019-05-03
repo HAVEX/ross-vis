@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 // import { selection } from "d3-selection";
 import "d3-selection-multi";
 import template from '../html/D3TimeSeries.html'
+import EventHandler from './EventHandler'
 
 // References: http://bl.ocks.org/ludwigschubert/0236fa8594c4b02711b2606a8f95f605
 
@@ -30,9 +31,10 @@ export default {
         yMin: 0,
         yMax: 0,
         isLabelled: false,
-        colorSet: ["#F8A51F", "#F8394E", "#517FB2"], 
+        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"], 
         brushes: [],
         cpds: [],
+        prev_cpd: 0,
     }),
     watch: {
         selectedIds: function (val) {
@@ -75,8 +77,8 @@ export default {
             let visContainer = document.getElementById(this.id)
             this.width = visContainer.clientWidth
             this.height = (window.innerHeight / 3 - 20)
-            
-            this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
+
+            this.padding = { left: 50, top: 0, right: 20, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
             this.y = d3.scaleLinear().range([this.height - this.padding.bottom, 0]);
         },
@@ -110,21 +112,23 @@ export default {
 
         clearLabel(){
             d3.select('#'+ this.id).selectAll(".axis-labels").remove()
-
         },
 
         label() {
             this.isLabelled = true
             this.svg.append("text")
-                .attr("class", "axis-labels")
-                .attr("transform", "translate(" + (this.width / 2) + " ," + (this.height + this.padding.top) + ")")
+                .attrs({
+                    "class": "axis-labels",
+                    transform: `translate(${(this.width / 2)}, ${this.height + this.padding.top})`
+                })
                 .style("text-anchor", "middle")
                 .text(this.selectedTimeDomain);
 
             this.svg.append("text")
-                .attr("class", "axis-labels")
-                .attr("transform", "translate(" + (3) + " ," + (this.height / 2) + ")")
-                .attr("transform", "rotate(90)")
+                .attrs({
+                    "class": "axis-labels",
+                    transform: `translate(${3}, ${this.height/2}) rotate(${90})`,
+                })
                 .style("text-anchor", "middle")
                 .text(this.$parent.plotMetric)
         },
@@ -137,7 +141,9 @@ export default {
 
         initBrushes() {
             this.brushSvg = this.svg.append('g')
-                .attr('class', 'brushes')
+                .attrs({
+                    'class': 'brushes'
+                })
 
             this.newBrush()
             this.drawBrushes();
@@ -230,21 +236,27 @@ export default {
         },  
 
         drawCPDs(){
-            d3.selectAll('.cpdline').remove()
+            d3.selectAll('.cpdline' + this.id).remove()
 
             let xPoints = [];
             for(let i = 0; i < this.cpds.length; i += 1){
                 xPoints.push(this.actualTime[this.cpds[i]])
             }
 
-            this.svg.append('line')
+            this.svg.selectAll('cpdline')
                 .data(xPoints)
-                .attr('class', 'cpdline')
-                .attr('x1', (d) => { return this.x(d) })
-                .attr('y1', 0)
-                .attr('x2', (d) => { return this.x(d) })
-                .attr('y2', 20)
-        },
+                .enter()
+                .append('line')
+                .attrs({
+                    'class': 'cpdline cpdline' + this.id,
+                    'x1': (d) => { return this.x(d) },
+                    'y1': 0,
+                    'x2': (d) => { return this.x(d) },
+                    'y2': this.height - this.padding.bottom,
+                })
+                .style('stroke', '#DA535B')
+                .style('stroke-width', '3.5px')
+        },  
 
         visualize(ts, cpd) {
             if (!this.isLabelled) {
@@ -252,7 +264,11 @@ export default {
             }
 
             if(cpd == 1){
-                this.cpds.push(this.$parent.stream_count - 1)
+                let current_cpd_idx = this.$parent.stream_count
+                let current_cpd = this.actualTime[current_cpd_idx]
+                EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
+                this.prev_cpd = current_cpd
+                this.cpds.push(this.$parent.stream_count)
             }
             
             this.drawCPDs()

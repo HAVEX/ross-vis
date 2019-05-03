@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { zoom }  from 'd3-zoom'
+import { zoom } from 'd3-zoom'
 import { lasso } from './lasso';
 import template from '../html/D3Dimensionality.html'
 import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
@@ -14,7 +14,7 @@ export default {
         config: null,
         vis: null,
         colorBy: null,
-        colorSet: ["#F8A51F", "#F8394E", "#517FB2"],
+        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"], 
         zoomed: false,
         xMin: 0,
         xMax: 0,
@@ -36,7 +36,7 @@ export default {
             //     .on("zoom", this.zoom())
         },
 
-        axis(){
+        axis() {
             this.xAxis = d3.axisBottom(this.x)
                 .tickPadding(10)
                 .tickFormat(d3.format('0.1s'))
@@ -46,7 +46,7 @@ export default {
                 .tickFormat(d3.format('0.1s'))
 
             this.yDom = [0, 0]
-            
+
             // this.xAxisSVG = this.svg.append('g')
             //     .attrs({
             //         transform: `translate(${this.padding.left}, ${this.height - this.padding.bottom})`,
@@ -66,7 +66,7 @@ export default {
         },
 
         label() {
-            
+
         },
 
         initVis(ts) {
@@ -113,7 +113,6 @@ export default {
                 if (y > this.yMax) {
                     this.yMax = y
                 }
-
             }
             return ret
         },
@@ -130,6 +129,7 @@ export default {
             //     .call(this.yAxis)
 
             d3.selectAll('.circle' + this.id).remove()
+            d3.selectAll('.lasso').remove()
             let self = this
             this.circles = this.svg.selectAll('circle')
                 .data(this.data)
@@ -142,10 +142,10 @@ export default {
                     'stroke-width': 1.0,
                     fill: (d) => { return self.colorSet[d[2]] },
                     id: (d) => { return 'dot' + d[3] },
-                    cx: (d) => { return self.x(d[0]) },
+                    cx: (d, i) => { return self.x(d[0]) },
                     cy: (d) => { return self.y(d[1]) },
                 })
-                .call(this.d3zoom)
+                // .call(this.d3zoom)
 
             this.lasso = lasso()
                 .closePathSelect(true)
@@ -320,7 +320,7 @@ export default {
             this.idleTimeout = null;
         },
 
-        
+
     },
 }
 

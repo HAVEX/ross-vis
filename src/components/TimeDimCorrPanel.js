@@ -6,7 +6,6 @@ import TimeSeries from './TimeSeries'
 import D3TimeSeries from './D3TimeSeries'
 import D3Dimensionality from './D3Dimensionality'
 
-import ControlPanel from './ControlPanel'
 import Causality from './Causality'
 import EventHandler from './EventHandler.js'
 
@@ -22,7 +21,6 @@ export default {
 	],
 	template: template,
 	components: {
-		ControlPanel,
 		Dimensionality,
 		D3Dimensionality,
 		TimeSeries,
@@ -30,7 +28,6 @@ export default {
 		Causality
 	},
 	data: () => ({
-		data: null,
 		ts: null,
 		cpd: null,
 		pca: null,
@@ -59,8 +56,8 @@ export default {
 			this.$parent.newCommPanel = true
 			this.$parent.timeIntervals.push([val[0][0], val[0][1]])
 		},
+		// Function calls tick when data comes in. 		
 		plotData: function (val) {
-			// Tick when the data comes. 
 			this.tick()
 		},
 	},
@@ -68,14 +65,13 @@ export default {
 		let self = this
 		EventHandler.$on('change_label', function () {
 			console.log("Change in update label")
-			// Update labels
 			self.$refs.D3TimeSeries.clearLabel()
 			self.$refs.D3TimeSeries.label()
 		})
 	},
 	methods: {
 		init() {
-			console.log('Init ', this.plotMetric, this.timeDomain, this.granularity)
+			console.log('Time-Dimensionality Panel [init]', this.plotMetric)
 			if (this.useD3) {
 				this.$refs.D3TimeSeries.init()
 				this.$refs.D3Dimensionality.init()
@@ -85,15 +81,31 @@ export default {
 				this.$refs.Dimensionality.init()
 			}
 			this.$refs.Causality.init()
-			//this.$refs.ControlPanel.init()
+		},
+
+		process(){
+			let stream_obj = this.plotData
+			if (stream_obj != null && Object.keys(stream_obj).length !== 1) {
+				this.plotData1 = stream_obj[this.plotMetric1]
+				this.plotData2 = stream_obj[this.plotMetric2]
+
+				// Create this.processIds, this.clusterIds for Communication panel
+				this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
+				for (let id in this.clusterMap) {
+					if (this.clusterMap.hasOwnProperty(id)) {
+						this.processIds.push(parseInt(id))
+						this.clusterIds.push(parseInt(this.clusterMap[id]))
+					}
+				}
+			}
 		},
 
 		processPCAData(data) {
 			let ret = {}
 			ret.data = []
-			let colnames = ['KpGid', 'PC0', 'PC1', 'cluster']
+			let colnames = [this.granularity, 'PC0', 'PC1', 'cluster']
 			ret.schema = {
-				'KpGid': 'int',
+				'id': 'int',
 				'PC0': 'float',
 				'PC1': 'float',
 				'cluster': 'int',
@@ -104,8 +116,8 @@ export default {
 						ret.data[i] = {}
 					}
 					if (colnames[j] == 'cluster') {
-						ret.data[i]['cluster'] = this.clusterMap[data[i]['KpGid']]
-						this.PCACluster[data[i]['KpGid']] = this.clusterMap[data[i]['KpGid']]
+						ret.data[i]['cluster'] = this.clusterMap[data[i][this.granularity]]
+						this.PCACluster[data[i][this.granularity]] = this.clusterMap[data[i][this.granularity]]
 					}
 					else {
 						ret.data[i][colnames[j]] = data[i][colnames[j]]
@@ -215,26 +227,24 @@ export default {
 				let key = cstore.keys[i]
 				cstore_id[key] = i
 			}
-
-			let keyUp = mapBy
 			for (let i = 0; i < cstore.size; i += 1) {
 				// index of keyUp in cstore
-				let keyUp_index = cstore_id[keyUp]
-				let keyUp_data = cstore[keyUp_index][i]
-				if (ret[keyUp_data] == undefined) {
-					ret[keyUp_data] = {}
+				let mapBy_index = cstore_id[mapBy]
+				let mapBy_data = cstore[mapBy_index][i]
+				if (ret[mapBy_data] == undefined) {
+					ret[mapBy_data] = {}
 				}
 				for (let key in cstore_id) {
-					if (cstore_id.hasOwnProperty(key) && key != keyUp) {
-						if (ret[keyUp_data][key] == undefined) {
-							ret[keyUp_data][key] = []
+					if (cstore_id.hasOwnProperty(key) && key != mapBy) {
+						if (ret[mapBy_data][key] == undefined) {
+							ret[mapBy_data][key] = []
 						}
 						let _index = cstore_id[key]
 						let _data = cstore[_index][i]
-						ret[keyUp_data][key].push(_data)
+						ret[mapBy_data][key].push(_data)
 					}
 				}
-				ret[keyUp_data][this.plotMetric] = cstore.uniqueValues.time
+				ret[mapBy_data][this.plotMetric] = cstore.uniqueValues.time
 			}
 			return ret
 		},
@@ -272,13 +282,13 @@ export default {
 
 						if (this.useD3) {
 							this.normal_result = this.processD3TimeSeries(this.normal_result, 'id')
-							this.pca_result = this.processD3TimeSeries(this.pca_result, 'KpGid')
+							this.pca_result = this.processD3TimeSeries(this.pca_result, 'id')
 							// this.micro_result = this.processD3TimeSeries(this.micro_result, 'id')
 							// this.macro_result = this.processD3TimeSeries(this.macro_result, 'id')
 						}
 
 						this.reset()
-						this.checkClustering()
+						// this.checkClustering()
 					}
 				}
 				else {
@@ -295,7 +305,7 @@ export default {
 				if (this.timeCluster.hasOwnProperty(KpGid)) {
 					if (this.timeCluster[KpGid] == this.PCACluster[KpGid]
 					) {
-						//console.log("Matches")
+						console.log("Matches")
 					}
 					else {
 						console.log("Bug")

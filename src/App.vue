@@ -6,12 +6,12 @@
 
 <script>
 export default {
-  name: 'App'
-}
+  name: "App"
+};
 </script>
 
 <style>
-#app {
-  margin-top: 10px;
+#dashboard {
+  padding: 64px 15px 0px;
 }
 </style>

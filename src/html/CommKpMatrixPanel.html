@@ -1,0 +1,24 @@
+<v-layout row wrap>
+    <v-flex xs12>
+        <!-- <v-btn v-if="isComparisonMode" absolute dark fab top left small @click="drawer=!drawer"
+                style="margin-top: 2em;" color="darken-2 blue">
+                <v-icon>settings</v-icon>
+            </v-btn> -->
+        <!-- <Communication ref="Communication" 
+            v-show="false" 
+            v-bind:comm-data="commData"
+            v-bind:measure="measure"
+            v-bind:metrics
+            v-bind:time-domain="timeDomain"
+            v-bind:time-intervals="timeIntervals"
+            v-bind:process-ids="processIds"
+            v-bind:cluster-ids="clusterIds"
+            v-bind:cluster-colors="clusterColors"
+            @updateMetrics="updateMetrics" 
+        /> -->
+        <KpMatrix ref="KpMatrix" ></KpMatrix>
+       
+        <!-- <Overview ref="Overview" v-bind:ts-data="isTsDataLoaded ? tsData : null "/> -->
+
+    </v-flex>
+</v-layout>

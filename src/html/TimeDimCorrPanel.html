@@ -1,11 +1,21 @@
 <v-layout row wrap>
     <v-flex xs7>
-        <D3TimeSeries ref="D3TimeSeries" />
-        <!-- <TimeSeries ref="TimeSeries" v-bind:cpd="cpd" v-bind:clustering="clustering" /> -->
+        <D3TimeSeries ref="D3TimeSeries" 
+            v-show = "useD3 == true"
+        />
+        <TimeSeries ref="TimeSeries" 
+            v-show = "useD3 == false"
+            v-bind:cpd="cpd" 
+            v-bind:clustering="clustering"
+        />
     </v-flex>
     <v-flex xs3>
-        <D3Dimensionality ref="D3Dimensionality" />
-        <!-- <Dimensionality ref="Dimensionality" v-bind:pca="pca" /> -->
+        <D3Dimensionality ref="D3Dimensionality"
+            v-show = "useD3 == true"
+        />
+        <Dimensionality ref="Dimensionality" 
+            v-show = "useD3 == false"
+            v-bind:pca="pca" /> 
     </v-flex>
     <v-flex xs2>
         <Causality ref="Causality" v-bind:causality="causality" />

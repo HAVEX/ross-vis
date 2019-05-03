@@ -17,14 +17,14 @@
     v-bind:plot-data="isTsDataLoaded ? plotData2 : null" 
     v-bind:cluster-map="clusterMap" />
     
-    <v-layout row wrap >
-        <v-flex xs12>
-            <Communication ref="Communication" @updateMetrics="updateMetrics"></Communication>
-        </v-flex>
-        <!-- <v-flex xs4>
-            <Overview ref="Overview" v-bind:ts-data="isTsDataLoaded ? tsData : null "/>
-        </v-flex> -->
-    </v-layout> 
+    <CommKpMatrixPanel ref="CommKpMatrixPanel"
+    v-bind:metrics="metrics"
+    v-bind:time-domain="timeDomain"
+    v-bind:measure="measure" 
+    v-bind:granularity="granularity" 
+    v-bind:comm-data="isTsDataLoaded ? commData : null" 
+    v-bind:cluster-map="clusterMap" />
+     
 </v-container>
 
  
