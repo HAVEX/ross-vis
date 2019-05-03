@@ -20,14 +20,15 @@ export default {
         matrix: null,
         matrixScale: 0.85,
         offset: 40,
-        colorSet: ["#F8A51F", "#F8394E", "#517FB2"],
+        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
+        clusterIds: []
     }),
 
     watch: {
     },
 
     mounted() {
-        this.id = 'kpmatrix-overview' + this._uid 
+        this.id = 'kpmatrix-overview' + this._uid
     },
 
     methods: {
@@ -35,13 +36,12 @@ export default {
             let visContainer = document.getElementById(this.id)
             this.width = (window.innerHeight / 3 - 20) * this.matrixScale
             this.height = (window.innerHeight / 3 - 20) * this.matrixScale
-            this.padding = {top: 20, bottom : 0, left : 0, right: 0}
+            this.padding = { top: 20, bottom: 0, left: 0, right: 0 }
 
-            console.log(this.matrix)
             this.num_of_matrix = this.matrix.length
-            for(let mat = 0; mat < this.matrix.length; mat += 1){
+            for (let mat = 0; mat < this.matrix.length; mat += 1) {
                 this.visualize(mat)
-            }      
+            }
         },
 
         preprocess() {
@@ -61,51 +61,71 @@ export default {
             let Kp = this.matrix[idx].length
             this.boxWidth = this.width / Kp
             this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
-            
+
             let adjacencyMatrix = adjacencyMatrixLayout()
-                .size([this.width, this.height])
+                .size([this.width - this.nodeWidth, this.height])
                 .useadj(true)
                 .adj(this.matrix[idx])
 
             let matrixData = adjacencyMatrix()
-            
-            this.max_weight = 0
-            for(let i = 0; i < matrixData.length; i += 1){
-                this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
-            }
+            console.log(matrixData, Number.isNaN(matrixData[0].x))
+            // if (!Number.isNaN(matrixData[0].x)) {
+                this.max_weight = 0
+                for (let i = 0; i < matrixData.length; i += 1) {
+                    this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
+                }
 
-            d3.selectAll('.KpMatrix' + idx).remove()
-            this.svg = d3.select('#' + this.id)
-                .append('svg')
-                .attrs({
-                    transform: `translate(${this.offset*idx}, ${0})`,
-                    width: this.width,
-                    height: this.height,
-                    class: 'KpMatrix' + idx,
-                })
+                d3.selectAll('.KpMatrix' + idx).remove()
+                this.svg = d3.select('#' + this.id)
+                    .append('svg')
+                    .attrs({
+                        transform: `translate(${this.offset * idx + this.offset}, ${0})`,
+                        width: this.width,
+                        height: this.height,
+                        class: 'KpMatrix' + idx,
+                    })
 
-            this.svg.selectAll('.rect' + idx)
-                .data(matrixData)
-                .enter()
-                .append('rect')
-                .attrs({
-                    class: 'rect' + idx, 
-                    'width': (d) => d.width,
-                    'height': (d) => d.height,
-                    'x': (d) => d.x,
-                    'y': (d) => d.y,
-                })
-                .style('stroke', 'black')
-                .style('stroke-width', '1.5px')
-                .style('stroke-opacity', .3)
-                .style('fill', d => "#7BB6B0")
-                .style('fill-opacity', d => d.weight/this.max_weight);
+                this.svg.selectAll('.rect' + idx)
+                    .data(matrixData)
+                    .enter()
+                    .append('rect')
+                    .attrs({
+                        class: 'rect' + idx,
+                        'width': (d) => this.nodeWidth,
+                        'height': (d) => this.nodeHeight,
+                        'x': (d) => d.x + this.nodeWidth,
+                        'y': (d) => d.y,
+                    })
+                    // .style('stroke', 'black')
+                    // .style('stroke-width', '1.5px')
+                    .style('stroke-opacity', .3)
+                    .style('fill', d => "#7BB6B0")
+                    .style('fill-opacity', d => d.weight / this.max_weight + 0.1);
 
-            d3.select('.KpMatrix')
-                .call(adjacencyMatrix.xAxis);
+                this.nodeWidth = this.width / Math.sqrt(matrixData.length)
+                this.nodeHeight = this.height / Math.sqrt(matrixData.length)
+                // Append the kp value indicators:
+                this.svg.selectAll('.clusterrect' + idx)
+                    .data(this.clusterIds)
+                    .enter()
+                    .append('rect')
+                    .attrs({
+                        class: 'clusterrect' + idx,
+                        'width': (d) => this.nodeWidth * 3,
+                        'height': (d) => this.nodeHeight,
+                        'x': (d) => 0,
+                        'y': (d, i) => this.nodeHeight * i,
+                    })
+                    .style('stroke-opacity', .3)
+                    .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
 
-            d3.select('.KpMatrix')
-                .call(adjacencyMatrix.yAxis);
+                d3.select('.KpMatrix')
+                    .call(adjacencyMatrix.xAxis);
+
+                d3.select('.KpMatrix')
+                    .call(adjacencyMatrix.yAxis);
+            // }
+
 
         },
 

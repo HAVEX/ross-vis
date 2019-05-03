@@ -51,7 +51,7 @@ export default {
     mounted() {
         let self = this
         EventHandler.$on('draw_kpmatrix_on_cpd', function (prev_cpd, cpd) {
-            if(!self.track_cpds.includes(cpd)){
+            if (!self.track_cpds.includes(cpd)) {
                 console.log("New CPD: ", prev_cpd, cpd)
                 self.processForCommunication('interval')
                 self.processForKpMatrixInterval(prev_cpd, cpd)
@@ -65,17 +65,22 @@ export default {
     },
     methods: {
         init() {
-            console.log('Communication Panel [init]', this.granularity)
-            this.processForCommunication('current')
-            this.processForKpMatrixCurrent()
-            this.visualize()
+            if (this.commData != null) {
+                console.log('Communication Panel [init]', this.granularity)
+                this.processForCommunication('current')
+                this.processForKpMatrixCurrent()
+                this.visualize()
+            }
         },
 
         update() {
-            console.log('Communication Panel [update]', this.granularity)
-            this.processForCommunication('current')
-            this.processForKpMatrixCurrent()
-            this.visualize()
+            if(this.commData != null){            
+                this.clusterIds = []
+                console.log('Communication Panel [update]', this.granularity)
+                this.processForCommunication('current')
+                this.processForKpMatrixCurrent()
+                this.visualize()
+            }
         },
 
         clear() {
@@ -83,12 +88,12 @@ export default {
         },
 
         visualize() {
+            this.$refs.KpMatrix.matrix = this.kpMatrix
+            this.$refs.KpMatrix.clusterIds = this.clusterIds
             if (this.granularity == 'KpGid') {
-                this.$refs.KpMatrix.matrix = this.kpMatrix
                 this.$refs.KpMatrix.init()
             }
             else if (this.granularity == 'Peid') {
-                this.$refs.KpMatrix.matrix = this.kpMatrix
                 this.$refs.KpMatrix.init()
                 // this.$refs.Communication.initVis()
             }
@@ -115,11 +120,11 @@ export default {
                     this.prev_comm_time = 0
                 }
 
-                if(mode == 'current'){
+                if (mode == 'current') {
                     this.timeIntervals = []
                     this.timeIntervals.push([this.prev_comm_time, comm_time])
                 }
-                else if(mode == 'interval'){
+                else if (mode == 'interval') {
                     this.timeIntervals.push([this.prev_comm_time, comm_time])
                 }
                 // this.$refs.Communication.allMetrics = Object.keys(comm_schema).filter(k => k.slice(-2) !== 'id' && k.slice(-2) !== 'Id')
@@ -130,7 +135,7 @@ export default {
         processForKpMatrixCurrent() {
             // Parsing code for the KpGrid view.
             let input_data = this.commData['incoming_df']
-            this.kpMatrix[0] = [] 
+            this.kpMatrix[0] = []
             input_data.map((data, kp) => {
                 let comm_data = data['CommData']
                 for (let i = 0; i < comm_data.length; i += 1) {
@@ -151,36 +156,37 @@ export default {
 
             // Filter by time interval. 
             let filter_data = []
-            for(let i = 0; i < input_data.length; i += 1){
-                if(input_data[i]['LastGvt'] > prev_cpd && input_data[i]['LastGvt'] <= cpd){
+            for (let i = 0; i < input_data.length; i += 1) {
+                if (input_data[i]['LastGvt'] > prev_cpd && input_data[i]['LastGvt'] <= cpd) {
                     filter_data.push(input_data[i])
                 }
             }
 
             let number_of_ids = input_data[0]['CommData'].length
-            let sum_by_ids = []   
+            let sum_by_ids = []
             filter_data.map((data, kp) => {
-                let comm_data = data['CommData']   
-                let idx = Math.floor(kp/number_of_ids)         
+                let comm_data = data['CommData']
+                let idx = Math.floor(kp / number_of_ids)
                 sum_by_ids[idx] = []
-                for(let i = 0; i < comm_data.length; i += 1){
-                    if(sum_by_ids[idx][i] == undefined){
+                for (let i = 0; i < comm_data.length; i += 1) {
+                    if (sum_by_ids[idx][i] == undefined) {
                         sum_by_ids[idx][i] = 0
                     }
                     sum_by_ids[idx][i] += comm_data[i]
                 }
             })
+            console.log(sum_by_ids)
             // take average of the data
             let avg_by_ids = []
-            for(let id = 0; id < number_of_ids; id += 1){
+            for (let id = 0; id < sum_by_ids.length; id += 1) {
                 avg_by_ids[id] = []
-                for(let i = 0; i < number_of_ids; i += 1){
-                    avg_by_ids[id][i] = sum_by_ids[id][i]/number_of_ids
+                for (let i = 0; i < number_of_ids; i += 1) {
+                    avg_by_ids[id][i] = sum_by_ids[id][i] / number_of_ids
                 }
             }
 
-            this.kpMatrix[this.kpMatrix_count] = [] 
-            for(let id = 0; id < number_of_ids; id += 1) {    
+            this.kpMatrix[this.kpMatrix_count] = []
+            for (let id = 0; id < number_of_ids; id += 1) {
                 for (let i = 0; i < number_of_ids; i += 1) {
                     if (this.kpMatrix[this.kpMatrix_count][id] == undefined) {
                         this.kpMatrix[this.kpMatrix_count][id] = []

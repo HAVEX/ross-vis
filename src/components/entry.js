@@ -25,7 +25,7 @@ export default {
     timeDomains: ['LastGvt', 'RealTs', 'VirtualTs'],
     selectedTimeDomain: 'LastGvt',
     granularity: ['Pe', 'Kp', 'Lp'],
-    selectedGranularity: 'Pe',
+    selectedGranularity: 'Kp',
     GranID: ['Peid', 'KpGid', 'Lpid'],
     selectedGranID: null,
     plotMetric1: 'RbSec',
