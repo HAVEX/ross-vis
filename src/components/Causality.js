@@ -21,6 +21,7 @@ export default {
       from_items: [],
       causality: ['from', 'to'],
       selectedCausality: 'to',
+      message: 'Causality view'
   }),
   methods: {
     rowClass(item, type) {

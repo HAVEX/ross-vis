@@ -6,7 +6,9 @@
     v-bind:measure="measure" 
     v-bind:time-domain="timeDomain"
     v-bind:plot-data="isTsDataLoaded ? plotData1 : null" 
-    v-bind:cluster-map="clusterMap" />
+    v-bind:comm-data="commData"
+    v-bind:cluster-map="clusterMap" 
+    v-bind:panel-id="panelId1" />
     
     <TimeDimCorrPanel ref="TimeDimCorrPanel2" 
     v-show="isTsDataLoaded" 
@@ -15,7 +17,9 @@
     v-bind:granularity="granularity" 
     v-bind:plot-metric="plotMetric2"
     v-bind:plot-data="isTsDataLoaded ? plotData2 : null" 
-    v-bind:cluster-map="clusterMap" />
+    v-bind:comm-data="commData"
+    v-bind:cluster-map="clusterMap" 
+    v-bind:panel-id="panelId2" />
     
     <CommKpMatrixPanel ref="CommKpMatrixPanel"
     v-bind:metrics="metrics"

@@ -68,8 +68,8 @@ export default {
             if (this.commData != null) {
                 console.log('Communication Panel [init]', this.granularity)
                 this.processForCommunication('current')
-                this.processForKpMatrixCurrent()
-                this.visualize()
+                // this.processForKpMatrixCurrent()
+                // this.visualize()
             }
         },
 
@@ -78,8 +78,8 @@ export default {
                 this.clusterIds = []
                 console.log('Communication Panel [update]', this.granularity)
                 this.processForCommunication('current')
-                this.processForKpMatrixCurrent()
-                this.visualize()
+                // this.processForKpMatrixCurrent()
+                // this.visualize()
             }
         },
 
@@ -132,25 +132,6 @@ export default {
             }
         },
 
-        processForKpMatrixCurrent() {
-            // Parsing code for the KpGrid view.
-            let input_data = this.commData['incoming_df']
-            this.kpMatrix[0] = []
-            input_data.map((data, kp) => {
-                let comm_data = data['CommData']
-                for (let i = 0; i < comm_data.length; i += 1) {
-                    if (this.kpMatrix[0][kp] == undefined) {
-                        this.kpMatrix[0][kp] = []
-                    }
-                    this.kpMatrix[0][kp][i] = {
-                        x: kp,
-                        j: i,
-                        z: comm_data[i]
-                    }
-                }
-            })
-        },
-
         processForKpMatrixInterval(prev_cpd, cpd) {
             let input_data = this.commData['df']
 
@@ -162,28 +143,33 @@ export default {
                 }
             }
 
+            // console.log(filter_data)
+
             let number_of_ids = input_data[0]['CommData'].length
             let sum_by_ids = []
             filter_data.map((data, kp) => {
                 let comm_data = data['CommData']
                 let idx = Math.floor(kp / number_of_ids)
-                sum_by_ids[idx] = []
                 for (let i = 0; i < comm_data.length; i += 1) {
-                    if (sum_by_ids[idx][i] == undefined) {
-                        sum_by_ids[idx][i] = 0
-                    }
-                    sum_by_ids[idx][i] += comm_data[i]
+                    sum_by_ids[i] = []
+                    for(let j = 0; j < comm_data.length; j += 1){
+                        if (sum_by_ids[i][j] == undefined) {
+                            sum_by_ids[i][j] = 0
+                        }
+                        sum_by_ids[i][j] += comm_data[j]
+                    }   
                 }
             })
-            console.log(sum_by_ids)
             // take average of the data
             let avg_by_ids = []
-            for (let id = 0; id < sum_by_ids.length; id += 1) {
+            for (let id = 0; id < number_of_ids; id += 1) {
                 avg_by_ids[id] = []
                 for (let i = 0; i < number_of_ids; i += 1) {
                     avg_by_ids[id][i] = sum_by_ids[id][i] / number_of_ids
                 }
             }
+
+            // console.log(avg_by_ids)
 
             this.kpMatrix[this.kpMatrix_count] = []
             for (let id = 0; id < number_of_ids; id += 1) {

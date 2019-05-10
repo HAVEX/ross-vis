@@ -1,23 +1,15 @@
 <v-layout row wrap>
-    <v-flex xs7>
-        <D3TimeSeries ref="D3TimeSeries" 
-            v-show = "useD3 == true"
-        />
-        <TimeSeries ref="TimeSeries" 
-            v-show = "useD3 == false"
-            v-bind:cpd="cpd" 
-            v-bind:clustering="clustering"
-        />
+    <v-flex xs2>
+        <Causality ref="Causality" v-if="panelId=='1'" />
+        <LiveKpMatrix ref="LiveKpMatrix" v-if="panelId=='2'" />
     </v-flex>
-    <v-flex xs3>
-        <D3Dimensionality ref="D3Dimensionality"
-            v-show = "useD3 == true"
-        />
-        <Dimensionality ref="Dimensionality" 
-            v-show = "useD3 == false"
-            v-bind:pca="pca" /> 
+    <v-flex xs8>
+        <D3TimeSeries ref="D3TimeSeries" v-show="useD3 == true" />
+        <TimeSeries ref="TimeSeries" v-show="useD3 == false" v-bind:cpd="cpd" v-bind:clustering="clustering" />
     </v-flex>
     <v-flex xs2>
-        <Causality ref="Causality" v-bind:causality="causality" />
+        <D3Dimensionality ref="D3Dimensionality" v-show="useD3 == true" />
+        <Dimensionality ref="Dimensionality" v-show="useD3 == false" v-bind:pca="pca" />
     </v-flex>
+
 </v-layout>

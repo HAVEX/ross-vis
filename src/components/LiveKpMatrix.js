@@ -1,10 +1,10 @@
 import * as d3 from 'd3'
 import "d3-selection-multi";
 import adjacencyMatrixLayout from '../libs/d3-adjacency-matrix-layout'
-import template from '../html/KpMatrix.html'
+import template from '../html/LiveKpMatrix.html'
 
 export default {
-    name: 'KpMatrix',
+    name: 'LiveKpMatrix',
     template: template,
     props: [],
 
@@ -28,7 +28,7 @@ export default {
     },
 
     mounted() {
-        this.id = 'kpmatrix-overview' + this._uid
+        this.id = 'live-kpmatrix-overview' + this._uid
     },
 
     methods: {

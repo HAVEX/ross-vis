@@ -1,8 +1,6 @@
 import * as d3 from 'd3'
-import { zoom } from 'd3-zoom'
 import { lasso } from './lasso';
 import template from '../html/D3Dimensionality.html'
-import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
 
 export default {
     name: 'D3Dimensionality',
@@ -20,6 +18,8 @@ export default {
         xMax: 0,
         yMin: 0,
         yMax: 0,
+        message: 'Dimensionality view',
+        showMessage: false,
     }),
     mounted() {
         this.id = 'dim-overview' + this._uid
@@ -292,10 +292,7 @@ export default {
                 let d0 = s.map(this.x.invert)
                 let d1 = s.map(this.y.invert)
 
-                console.log(d0, d1)
-
                 this.selectedIds = this.findIdsInRegion(d0[0], d0[1], d1[0], d1[1])
-
 
                 // set the scale domains based on selection
                 this.x.domain([s[0][0], s[1][0]].map(this.x.invert, this.x))
