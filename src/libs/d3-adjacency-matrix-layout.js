@@ -2,7 +2,6 @@
 
 // https://bl.ocks.org/micahstubbs/7f360cc66abfa28b400b96bc75b8984e
 import * as d3 from "d3"
-import { formatPrefix } from "d3-format";
 
 export default function adjacencyMatrixLayout() {
     var directed = true;
@@ -60,7 +59,6 @@ export default function adjacencyMatrixLayout() {
                 }
             });
 
-            console.log('nodes', nodes, nodes.length);
 
             nodes.forEach(function (sourceNode, a) {
                 nodes.forEach(function (targetNode, b) {

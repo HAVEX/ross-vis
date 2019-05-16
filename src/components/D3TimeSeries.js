@@ -92,7 +92,6 @@ export default {
         showLabels() {
             let width = 100;
             let height = 20;
-            console.log(d3.select('#labels'))
             var svg = d3.select("#labels").append('svg')
                 .attrs({
                     "width": width,

@@ -11,6 +11,7 @@ function lasso() {
         isPathClosed = false,
         hoverSelect = true,
         targetArea,
+        className = 'lasso',
         on = {start:function(){}, draw: function(){}, end: function(){}};
  
     // Function to execute on call
@@ -18,7 +19,7 @@ function lasso() {
 
         // add a new group for the lasso
         var g = _this.append("g")
-            .attr("class","lasso");
+            .attr("class",className);
         
         // add the drawn path for the lasso
         var dyn_path = g.append("path")
@@ -182,6 +183,11 @@ function lasso() {
         });
         return lasso;
     };
+
+    lasso.className = function (_) {
+        className = _
+        return lasso
+    }
 
     // Return possible items
     lasso.possibleItems = function() {

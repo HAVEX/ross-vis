@@ -66,7 +66,7 @@ export default {
 		clear() {
 			this.$refs.TimeDimCorrPanel1.clear()
 			this.$refs.TimeDimCorrPanel2.clear()
-			this.$refs.CommKpMatrixPanel.clear()
+			// this.$refs.CommKpMatrixPanel.clear()
 		},
 
 		update() {
@@ -103,6 +103,8 @@ export default {
 			return ret
 		},
 
-		
+		createKpMatrix(data){
+			this.$refs.comm
+		}
 	}
 }

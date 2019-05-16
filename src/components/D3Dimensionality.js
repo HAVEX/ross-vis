@@ -12,7 +12,7 @@ export default {
         config: null,
         vis: null,
         colorBy: null,
-        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"], 
+        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         zoomed: false,
         xMin: 0,
         xMax: 0,
@@ -129,7 +129,7 @@ export default {
             //     .call(this.yAxis)
 
             d3.selectAll('.circle' + this.id).remove()
-            d3.selectAll('.lasso').remove()
+            d3.selectAll('.lasso' + this.id).remove()
             let self = this
             this.circles = this.svg.selectAll('circle')
                 .data(this.data)
@@ -145,9 +145,10 @@ export default {
                     cx: (d, i) => { return self.x(d[0]) },
                     cy: (d) => { return self.y(d[1]) },
                 })
-                // .call(this.d3zoom)
+            // .call(this.d3zoom)
 
             this.lasso = lasso()
+                .className('lasso' + this.id)
                 .closePathSelect(true)
                 .closePathDistance(100)
                 .items(this.circles)

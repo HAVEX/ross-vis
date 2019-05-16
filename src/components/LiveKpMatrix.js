@@ -16,7 +16,7 @@ export default {
         container: null,
         height: 0,
         width: 0,
-        message: "Communication view",
+        message: "Live communication view",
         matrix: null,
         matrixScale: 0.85,
         offset: 0,
@@ -57,7 +57,6 @@ export default {
         },
 
         visualize(idx) {
-            console.log('a')
             let Kp = this.matrix[idx].length
             this.boxWidth = this.width / Kp
             this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
@@ -68,7 +67,6 @@ export default {
                 .adj(this.matrix[idx])
 
             let matrixData = adjacencyMatrix()
-            console.log(matrixData, Number.isNaN(matrixData[0].x))
             // if (!Number.isNaN(matrixData[0].x)) {
                 this.max_weight = 0
                 for (let i = 0; i < matrixData.length; i += 1) {

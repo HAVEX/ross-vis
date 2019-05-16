@@ -14,4 +14,8 @@ export default {
 #dashboard {
   padding: 64px 15px 0px;
 }
+
+.v-chip {
+  font-size: 18px;
+}
 </style>
