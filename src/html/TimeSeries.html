@@ -1,6 +1,49 @@
-<v-card :id="id">
-    <!-- <v-switch label="Change Point Detection" v-model="showCPD" v-on:change="visualizeCPD()"></v-switch> -->
-    <!-- <v-overflow-btn dense label="Analytical Method" :items="methods" v-model="selectedMethod"></v-overflow-btn> -->
-    <!-- <v-spacer></v-spacer> -->
+<v-flex fill-height>
+  <v-toolbar dense>
+    <v-flex xs3 class="ma-2">
+      <v-select 
+        label="TimeMode"
+        :items="timeDomains"
+        v-model="selectedTimeDomain"
+        v-on:change="visualize()"
+      > </v-select>
+    </v-flex>
+    <!-- <v-flex xs3 class="ma-2">
+      <v-select 
+        label="Measure"
+        :items="measures"
+        v-model="selectedMeasure"
+        v-on:change="visualize()"
+      >
+      </v-select>
+    </v-flex> -->
+    <v-flex xs2 class="ma-2">
+      <v-select
+        label="Granularity"
+        :items="granularities"
+        v-model="granularity"
+        v-on:change="visualize()"
+      >
+      </v-select>
+    </v-flex>
+    <v-flex v-if="clusters" xs2 class="ma-2">
+      <v-select
+        label="Color by"
+        :items="clusters"
+        v-model="colorEncoding"
+        v-on:change="visualize()"
+      >
+      </v-select>
+    </v-flex>
+    <v-spacer></v-spacer>
+    <v-btn icon>
+      <v-icon v-on:click="backward()">skip_previous</v-icon>
+    </v-btn>
+    <v-btn icon>
+      <v-icon v-on:click="forward()">skip_next</v-icon>
+    </v-btn>
+    <v-btn icon>
+      <v-icon v-on:click="reset()">refresh</v-icon>
+    </v-btn>
   </v-toolbar>
 </v-card>

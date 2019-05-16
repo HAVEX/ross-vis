@@ -29,7 +29,7 @@
     <v-container fluid fill-height class="pa-1">
       <v-layout justify-center align-center>
         <v-flex xs7 fill-height class="pa-1">
-          <TimeSeries ref="TimeSeries"></TimeSeries>
+          <TimeSeries ref="TimeSeries" @update="updateCommunication"></TimeSeries>
         </v-flex>
         <v-flex xs5 fill-height class="pa-1">
           <Communication  ref="Communication" />
