@@ -50,6 +50,8 @@ export default {
             this.nodeWidth = this.width / Kp
             this.nodeHeight = this.height / Kp
             this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
+            this.nodeWidth = this.width / this.matrix.length + 0.5
+            this.nodeHeight = this.height / this.matrix.length + 0.5
 
             let adjacencyMatrix = adjacencyMatrixLayout()
                 .size([this.width - this.nodeWidth / 2, this.height - this.nodeHeight / 2])
@@ -97,8 +99,7 @@ export default {
                 })
 
 
-            this.nodeWidth = this.width / (Math.sqrt(matrixData.length) + 0.5)
-            this.nodeHeight = this.height / (Math.sqrt(matrixData.length) + 0.5)
+           
             // Append the kp value indicators:
             this.svg.selectAll('.clusterrectIY' + this.idx)
                 .data(this.clusterIds)
