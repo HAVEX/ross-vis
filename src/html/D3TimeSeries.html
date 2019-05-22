@@ -1,6 +1,6 @@
 <v-card :id="id">
     <v-flex>
-        <v-chip v-if="showMessage==true"> {{ message }} </v-chip>
+        <v-chip id="timeseries-chip" v-if="showMessage==true"> {{ message }} </v-chip>
         <div v-if="showMessage==true" id="labels"></div>
     </v-flex>
 </v-card>

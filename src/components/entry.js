@@ -50,8 +50,10 @@ export default {
 		selectedAnalysis: 'Case_study-1',
 		play: 1,
 		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
-		clusterMetrics: ['RbSec', 'RbPrim'],
+		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
 		selectedClusterMetric: 'RbPrim',
+		numberOfClusters: 3,
+		selectedNumberOfClusters: 3,
 		commThreshold: 0,
 		thresholdValue: 0,
 		showIntraComm: false,
@@ -191,6 +193,10 @@ export default {
 				EventHandler.$emit('change_label')
 				this.$refs.StreamBoard.update()
 			})
+		},
+
+		updateNumberOfClusters(){
+
 		},
 
 		updateClusterMetric() {

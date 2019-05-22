@@ -124,7 +124,7 @@ export default {
 					this.clusterIds.push(parseInt(this.clusterMap[id]))
 				}
 			}
-			console.log("Cluster IDs", this.clusterIds)
+			// console.log("Cluster IDs", this.clusterIds)
 		}
 	},
 

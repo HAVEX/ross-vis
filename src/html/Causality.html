@@ -10,10 +10,9 @@
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item>From metrics</b-dropdown-item>
     </b-dropdown> -->
-    <b-container fluid class="table-container">
+    <b-container fluid fill-height class="table-container">
 
     <b-table 
-        id="causality-table"
         v-if="selectedCausality == 'to'"
         :sort-by.sync="sortBy" 
         :sort-desc.sync="sortDesc" 
@@ -21,7 +20,6 @@
         :fields="fields" 
         :responsive="responsive" />
     <b-table 
-        id="causality-table"
         v-if="selectedCausality == 'from'"
         :sort-by.sync="sortBy" 
         :sort-desc.sync="sortDesc" 

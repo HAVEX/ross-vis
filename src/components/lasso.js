@@ -1,6 +1,4 @@
 import * as d3 from 'd3'
-import * as selection from "d3-selection";
-import * as drag from "d3-drag";
 import classifyPoint from "robust-point-in-polygon";
 
 function lasso() {
@@ -262,8 +260,6 @@ function lasso() {
         targetArea = _;
         return lasso;
     }
-
-
     
     return lasso;
 };

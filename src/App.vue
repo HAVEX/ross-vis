@@ -15,13 +15,35 @@ export default {
   padding: 64px 15px 0px;
 }
 
+/* Chips to represent what each view is */
 .v-chip {
   font-size: 18px;
 }
 
+/* Lasso CSS*/
+.drawn{
+  fill:rgba(255, 255, 255, 0.5);
+  stroke:saddlebrown;
+  stroke-width: 1.5px;
+}
+
+.origin{
+  fill:saddlebrown;
+  opacity: 0.5;
+}
+
+/* Navigator CSS */
+.v-navigation-drawer{
+  padding: 15px;
+}
+
+#control-panel{
+  box-shadow: 0 0px 0px 0px rgba(0,0,0,.2), 0 0px 0px 0 rgba(0,0,0,.14), 0 0px 0px 0 rgba(0,0,0,.12)
+}
+
 /* Causality table CSS */
 .table-container {
-     height: calc(50vh - 450px);
+     height: calc(10vh - 450px);
 }
  .table-container table {
      display: flex;
@@ -50,7 +72,7 @@ export default {
      border-collapse: collapse;
 }
  .table-container table td, .table-container table th {
-     padding: 0.4em;
+     padding: 0.8em;
 }
  .table-container table th {
      border: 1px solid black;

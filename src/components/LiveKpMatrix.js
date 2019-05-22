@@ -1,6 +1,6 @@
 import * as d3 from 'd3'
 import "d3-selection-multi";
-import adjacencyMatrixLayout from '../libs/d3-adjacency-matrix-layout'
+import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
 import template from '../html/LiveKpMatrix.html'
 
 export default {
@@ -60,6 +60,8 @@ export default {
             let Kp = this.matrix[idx].length
             this.boxWidth = this.width / Kp
             this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
+            this.nodeWidth = this.width / this.matrix[idx].length + 0.5
+            this.nodeHeight = this.height / this.matrix[idx].length + 0.5
 
             let adjacencyMatrix = adjacencyMatrixLayout()
                 .size([this.width - this.nodeWidth/2, this.height - this.nodeHeight/2 ])
@@ -67,7 +69,7 @@ export default {
                 .adj(this.matrix[idx])
 
             let matrixData = adjacencyMatrix()
-            // if (!Number.isNaN(matrixData[0].x)) {
+            if (!Number.isNaN(matrixData[0].x)) {
                 this.max_weight = 0
                 for (let i = 0; i < matrixData.length; i += 1) {
                     this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
@@ -98,11 +100,13 @@ export default {
                     // .style('stroke-width', '1.5px')
                     .style('stroke-opacity', .3)
                     .style('fill', d => "#7BB6B0")
-                    .style('fill-opacity', d => d.weight / this.max_weight + 0.1);
+                    .style('fill-opacity', d => d.weight / this.max_weight + 0.1)
+                    .on('click', (d) => {
+                        console.log(d.id)
+                    })
 
                 
-                this.nodeWidth = this.width / (Math.sqrt(matrixData.length ) + 0.5)
-                this.nodeHeight = this.height / (Math.sqrt(matrixData.length ) + 0.5)
+          
                 // Append the kp value indicators:
                 this.svg.selectAll('.clusterrectY' + idx)
                     .data(this.clusterIds)
@@ -147,7 +151,7 @@ export default {
 
                 d3.select('.KpMatrix')
                     .call(adjacencyMatrix.yAxis);
-            // }
+            }
         },
         
         clear() {
