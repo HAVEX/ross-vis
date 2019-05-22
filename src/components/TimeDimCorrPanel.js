@@ -30,7 +30,7 @@ export default {
 		TimeSeries,
 		D3TimeSeries,
 		Causality,
-		LiveKpMatrix
+		LiveKpMatrix,
 	},
 	data: () => ({
 		ts: null,
@@ -92,7 +92,7 @@ export default {
 					this.$refs.TimeSeries.init()
 					this.$refs.Dimensionality.init()
 				}
-				this.$refs.Causality.init()
+				// this.$refs.Causality.init()
 			}
 			else if(this.panelId == '2'){
 				if (this.useD3) {
@@ -109,20 +109,22 @@ export default {
 			}
 	},
 
-	process() {
+	processClusterIDs() {
 		let stream_obj = this.plotData
 		if (stream_obj != null && Object.keys(stream_obj).length !== 1) {
 			this.plotData1 = stream_obj[this.plotMetric1]
 			this.plotData2 = stream_obj[this.plotMetric2]
 
+			this.clusterIds = []
 			// Create this.processIds, this.clusterIds for Communication panel
-			this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
+			// this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
 			for (let id in this.clusterMap) {
 				if (this.clusterMap.hasOwnProperty(id)) {
 					this.processIds.push(parseInt(id))
 					this.clusterIds.push(parseInt(this.clusterMap[id]))
 				}
 			}
+			console.log("Cluster IDs", this.clusterIds)
 		}
 	},
 
@@ -339,6 +341,7 @@ export default {
 						// this.macro_result = this.processD3TimeSeries(this.macro_result, 'id')
 					}
 					this.processLiveKpMatrix()
+					this.processClusterIDs()
 					this.reset()
 					// this.checkClustering()
 				}

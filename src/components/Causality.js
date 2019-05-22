@@ -12,6 +12,7 @@ export default {
       striped: true,
       bordered: true,
       hover: true,
+      responsive: true,
       fields: [
         { key: 'metric', sortable: false },
         { key: 'IR', sortable: true },
@@ -53,7 +54,7 @@ export default {
           data['to'][i]['_rowVariant'] = 'success'
         }
         else{
-          data['to'][i]['_rowVariant'] = 'danger'
+          data['to'][i]['_rowVariant'] = 'dangere'
         }
       }
       return data
@@ -61,14 +62,14 @@ export default {
 
     initVis(data) {
       data = this.preprocess(data)
-      this.from_items = data['from']
-      this.to_items = data['to']
+      this.from_items = data['from'].slice(1, 5)
+      this.to_items = data['to'].slice(0, 5)
     },
 
     clear(data) {
       this.preprocess(data)
-      this.from_items = data['from']
-      this.to_items = data['to']
+      this.from_items = data['from'].slice(1, 5)
+      this.to_items = data['to'].slice(0, 5)
     },
   }
 }

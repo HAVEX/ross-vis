@@ -58,13 +58,30 @@ export default {
             }
         })
 
-        EventHandler.$on('fetch_kpmatrix_on_cpd_results', function (cpd, matrix) {
+        EventHandler.$on('fetch_kpmatrix_on_cpd_results', function (prev_cpd, cpd, matrix) {
             if (!self.track_cpds.includes(cpd)) {
                 self.data = matrix['comm']['incoming_df']
                 self.visualize()
                 self.track_cpds.push(cpd)
             }
         })
+
+        EventHandler.$on('draw_kpmatrix_on_click', function (prev_cpd, cpd, Peid) {
+            if (!self.track_cpds.includes(cpd) && cpd != undefined) {
+                console.log("New CPD: ", prev_cpd, cpd)
+                self.processForCommunication('interval')
+                EventHandler.$emit('fetch_kpmatrix_on_click', prev_cpd, cpd, Peid)
+            }
+        })
+
+        EventHandler.$on('fetch_kpmatrix_on_click_results', function (cpd, matrix) {
+            if (!self.track_cpds.includes(cpd)) {
+                self.data = matrix['comm']['incoming_df']
+                self.visualize()
+                self.track_cpds.push(cpd)
+            }
+        })
+
         this.id = this._uid + '-overview'
         this.init()
     },

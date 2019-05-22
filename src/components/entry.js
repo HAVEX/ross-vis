@@ -25,11 +25,11 @@ export default {
 		timeDomains: ['LastGvt', 'RealTs', 'VirtualTs'],
 		selectedTimeDomain: 'LastGvt',
 		granularity: ['Pe', 'Kp', 'Lp'],
-		selectedGranularity: 'Kp',
+		selectedGranularity: 'Pe',
 		GranID: ['Peid', 'KpGid', 'Lpid'],
 		selectedGranID: null,
 		plotMetric1: 'RbSec',
-		plotMetric2: 'NeventProcessed',
+		plotMetric2: 'RbPrim',
 		similarity: ['euclidean'],
 		selectedSimilarity: 'euclidean',
 		clustering: ['evostream', 'dbstream'],
@@ -49,9 +49,9 @@ export default {
 		analysis: ['Case_study-1', 'Case_study-2'],
 		selectedAnalysis: 'Case_study-1',
 		play: 1,
-		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec'],
-		clusterMetrics: ['RbSec', 'NeventProcessed'],
-		selectedClusterMetric: 'RbSec',
+		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
+		clusterMetrics: ['RbSec', 'RbPrim'],
+		selectedClusterMetric: 'RbPrim',
 		commThreshold: 0,
 		thresholdValue: 0,
 		showIntraComm: false,
@@ -84,7 +84,29 @@ export default {
 			self.socket.send(JSON.stringify(obj))
 			self.socket.onmessage = (event) => {
 				let data = JSON.parse(event.data)
-				EventHandler.$emit('fetch_kpmatrix_on_cpd_results', cpd, data)
+				EventHandler.$emit('fetch_kpmatrix_on_cpd_results', prev_cpd, cpd, data)
+				self.play = 1
+				self.update = 1
+				self.fetchTsData()
+			}
+		})
+
+		EventHandler.$on('fetch_kpmatrix_on_click', function (prev_cpd, cpd) {
+			let interval = []
+			interval.push(prev_cpd)
+			interval.push(cpd)
+			console.log('Fetching comm data for click', interval)
+			let obj = {
+				metric: this.calcMetrics,
+				method: 'comm-data-interval-mode2',
+				granularity: this.granularity,
+				interval: interval
+			}
+			self.play = 0
+			self.socket.send(JSON.stringify(obj))
+			self.socket.onmessage = (event) => {
+				let data = JSON.parse(event.data)
+				EventHandler.$emit('fetch_kpmatrix_on_click_results', cpd, data)
 				self.play = 1
 				self.update = 1
 				self.fetchTsData()
