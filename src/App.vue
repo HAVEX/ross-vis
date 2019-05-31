@@ -92,7 +92,7 @@ export default {
   text-overflow: ellipsis;
 }
 .table-container table thead {
-  border: 2px solid #0f0fa3;
+  border: 2px solid black;
 }
 .table-container th {
   background-color: white;

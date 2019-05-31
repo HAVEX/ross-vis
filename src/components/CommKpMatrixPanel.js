@@ -3,6 +3,9 @@ import Communication from './Communication'
 import AggrKpMatrix from './AggrKpMatrix'
 import EventHandler from './EventHandler'
 
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/antd.css'
+
 export default {
     name: 'CommKpMatrixPanel',
     template,
@@ -16,7 +19,8 @@ export default {
     ],
     components: {
         Communication,
-        AggrKpMatrix
+        AggrKpMatrix,
+        VueSlider,
     },
     data: () => ({
         id: null,
@@ -35,7 +39,10 @@ export default {
         newCommPanel: false,
         isComparisonMode: false,
         kpMatrix_count: 1,
-        track_cpds: []
+        message: "Aggregated Communication view",
+        track_cpds: [],
+        value: 0, 
+        height: 200,
     }),
     computed: {
         thresholdValue: function () {
@@ -82,12 +89,13 @@ export default {
             }
         })
 
-        this.id = this._uid + '-overview'
+        this.id = + 'Communication-overview'
         this.init()
     },
     methods: {
         init() {
             this.$refs.AggrKpMatrix.init()
+            this.height = (window.innerHeight / 3 - 20)
         },
 
         visualize() {
@@ -102,7 +110,9 @@ export default {
                         this.kpMatrix[id][i] = {
                             x: id,
                             j: i,
-                            z: this.data[id]['CommData'][i]
+                            z: this.data[id]['CommData'][i],
+                            id: this.processIds[i],
+                            cluster: this.clusterIds[i],
                         }
                     }
                 }
@@ -123,6 +133,8 @@ export default {
 
         // Parsing code for the picos view.
         processForCommunication(mode) {
+            this.clusterIds = []
+            this.processIds = []
             if (this.commData != null && Object.keys(this.commData).length !== 1) {
                 for (let id in this.clusterMap) {
                     if (this.clusterMap.hasOwnProperty(id)) {

@@ -84,13 +84,13 @@ export default {
 				granularity: this.granularity,
 				interval: interval
 			}
-			self.request = 0
 			self.socket.send(JSON.stringify(obj))
 			self.socket.onmessage = (event) => {
 				let data = JSON.parse(event.data)
 				EventHandler.$emit('fetch_kpmatrix_on_cpd_results', prev_cpd, cpd, data)
 				self.request = 1
 				self.fetchTsData()
+				self.request = 0
 			}
 		})
 
@@ -112,6 +112,7 @@ export default {
 				EventHandler.$emit('fetch_kpmatrix_on_click_results', cpd, data)
 				self.request = 1
 				self.fetchTsData()
+				self.request = 0
 			}
 		})
 
@@ -142,6 +143,7 @@ export default {
 		updatePlay() {
 			this.play = 1
 			this.update = 1
+			this.request = 0
 			this.fetchTsData()
 		},
 
@@ -152,6 +154,7 @@ export default {
 		updatePrevStep() {
 			this.play = 1
 			this.update = -1
+			this.request = 0
 			console.log("Removing ", this.count)
 			this.fetchTsData()
 
@@ -239,6 +242,13 @@ export default {
 			if (!count) {
 				count = this.count
 			}
+
+			// Toggle off the request mode explicitly if it is on.
+			if(this.request == 1){
+				this.request = 0
+				this.play = 1
+			}
+			
 			let obj = {
 				data: this.selectedGranularity + 'Data',
 				granularity: this.selectedGranID,

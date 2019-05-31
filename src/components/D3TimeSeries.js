@@ -302,6 +302,7 @@ export default {
                 })
                 .style('stroke', '#DA535B')
                 .style('stroke-width', '3.5px')
+                .style('z-index', 100)
         },
 
         // clusterLabel() {
@@ -310,48 +311,48 @@ export default {
         //         .enter().
         // }
 
-    // enablePanning() {
-    //     // Zoom/Pan behavior
-    //     let pan = d3.behavior.zoom()
-    //         .x(x_scale)
-    //         .scale(scale)
-    //         .size([this.width, this.height])
-    //         .scaleExtent([scale, scale])
-    //         .on('zoom', function (e) {
-    //             var current_domain = x_scale.domain(),
-    //                 current_max = current_domain[1].getTime();
+        // enablePanning() {
+        //     // Zoom/Pan behavior
+        //     let pan = d3.behavior.zoom()
+        //         .x(x_scale)
+        //         .scale(scale)
+        //         .size([this.width, this.height])
+        //         .scaleExtent([scale, scale])
+        //         .on('zoom', function (e) {
+        //             var current_domain = x_scale.domain(),
+        //                 current_max = current_domain[1].getTime();
 
-    //             // If we go past the max (i.e. now), reset translate to the max
-    //             if (!isNaN(max_translate_x) && current_max > now)
-    //                 pan.translate([max_translate_x, 0]);
+        //             // If we go past the max (i.e. now), reset translate to the max
+        //             if (!isNaN(max_translate_x) && current_max > now)
+        //                 pan.translate([max_translate_x, 0]);
 
-    //             // Update the data once user hits the point where current data ends
-    //             if (pan.translate()[0] > min_translate_x) {
-    //                 updateData();
-    //                 addNewPoints();
+        //             // Update the data once user hits the point where current data ends
+        //             if (pan.translate()[0] > min_translate_x) {
+        //                 updateData();
+        //                 addNewPoints();
 
-    //                 // Just to illustrate what's happening
-    //                 console.debug('Updated data: ', chart_data);
-    //                 console.debug('Updated selection: ', circles);
-    //             }
+        //                 // Just to illustrate what's happening
+        //                 console.debug('Updated data: ', chart_data);
+        //                 console.debug('Updated selection: ', circles);
+        //             }
 
-    //             // Redraw any components defined by the x axis
-    //             x_axis.call(x_axis_generator);
-    //             circles.attr('cx', function (d) {
-    //                 return x_scale(new Date(d.registered));
-    //             });
-    //         });
+        //             // Redraw any components defined by the x axis
+        //             x_axis.call(x_axis_generator);
+        //             circles.attr('cx', function (d) {
+        //                 return x_scale(new Date(d.registered));
+        //             });
+        //         });
 
-    //     // Apply the behavior 
-    //     this.svg.call(pan);
+        //     // Apply the behavior 
+        //     this.svg.call(pan);
 
-    //     // Now that we've scaled in, find the farthest point that
-    //     // we'll allow users to pan forward in time (to the right)
-    //     max_translate_x = width - x_scale(new Date(now));
-    //     this.svg.call(pan.translate([max_translate_x, 0]).event);
-    // },
+        //     // Now that we've scaled in, find the farthest point that
+        //     // we'll allow users to pan forward in time (to the right)
+        //     max_translate_x = width - x_scale(new Date(now));
+        //     this.svg.call(pan.translate([max_translate_x, 0]).event);
+        // },
 
-    visualize(ts, cpd) {
+        visualize(ts, cpd) {
             if (!this.isLabelled) {
                 this.label()
                 // this.clusterLabel()
@@ -400,6 +401,7 @@ export default {
                         fill: 'transparent',
                         transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     })
+                    .style('z-index', 0)
             }
         },
 

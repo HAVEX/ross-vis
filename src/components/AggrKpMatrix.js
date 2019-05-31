@@ -2,19 +2,20 @@ import * as d3 from 'd3'
 import "d3-selection-multi";
 import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
 import template from '../html/AggrKpMatrix.html'
-import EventHandler from './EventHandler.js'
+
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/antd.css'
 
 export default {
     name: 'AggrKpMatrix',
     template: template,
+    components: {
+        VueSlider
+    },
     props: [],
 
     data: () => ({
         id: null,
-        data: null,
-        view: null,
-        vis: null,
-        container: null,
         height: 0,
         width: 0,
         message: "Aggregated Communication view",
@@ -24,6 +25,8 @@ export default {
         colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         clusterIds: [],
         idx: 0,
+        value: [0, 100],
+        mark_points: [0],
     }),
 
     watch: {
@@ -46,6 +49,7 @@ export default {
         },
 
         visualize(prev_cpd, cpd) {
+            let uniqueKpCount = 16
             let Kp = this.matrix.length
             this.nodeWidth = this.width / Kp
             this.nodeHeight = this.height / Kp
@@ -57,15 +61,21 @@ export default {
                 .size([this.width - this.nodeWidth / 2, this.height - this.nodeHeight / 2])
                 .useadj(true)
                 .adj(this.matrix)
-                // .prev_cpd(prev_cpd)
-                // .cpd(cpd)
+            // .prev_cpd(prev_cpd)
+            // .cpd(cpd)
 
             let matrixData = adjacencyMatrix()
             this.max_weight = 0
             for (let i = 0; i < matrixData.length; i += 1) {
                 this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
             }
-
+            console.log(this.value.length)
+            
+            if(this.value[1] < this.max_weight){
+                this.value[1] = this.max_weight
+            }
+            this.mark_points.push(this.max_weight)
+            
             d3.selectAll('.KpMatrixI' + this.idx).remove()
             this.svg = d3.select('#' + this.id)
                 .append('svg')
@@ -87,19 +97,24 @@ export default {
                     'x': (d) => d.x + this.nodeWidth / 2,
                     'y': (d) => d.y + this.nodeHeight / 2,
                 })
-                // .style('stroke', 'black')
-                // .style('stroke-width', '1.5px')
-                .style('stroke-opacity', .3)
-                .style('fill', d => "#7BB6B0")
-                .style('fill-opacity', d => d.weight / this.max_weight + 0.1)
-                .on('click', (d, i)=>{
-                    console.log(d, i, this.matrix.length, i % this.matrix.length)
-                    peid = i % this.matrix.length
-                    EventHandler.$emit('fetch_kpmatrix_on_click', d.prev_cpd, d.cpd, peid)
+                .style('stroke', (d, i) => {
+                    if (d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
+                        return 'black'
+                })
+                .style('stroke-width', (d, i) => {
+                    if (d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
+                        return '0.1px'
+                })
+                .style('stroke-opacity', 1)
+                .style('fill', d => "#8e0b0b")
+                .style('fill-opacity', d => {
+                    // console.log(d.weight / this.max_weight)
+                    return d.weight / this.max_weight
+                })
+                .on('click', (d) => {
+                    console.log(d.id)
                 })
 
-
-           
             // Append the kp value indicators:
             this.svg.selectAll('.clusterrectIY' + this.idx)
                 .data(this.clusterIds)
