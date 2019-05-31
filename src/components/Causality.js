@@ -62,13 +62,13 @@ export default {
 
     initVis(data) {
       data = this.preprocess(data)
-      this.from_items = data['from'].slice(1, 5)
+      this.from_items = data['from'].slice(0, 7)
       this.to_items = data['to'].slice(0, 5)
     },
 
     clear(data) {
       this.preprocess(data)
-      this.from_items = data['from'].slice(1, 5)
+      this.from_items = data['from'].slice(0, 7)
       this.to_items = data['to'].slice(0, 5)
     },
   }

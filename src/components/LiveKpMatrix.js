@@ -85,6 +85,7 @@ export default {
                         class: 'KpMatrix' + idx,
                     })
 
+                let uniqueKpCount = 16
                 this.svg.selectAll('.rect' + idx)
                     .data(matrixData)
                     .enter()
@@ -96,11 +97,17 @@ export default {
                         'x': (d) => d.x + this.nodeWidth/2,
                         'y': (d) => d.y + this.nodeHeight/2,
                     })
-                    // .style('stroke', 'black')
-                    // .style('stroke-width', '1.5px')
-                    .style('stroke-opacity', .3)
-                    .style('fill', d => "#7BB6B0")
-                    .style('fill-opacity', d => d.weight / this.max_weight + 0.1)
+                    .style('stroke', (d, i) => {
+                        if(d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
+                            return 'black'
+                    })
+                    .style('stroke-width', (d, i) => {
+                        if(d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
+                            return '0.1px'
+                    })
+                    .style('stroke-opacity', 1)
+                    .style('fill', d => "#8e0b0b")
+                    .style('fill-opacity', d => d.weight / this.max_weight)
                     .on('click', (d) => {
                         console.log(d.id)
                     })
