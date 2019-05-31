@@ -27,6 +27,10 @@ export default {
         idx: 0,
         value: [0, 100],
         mark_points: [0],
+        weights: [],
+        max_weight: 0,
+        max:100,
+        min:0,
     }),
 
     watch: {
@@ -42,6 +46,37 @@ export default {
             this.width = (window.innerHeight / 3 - 20) * this.matrixScale
             this.height = (window.innerHeight / 3 - 20) * this.matrixScale
             this.padding = { top: 20, bottom: 0, left: 0, right: 0 }
+        },
+
+        change(type, msg){
+            this.min = type[0]
+            this.max = type[1]
+
+            d3.selectAll('.rect')
+                .style('fill-opacity', d => {
+                    return (d.weight * 100) / (this.max_weight*(this.max - this.min))
+                })
+        },
+
+        updateMarks(){
+            let weights = []
+            let mark_points = []
+
+            for (let i = 0; i < this.matrixData.length; i += 1) {
+                this.max_weight = Math.max(this.max_weight, this.matrixData[i].weight)
+            }
+
+            if(!this.weights.includes(this.max_weight)){
+                this.weights.push(this.max_weight)
+            }
+
+            weights = JSON.parse(JSON.stringify(this.weights))
+
+            for(let i = 0; i < weights.length; i += 1){
+                let mark = (weights[i]/this.max_weight)*100
+                mark_points.push(mark.toFixed(3))
+            }
+            this.mark_points = mark_points
         },
 
         reset() {
@@ -64,18 +99,10 @@ export default {
             // .prev_cpd(prev_cpd)
             // .cpd(cpd)
 
-            let matrixData = adjacencyMatrix()
-            this.max_weight = 0
-            for (let i = 0; i < matrixData.length; i += 1) {
-                this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
-            }
-            console.log(this.value.length)
-            
-            if(this.value[1] < this.max_weight){
-                this.value[1] = this.max_weight
-            }
-            this.mark_points.push(this.max_weight)
-            
+            this.matrixData = adjacencyMatrix()
+
+            this.updateMarks()
+
             d3.selectAll('.KpMatrixI' + this.idx).remove()
             this.svg = d3.select('#' + this.id)
                 .append('svg')
@@ -86,79 +113,78 @@ export default {
                     class: 'KpMatrixI' + this.idx,
                 })
 
-            this.svg.selectAll('.rect' + this.idx)
-                .data(matrixData)
-                .enter()
-                .append('rect')
-                .attrs({
-                    class: 'rect' + this.idx,
-                    'width': (d) => this.nodeWidth,
-                    'height': (d) => this.nodeHeight,
-                    'x': (d) => d.x + this.nodeWidth / 2,
-                    'y': (d) => d.y + this.nodeHeight / 2,
-                })
-                .style('stroke', (d, i) => {
-                    if (d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
-                        return 'black'
-                })
-                .style('stroke-width', (d, i) => {
-                    if (d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
-                        return '0.1px'
-                })
-                .style('stroke-opacity', 1)
-                .style('fill', d => "#8e0b0b")
-                .style('fill-opacity', d => {
-                    // console.log(d.weight / this.max_weight)
-                    return d.weight / this.max_weight
-                })
-                .on('click', (d) => {
-                    console.log(d.id)
-                })
+                this.svg.selectAll('.rect' + this.idx)
+                    .data(this.matrixData)
+                    .enter()
+                    .append('rect')
+                    .attrs({
+                        class: 'rect rect' + this.idx,
+                        'width': (d) => this.nodeWidth,
+                        'height': (d) => this.nodeHeight,
+                        'x': (d) => d.x + this.nodeWidth / 2,
+                        'y': (d) => d.y + this.nodeHeight / 2,
+                    })
+                    .style('stroke', (d, i) => {
+                        if (d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
+                            return 'black'
+                    })
+                    .style('stroke-width', (d, i) => {
+                        if (d.target % uniqueKpCount == 0 || d.source % uniqueKpCount == 0)
+                            return '0.1px'
+                    })
+                    .style('stroke-opacity', 1)
+                    .style('fill', d => "#8e0b0b")
+                    .style('fill-opacity', d => {
+                        return (d.weight * 100) / (this.max_weight*(this.max - this.min))
+                    })
+                    .on('click', (d) => {
+                        console.log(d.id)
+                    })
 
-            // Append the kp value indicators:
-            this.svg.selectAll('.clusterrectIY' + this.idx)
-                .data(this.clusterIds)
-                .enter()
-                .append('rect')
-                .attrs({
-                    class: 'clusterrectIY' + this.idx,
-                    'width': (d) => {
-                        if (Kp < 16) {
-                            return this.nodeWidth / 2
-                        }
-                        return this.nodeWidth * 3
-                    },
-                    'height': (d) => this.nodeHeight,
-                    'x': (d) => 0,
-                    'y': (d, i) => this.nodeHeight * (i + 0.5),
-                })
-                .style('stroke-opacity', .3)
-                .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
+                // Append the kp value indicators:
+                this.svg.selectAll('.clusterrectIY' + this.idx)
+                    .data(this.clusterIds)
+                    .enter()
+                    .append('rect')
+                    .attrs({
+                        class: 'clusterrectIY' + this.idx,
+                        'width': (d) => {
+                            if (Kp < 16) {
+                                return this.nodeWidth / 2
+                            }
+                            return this.nodeWidth * 3
+                        },
+                        'height': (d) => this.nodeHeight,
+                        'x': (d) => 0,
+                        'y': (d, i) => this.nodeHeight * (i + 0.5),
+                    })
+                    .style('stroke-opacity', .3)
+                    .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
 
-            this.svg.selectAll('.clusterrectIX' + this.idx)
-                .data(this.clusterIds)
-                .enter()
-                .append('rect')
-                .attrs({
-                    class: 'clusterrectIX' + this.idx,
-                    'width': (d) => this.nodeWidth,
-                    'height': (d) => {
-                        if (Kp < 16) {
-                            return this.nodeHeight / 2
-                        }
-                        return this.nodeHeight * 3
-                    },
-                    'x': (d, i) => this.nodeWidth * (i + 0.5),
-                    'y': (d, i) => 0,
-                })
-                .style('stroke-opacity', .3)
-                .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
+                this.svg.selectAll('.clusterrectIX' + this.idx)
+                    .data(this.clusterIds)
+                    .enter()
+                    .append('rect')
+                    .attrs({
+                        class: 'clusterrectIX' + this.idx,
+                        'width': (d) => this.nodeWidth,
+                        'height': (d) => {
+                            if (Kp < 16) {
+                                return this.nodeHeight / 2
+                            }
+                            return this.nodeHeight * 3
+                        },
+                        'x': (d, i) => this.nodeWidth * (i + 0.5),
+                        'y': (d, i) => 0,
+                    })
+                    .style('stroke-opacity', .3)
+                    .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
 
-            d3.select('.KpMatrixI')
-                .call(adjacencyMatrix.xAxis);
+                d3.select('.KpMatrixI')
+                    .call(adjacencyMatrix.xAxis);
 
-            d3.select('.KpMatrixI')
-                .call(adjacencyMatrix.yAxis);
+                d3.select('.KpMatrixI')
+                    .call(adjacencyMatrix.yAxis);
 
             this.idx += 1
         },
