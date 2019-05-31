@@ -49,6 +49,8 @@ export default {
 		analysis: ['Case_study-1', 'Case_study-2'],
 		selectedAnalysis: 'Case_study-1',
 		play: 1,
+		update: 1,
+		request: 0,
 		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
 		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
 		selectedClusterMetric: 'RbPrim',
@@ -66,9 +68,6 @@ export default {
 		plotMetric1: function () {
 			return this.plotMetric2
 		},
-		play: function () {
-			console.log(this.play)
-		}
 	},
 
 	mounted: function () {
@@ -85,13 +84,12 @@ export default {
 				granularity: this.granularity,
 				interval: interval
 			}
-			self.play = 0
+			self.request = 0
 			self.socket.send(JSON.stringify(obj))
 			self.socket.onmessage = (event) => {
 				let data = JSON.parse(event.data)
 				EventHandler.$emit('fetch_kpmatrix_on_cpd_results', prev_cpd, cpd, data)
-				self.play = 1
-				self.update = 1
+				self.request = 1
 				self.fetchTsData()
 			}
 		})
@@ -107,13 +105,12 @@ export default {
 				granularity: this.granularity,
 				interval: interval
 			}
-			self.play = 0
+			self.request = 0
 			self.socket.send(JSON.stringify(obj))
 			self.socket.onmessage = (event) => {
 				let data = JSON.parse(event.data)
 				EventHandler.$emit('fetch_kpmatrix_on_click_results', cpd, data)
-				self.play = 1
-				self.update = 1
+				self.request = 1
 				self.fetchTsData()
 			}
 		})
@@ -251,6 +248,7 @@ export default {
 				stream_count: this.count,
 				play: this.play,
 				update: this.update,
+				request: this.request,
 			}
 			console.log("Request", obj)
 			return JSON.stringify(obj)

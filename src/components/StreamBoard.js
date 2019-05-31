@@ -91,15 +91,18 @@ export default {
 			let ret = {}
 			let clusterType = 'normal'
 			let zero_index_data = data[clusterMetric]['result'][0]
-			for (let i = 0; i < zero_index_data[clusterType].length; i += 1) {
-				let _data = zero_index_data[clusterType][i]
-				let _cluster = zero_index_data[clusterType + '_clusters'][i]
-				for (let time = 0; time < _data.length; time += 1) {
-					let current_time = zero_index_data[clusterType + '_times'][time]
-					let id = zero_index_data['ids'][i]
-					ret[id] = _cluster
+			if (zero_index_data[clusterType] != undefined){
+				for (let i = 0; i < zero_index_data[clusterType].length; i += 1) {
+					let _data = zero_index_data[clusterType][i]
+					let _cluster = zero_index_data[clusterType + '_clusters'][i]
+					for (let time = 0; time < _data.length; time += 1) {
+						let current_time = zero_index_data[clusterType + '_times'][time]
+						let id = zero_index_data['ids'][i]
+						ret[id] = _cluster
+					}
 				}
 			}
+			
 			return ret
 		},
 
