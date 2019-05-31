@@ -153,6 +153,11 @@ export default {
                 })
                 .call(this.yAxis);
 
+            this.areaPath = this.svg.append('path')
+                .attrs({
+                    "clip-path": "url(#clip)",
+                })
+
             this.yDom = [0, 0]
         },
 
@@ -183,6 +188,11 @@ export default {
             this.line = d3.line()
                 .x((d, i) => this.x(this.actualTime[i]))
                 .y((d) => this.y(d));
+
+            this.area = d3.area()
+                .curve(d3.curveStepAfter)
+                .y0(this.y(0))
+                .y1(function(d) { return this.y(d.value); });
         },
 
         initBrushes() {
@@ -195,14 +205,36 @@ export default {
             this.drawBrushes();
         },
 
+        zoomed() {
+            let xz = d3.event.transform.rescaleX(this.x);
+            this.xAxisSVG.call(this.xAxis.scale(xz));
+            // this.areaPath.attr("d", this.area.x(function (d) { return xz(d.date); }));
+        },
+
+        enableZoom() {
+            this.zoom = d3.zoom()
+                .scaleExtent([1 / 4, 8])
+                .translateExtent([[-this.width, -Infinity], [2 * this.width, Infinity]])
+                .on("zoom", this.zoomed);
+        },
+
         initVis() {
             this.initLine()
+            this.enableZoom()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
                     width: this.width,
                     height: this.height,
-                    transform: 'translate(0, 0)'
+                    transform: 'translate(0, 0)',
+                    "pointer-events": "all"
                 })
+                .call(this.zoom)
+
+            this.svg.append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("width", this.width)
+                .attr("height", this.height);
 
             this.initBrushes()
             this.axis()
@@ -245,7 +277,6 @@ export default {
         },
 
         drawBrushes() {
-
             let brushSelection = this.brushSvg
                 .selectAll('.brush')
                 .data(this.brushes)
@@ -379,7 +410,12 @@ export default {
                 let cluster = res['cluster'][0]
                 this.cluster[id] = res['cluster'][0]
 
-                this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
+                if(this.actualTime.length > 25){
+                    this.x.domain([this.actualTime[this.actualTime.length - 25], this.actualTime[this.actualTime.length - 1]])
+                }
+                else{
+                    this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
+                }
                 let yDomTemp = d3.extent(data)
                 if (yDomTemp[1] > this.yDom[1])
                     this.yDom[1] = yDomTemp[1]
