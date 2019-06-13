@@ -1,5 +1,6 @@
 <v-container fluid class="pa-0">
     <TimeDimCorrPanel ref="TimeDimCorrPanel1"
+    id="panel1"
     v-show="isTsDataLoaded" 
     v-bind:plot-metric="plotMetric1"   
     v-bind:granularity="granularity"
@@ -11,6 +12,7 @@
     v-bind:panel-id="panelId1" />
     
     <TimeDimCorrPanel ref="TimeDimCorrPanel2" 
+    id="panel2"
     v-show="isTsDataLoaded" 
     v-bind:time-domain="timeDomain"
     v-bind:measure="measure" 
@@ -22,6 +24,7 @@
     v-bind:panel-id="panelId2" />
     
     <CommKpMatrixPanel ref="CommKpMatrixPanel"
+    id="panel3"
     v-bind:metrics="metrics"
     v-bind:time-domain="timeDomain"
     v-bind:measure="measure" 

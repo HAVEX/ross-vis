@@ -4,11 +4,10 @@ import template from '../html/TimeDimCorrPanel.html'
 import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 import D3TimeSeries from './D3TimeSeries'
+// import D3TimeSeries from './D3TimeSeriesNew'
 import D3Dimensionality from './D3Dimensionality'
 import LiveKpMatrix from './LiveKpMatrix'
 import Causality from './Causality'
-
-import reorder from './reordering'
 
 import EventHandler from './EventHandler.js'
 
@@ -109,25 +108,6 @@ export default {
 					this.$refs.Dimensionality.init()
 				}
 				this.$refs.LiveKpMatrix.init()
-			}
-		},
-
-		processClusterIDs() {
-			let stream_obj = this.plotData
-			if (stream_obj != null && Object.keys(stream_obj).length !== 1) {
-				this.plotData1 = stream_obj[this.plotMetric1]
-				this.plotData2 = stream_obj[this.plotMetric2]
-
-				this.clusterIds = []
-				// Create this.processIds, this.clusterIds for Communication panel
-				// this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
-				for (let id in this.clusterMap) {
-					if (this.clusterMap.hasOwnProperty(id)) {
-						this.processIds.push(parseInt(id))
-						this.clusterIds.push(parseInt(this.clusterMap[id]))
-					}
-				}
-				// console.log("Cluster IDs", this.clusterIds)
 			}
 		},
 
@@ -238,6 +218,25 @@ export default {
 				})
 			}
 			return ret
+		},
+
+		processClusterIDs() {
+			let stream_obj = this.plotData
+			if (stream_obj != null && Object.keys(stream_obj).length !== 1) {
+				this.plotData1 = stream_obj[this.plotMetric1]
+				this.plotData2 = stream_obj[this.plotMetric2]
+
+				this.clusterIds = []
+				// Create this.processIds, this.clusterIds for Communication panel
+				// this.clusterMap = this.getClusterMapping(stream_obj, this.clusterMetric)
+				for (let id in this.clusterMap) {
+					if (this.clusterMap.hasOwnProperty(id)) {
+						this.processIds.push(parseInt(id))
+						this.clusterIds.push(parseInt(this.clusterMap[id]))
+					}
+				}
+				// console.log("Cluster IDs", this.clusterIds)
+			}
 		},
 
 		create_cstore(data, index) {
@@ -403,7 +402,7 @@ export default {
 				this.$refs.TimeSeries.reset(this.normal_result)
 				this.$refs.Dimensionality.reset(this.pca_result)
 			}
-			this.$refs.Causality.clear(this.causality_result)
+			// this.$refs.Causality.clear(this.causality_result)
 		},
 
 		reset() {
@@ -517,7 +516,6 @@ export default {
 				this.updateTimeSeries(callback)
 				this.updateDimensionality()
 			}
-
 		}
 	}
 }

@@ -113,7 +113,9 @@ export default function adjacencyMatrixLayout() {
                         y: yScale(j),
                         weight: adj[i][j].z,
                         height: nodeHeight,
-                        width: nodeWidth
+                        width: nodeWidth,
+                        changePoint: adj[i][j].changePoint,
+                        changeIdx: adj[i][j].changeIdx
                     }
                     matrix.push(grid);
                 }

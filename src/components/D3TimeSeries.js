@@ -22,8 +22,6 @@ export default {
         metrics: null,
         showCPD: false,
         selectedMeasure: null,
-        methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-        selectedMethod: 'AFF',
         current_views: [],
         selectedIds: [],
         cpds: [],
@@ -36,7 +34,11 @@ export default {
         cpds: [],
         prev_cpd: 0,
         message: "Time-series view",
-        showMessage: false,
+        showMessage: true,
+        timepointMoveThreshold: 50,
+        actualTime: 0,
+        clusterMap: {},
+        cluster: []
     }),
     watch: {
         selectedIds: function (val) {
@@ -80,52 +82,54 @@ export default {
             this.width = visContainer.clientWidth
             this.height = (window.innerHeight / 3 - 20)
 
-            this.padding = { left: 50, top: 0, right: 20, bottom: 30 }
+            this.padding = { left: 75, top: 10, right: 0, bottom: 40 }
             this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
-            this.y = d3.scaleLinear().range([this.height - this.padding.bottom, 0]);
-
-            if (this.showMessage == true) {
-                this.showLabels()
-            }
+            this.y = d3.scaleLinear().range([this.height - this.padding.bottom - this.padding.top, 0]);
         },
 
         showLabels() {
-            let width = 100;
-            let height = 20;
-            var svg = d3.select("#labels").append('svg')
+            let width = 600;
+            let height = 50;
+            let x_offset = 40
+            let y_offset = 0
+            let radius = 10
+            let gap = 200
+            d3.select('.clusterLabelSVG').remove()
+            let svg = d3.select("#labels").append('svg')
                 .attrs({
+                    transform: `translate(${x_offset}, ${y_offset})`,
                     "width": width,
-                    "height": height
+                    "height": height,
+                    "class": "clusterLabelSVG"
                 })
                 .append("g");
 
-            var circles = svg.selectAll("circle")
+            let circles = svg.selectAll("circle")
                 .data(this.colorSet)
                 .enter().append("circle")
                 .style("stroke", "gray")
-                .style("fill", "white")
-                .attr("r", function (d, i) {
-                    return 10
+                .style("fill", (d, i) => {
+                    return this.colorSet[i]
                 })
-                .attr("cx", function (d, i) {
-                    return i * 20
+                .attrs({
+                    "r": (d, i) => { return radius },
+                    "cx": (d, i) => { return i * gap + radius },
+                    "cy": (d, i) => { return 2 * radius},
                 })
-                .attr("cy", function (d, i) {
-                    return 10
-                });
 
-            var text = svg.selectAll("text")
+            let padding = 10
+            let text = svg.selectAll("text")
                 .data(this.colorSet)
                 .enter()
-                .append("text");
-
-            var textLabels = text
-                .attr("x", function (d) { return d.x; })
-                .attr("y", function (d) { return d.y; })
-                .text(function (d, i) { return "Cluster-" + i })
-                .attr("font-family", "sans-serif")
-                .attr("font-size", "10px")
-                .attr("fill", "red");
+                .append("text")
+                .text( (d, i) => { return "Cluster-" + i + ' (' + this.clusterMap[i] + ')' })
+                .attrs({
+                    "x": (d, i) => { return i * gap + 2 * radius + padding },
+                    "y": (d, i) => { return 2 * radius + padding; },
+                    "font-family": "sans-serif",
+                    "font-size": "24px",
+                    "fill": "black"
+                })
 
         },
 
@@ -139,9 +143,9 @@ export default {
 
             this.xAxisSVG = this.svg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left}, ${this.height - this.padding.bottom})`,
+                    transform: `translate(${this.padding.left}, ${this.height - 1.0 * this.padding.bottom})`,
                     class: 'x-axis',
-                    'stroke-width': '2px'
+                    'stroke-width': '1.5px'
                 })
                 .call(this.xAxis);
 
@@ -149,7 +153,7 @@ export default {
                 .attrs({
                     transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     class: 'y-axis',
-                    'stroke-width': '2px'
+                    'stroke-width': '1.5px'
                 })
                 .call(this.yAxis);
 
@@ -170,7 +174,7 @@ export default {
             this.svg.append("text")
                 .attrs({
                     "class": "axis-labels",
-                    transform: `translate(${(this.width / 2)}, ${this.height + this.padding.top})`
+                    transform: `translate(${(this.width / 2)}, ${this.height - this.padding.top})`
                 })
                 .style("text-anchor", "middle")
                 .text(this.selectedTimeDomain);
@@ -192,7 +196,7 @@ export default {
             this.area = d3.area()
                 .curve(d3.curveStepAfter)
                 .y0(this.y(0))
-                .y1(function(d) { return this.y(d.value); });
+                .y1(function (d) { return this.y(d.value); });
         },
 
         initBrushes() {
@@ -214,7 +218,7 @@ export default {
         enableZoom() {
             this.zoom = d3.zoom()
                 .scaleExtent([1 / 4, 8])
-                .translateExtent([[-this.width, -Infinity], [2 * this.width, Infinity]])
+                .translateExtent([[, -Infinity], [this.width, Infinity]])
                 .on("zoom", this.zoomed);
         },
 
@@ -223,7 +227,7 @@ export default {
             this.enableZoom()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
-                    width: this.width,
+                    width: this.width - 2 * this.padding.left - this.padding.right,
                     height: this.height,
                     transform: 'translate(0, 0)',
                     "pointer-events": "all"
@@ -233,8 +237,8 @@ export default {
             this.svg.append("clipPath")
                 .attr("id", "clip")
                 .append("rect")
-                .attr("width", this.width)
-                .attr("height", this.height);
+                .attr("width", this.width - this.padding.left - this.padding.right)
+                .attr("height", this.height - this.padding.top - this.padding.bottom);
 
             this.initBrushes()
             this.axis()
@@ -336,6 +340,7 @@ export default {
                 .style('z-index', 100)
         },
 
+
         // clusterLabel() {
         //     d3.select('#timeseries-chip')
         //         .append('svg')
@@ -386,7 +391,6 @@ export default {
         visualize(ts, cpd) {
             if (!this.isLabelled) {
                 this.label()
-                // this.clusterLabel()
             }
 
             if (cpd == 1) {
@@ -399,6 +403,7 @@ export default {
 
             this.drawCPDs()
 
+            this.clusterMap = {}
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
                 this.data = this.svg.append('path')
@@ -408,12 +413,16 @@ export default {
                 this.actualTime = res[this.plotMetric]
                 let data = res['ts']
                 let cluster = res['cluster'][0]
+                if(this.clusterMap[cluster] == undefined){
+                    this.clusterMap[cluster] = 0
+                }
+                this.clusterMap[cluster] += 1
                 this.cluster[id] = res['cluster'][0]
 
-                if(this.actualTime.length > 25){
-                    this.x.domain([this.actualTime[this.actualTime.length - 25], this.actualTime[this.actualTime.length - 1]])
+                if (this.actualTime.length > this.timepointMoveThreshold) {
+                    this.x.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
                 }
-                else{
+                else {
                     this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
                 }
                 let yDomTemp = d3.extent(data)
@@ -433,12 +442,18 @@ export default {
                         'id': 'line' + id,
                         d: this.line,
                         stroke: this.colorSet[cluster],
-                        'stroke-width': 1.0,
+                        'stroke-width': (d) => {
+                            if (Object.entries(ts).length < 16) return 2.0
+                            else return 1.0
+                        },
                         fill: 'transparent',
                         transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     })
                     .style('z-index', 0)
             }
+            console.log(this.clusterMap)
+            this.showLabels()
+
         },
 
         brushEnd() {

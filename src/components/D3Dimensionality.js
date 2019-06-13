@@ -118,6 +118,7 @@ export default {
         },
 
         visualize(ts) {
+            this.ts = ts
             this.data = this.preprocess(ts)
             this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
             this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
@@ -138,7 +139,10 @@ export default {
                 .attrs({
                     class: (d) => { return 'dot' + d[3] + ' circle' + this.id },
                     stroke: (d) => { return self.colorSet[d[2]] },
-                    r: 3,
+                    r: (d) => {
+                        if(Object.entries(ts).length < 16) return 6.0
+                        else return 3.0
+                    },
                     'stroke-width': 1.0,
                     fill: (d) => { return self.colorSet[d[2]] },
                     id: (d) => { return 'dot' + d[3] },
@@ -165,7 +169,10 @@ export default {
         // ====================================
         lassoStart() {
             this.lasso.items()
-                .attr("r", 3) // reset size
+                .attr("r", (d) => {
+                    if(Object.entries(this.ts).length < 16) return 6.0
+                    else return 3.0
+                }) // reset size
                 .classed("not_possible", true)
                 .classed("selected", false);
         },
@@ -197,7 +204,10 @@ export default {
             // Style the selected dots
             this.lasso.selectedItems()
                 .classed("selected", true)
-                .attr("r", 3)
+                .attr("r", (d) => {
+                    if(Object.entries(this.ts).length < 16) return 6.0
+                    else return 3.0
+                })
                 .attr("id", (d) => { this.selectedIds.push(d[3]) })
                 .attr("opacity", 1)
 

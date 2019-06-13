@@ -15,6 +15,33 @@ export default {
   padding: 64px 15px 0px;
 }
 
+.panel{
+  height: 50px;
+}
+
+.x-axis { 
+  font: 16px sans-serif; 
+}
+
+.y-axis {
+  font: 16px sans-serif;
+}
+
+.axis-labels{
+  font:28px sans-serif;
+}
+
+.vue-slider-mark-label{
+  font: 20px sans-serif
+}
+
+
+/* KpMatrix rectangle stroke-width border */
+.top { stroke-dasharray: 0,50,150 }
+.left { stroke-dasharray: 150,50 }
+.bottom { stroke-dasharray: 100,50 }
+.right { stroke-dasharray: 50,50,100 }
+
 /* Chips to represent what each view is */
 .v-chip {
   font-size: 18px;
@@ -79,7 +106,7 @@ export default {
 }
 .table-container table th {
   border: 1px solid white;
-  font-size: 0.7vw;
+  /* font-size: 0.7vw; */
 }
 .table-container table td {
   border: 1px solid #e7e1e1;
@@ -105,8 +132,9 @@ export default {
   user-select: none;
 }
 .table-container table tbody td {
-  padding: 8px;
+  padding: 16px;
   cursor: pointer;
+  font-size: 0.5vw;
 }
 .table-container table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.5);
