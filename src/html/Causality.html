@@ -1,6 +1,29 @@
 <v-card flex fill-height id="correlation-view">
-    <!-- <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="to_items" :fields="fields" :tbody-tr-class="rowClass"/>
-    <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="from_items" :fields="fields" :tbody-tr-class="rowClass"/> -->
-    <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="to_items" :fields="fields" />
-    <b-table :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :items="from_items" :fields="fields" />
+    <v-flex>            
+        <v-layout row wrap class='panel'>
+            <v-chip> {{ message }} </v-chip>
+    
+            <v-flex xs5 class="ma-1">
+                <v-select label="Metric (to/from)" :items="causality" v-model="selectedCausality"
+                    :menu-props="{ maxHeight: '200' }" persistent-hint>
+                </v-select>
+            </v-flex>
+            
+        </v-layout>
+            <!-- <b-dropdown 
+                id="dropdown-1" 
+                v-bind:text="selectedCausality" 
+                class="m-md-3">
+                    <b-dropdown-item>To metrics</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item>From metrics</b-dropdown-item>
+            </b-dropdown> -->
+        <b-container fluid fill-height class="table-container">
+            <b-table v-if="selectedCausality == 'to'" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
+                :items="to_items" :fields="fields" :responsive="responsive" />
+            <b-table v-if="selectedCausality == 'from'" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
+                :items="from_items" :fields="fields" :responsive="responsive" />
+        </b-container>
+    </v-flex>
+
 </v-card>

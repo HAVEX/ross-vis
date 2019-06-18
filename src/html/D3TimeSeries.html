@@ -1,3 +1,9 @@
-<v-card :id="id">    
+<v-card :id="id">
+    <v-flex>
+        <v-flex row wrap>
+            <v-chip id="timeseries-chip" v-if="showMessage==true"> {{ message }} </v-chip>
+            <div v-if="showMessage==true" id="labels"></div>
+        </v-flex>
+       
+    </v-flex>
 </v-card>
-    

@@ -1,30 +1,37 @@
 <v-container fluid class="pa-0">
     <TimeDimCorrPanel ref="TimeDimCorrPanel1"
+    id="panel1"
     v-show="isTsDataLoaded" 
     v-bind:plot-metric="plotMetric1"   
     v-bind:granularity="granularity"
     v-bind:measure="measure" 
     v-bind:time-domain="timeDomain"
     v-bind:plot-data="isTsDataLoaded ? plotData1 : null" 
-    v-bind:cluster-map="clusterMap" />
+    v-bind:comm-data="commData"
+    v-bind:cluster-map="clusterMap" 
+    v-bind:panel-id="panelId1" />
     
     <TimeDimCorrPanel ref="TimeDimCorrPanel2" 
+    id="panel2"
     v-show="isTsDataLoaded" 
     v-bind:time-domain="timeDomain"
     v-bind:measure="measure" 
     v-bind:granularity="granularity" 
     v-bind:plot-metric="plotMetric2"
     v-bind:plot-data="isTsDataLoaded ? plotData2 : null" 
-    v-bind:cluster-map="clusterMap" />
+    v-bind:comm-data="commData"
+    v-bind:cluster-map="clusterMap" 
+    v-bind:panel-id="panelId2" />
     
-    <v-layout row wrap >
-        <v-flex xs12>
-            <Communication ref="Communication" @updateMetrics="updateMetrics"></Communication>
-        </v-flex>
-        <!-- <v-flex xs4>
-            <Overview ref="Overview" v-bind:ts-data="isTsDataLoaded ? tsData : null "/>
-        </v-flex> -->
-    </v-layout> 
+    <CommKpMatrixPanel ref="CommKpMatrixPanel"
+    id="panel3"
+    v-bind:metrics="metrics"
+    v-bind:time-domain="timeDomain"
+    v-bind:measure="measure" 
+    v-bind:granularity="granularity" 
+    v-bind:comm-data="isTsDataLoaded ? commData : null" 
+    v-bind:cluster-map="clusterMap" />
+     
 </v-container>
 
  

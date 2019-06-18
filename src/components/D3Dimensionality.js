@@ -1,7 +1,6 @@
 import * as d3 from 'd3'
 import { lasso } from './lasso';
 import template from '../html/D3Dimensionality.html'
-import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
 
 export default {
     name: 'D3Dimensionality',
@@ -13,12 +12,14 @@ export default {
         config: null,
         vis: null,
         colorBy: null,
-        colorSet: ["#F8A51F", "#F8394E", "#517FB2"],
+        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         zoomed: false,
         xMin: 0,
         xMax: 0,
         yMin: 0,
         yMax: 0,
+        message: 'Dimensionality view',
+        showMessage: false,
     }),
     mounted() {
         this.id = 'dim-overview' + this._uid
@@ -31,9 +32,11 @@ export default {
             this.padding = { left: 50, top: 0, right: 50, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.width]);
             this.y = d3.scaleLinear().range([this.height, 0]);
+            // this.d3zoom = d3.zoom()
+            //     .on("zoom", this.zoom())
         },
 
-        axis(){
+        axis() {
             this.xAxis = d3.axisBottom(this.x)
                 .tickPadding(10)
                 .tickFormat(d3.format('0.1s'))
@@ -43,7 +46,7 @@ export default {
                 .tickFormat(d3.format('0.1s'))
 
             this.yDom = [0, 0]
-            
+
             // this.xAxisSVG = this.svg.append('g')
             //     .attrs({
             //         transform: `translate(${this.padding.left}, ${this.height - this.padding.bottom})`,
@@ -63,7 +66,7 @@ export default {
         },
 
         label() {
-            
+
         },
 
         initVis(ts) {
@@ -110,12 +113,12 @@ export default {
                 if (y > this.yMax) {
                     this.yMax = y
                 }
-
             }
             return ret
         },
 
         visualize(ts) {
+            this.ts = ts
             this.data = this.preprocess(ts)
             this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
             this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
@@ -127,6 +130,7 @@ export default {
             //     .call(this.yAxis)
 
             d3.selectAll('.circle' + this.id).remove()
+            d3.selectAll('.lasso' + this.id).remove()
             let self = this
             this.circles = this.svg.selectAll('circle')
                 .data(this.data)
@@ -135,15 +139,20 @@ export default {
                 .attrs({
                     class: (d) => { return 'dot' + d[3] + ' circle' + this.id },
                     stroke: (d) => { return self.colorSet[d[2]] },
-                    r: 3,
+                    r: (d) => {
+                        if(Object.entries(ts).length < 16) return 6.0
+                        else return 3.0
+                    },
                     'stroke-width': 1.0,
                     fill: (d) => { return self.colorSet[d[2]] },
                     id: (d) => { return 'dot' + d[3] },
-                    cx: (d) => { return self.x(d[0]) },
+                    cx: (d, i) => { return self.x(d[0]) },
                     cy: (d) => { return self.y(d[1]) },
                 })
+            // .call(this.d3zoom)
 
             this.lasso = lasso()
+                .className('lasso' + this.id)
                 .closePathSelect(true)
                 .closePathDistance(100)
                 .items(this.circles)
@@ -160,7 +169,10 @@ export default {
         // ====================================
         lassoStart() {
             this.lasso.items()
-                .attr("r", 3) // reset size
+                .attr("r", (d) => {
+                    if(Object.entries(this.ts).length < 16) return 6.0
+                    else return 3.0
+                }) // reset size
                 .classed("not_possible", true)
                 .classed("selected", false);
         },
@@ -192,7 +204,10 @@ export default {
             // Style the selected dots
             this.lasso.selectedItems()
                 .classed("selected", true)
-                .attr("r", 3)
+                .attr("r", (d) => {
+                    if(Object.entries(this.ts).length < 16) return 6.0
+                    else return 3.0
+                })
                 .attr("id", (d) => { this.selectedIds.push(d[3]) })
                 .attr("opacity", 1)
 
@@ -212,75 +227,13 @@ export default {
             }
         },
 
-        //==================================
-        // Not used
-        //==================================
-        findIdsInRegion(xMin, xMax, yMin, yMax) {
-            let ret = []
-            console.log(xMin, xMax, yMin, yMax)
-            xMin = this.x(xMin)
-            xMax = this.x(xMax)
-            yMin = this.y(yMin)
-            yMax = this.y(yMax)
-            for (let [idx, res] of Object.entries(this.ts)) {
-                let xVal = res['PC0'][0]
-                let yVal = res['PC1'][0]
-                if (xVal >= xMin && xVal <= xMax && yVal >= yMin && yVal <= yMax) {
-                    ret.push(idx)
-                }
-            }
-            console.log(ret)
-            return ret
-        },
-
-        brushended() {
-            let idleDelay = 350
-            let s = d3.event.selection
-            if (!s) {
-                if (!this.idleTimeout)
-                    return this.idleTimeout = setTimeout(this.idled, idleDelay)
-                this.x.domain([2.0 * xMin, 2.0 * xMax])
-                this.y.domain([2.0 * yMin, 2.0 * yMax])
-            }
-            else {
-                let d0 = s.map(this.x.invert)
-                let d1 = s.map(this.y.invert)
-
-                console.log(d0, d1)
-
-                this.selectedIds = this.findIdsInRegion(d0[0], d0[1], d1[0], d1[1])
-
-
-                // set the scale domains based on selection
-                this.x.domain([s[0][0], s[1][0]].map(this.x.invert, this.x))
-                this.y.domain([s[1][1], s[0][1]].map(this.y.invert, this.y))
-
-
-                // console.log(d3.brushSelection(this.brushSvg.node()))
-
-                // https://github.com/d3/d3-brush/issues/10
-                if (!d3.event.sourceEvent) return
-
-                // to set the brush movement to null. But doesnt do the required trick.
-                // Reason: maybe webpack
-                // https://github.com/d3/d3-brush/issues/10
-                d3.select(".brush").call(this.brush.move, null)
-            }
-            this.zoom()
-            this.select()
-        },
-
-        idled() {
-            this.idleTimeout = null;
-        },
-
         zoom() {
             // for unzoom button; Needs fix
             this.zoomed = true
 
-            // adjust the scales
-            this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
-            this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
+            // // adjust the scales
+            // this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
+            // this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
 
             // Put circles back in view
             let self = this
@@ -306,9 +259,9 @@ export default {
             this.x.domain([2.0 * this.xMin, 2.0 * this.xMax])
             this.y.domain([2.0 * this.yMin, 2.0 * this.yMax])
 
-            // adjust the scale
-            this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
-            this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
+            // // adjust the scale
+            // this.svg.select(".x-axis").transition(this.t).call(this.xAxis)
+            // this.svg.select(".y-axis").transition(this.t).call(this.yAxis)
 
             // Put circles back
             let self = this
@@ -316,6 +269,66 @@ export default {
                 .attr("cx", function (d) { return self.x(d['PC0'][0]) })
                 .attr("cy", function (d) { return self.y(d['PC1'][0]) })
         },
+
+        //==================================
+        // Not used
+        //==================================
+        findIdsInRegion(xMin, xMax, yMin, yMax) {
+            let ret = []
+            console.log(xMin, xMax, yMin, yMax)
+            xMin = this.x(xMin)
+            xMax = this.x(xMax)
+            yMin = this.y(yMin)
+            yMax = this.y(yMax)
+            for (let [idx, res] of Object.entries(this.ts)) {
+                let xVal = res['PC0'][0]
+                let yVal = res['PC1'][0]
+                if (xVal >= xMin && xVal <= xMax && yVal >= yMin && yVal <= yMax) {
+                    ret.push(idx)
+                }
+            }
+            return ret
+        },
+
+        brushended() {
+            let idleDelay = 350
+            let s = d3.event.selection
+            if (!s) {
+                if (!this.idleTimeout)
+                    return this.idleTimeout = setTimeout(this.idled, idleDelay)
+                this.x.domain([2.0 * xMin, 2.0 * xMax])
+                this.y.domain([2.0 * yMin, 2.0 * yMax])
+            }
+            else {
+                let d0 = s.map(this.x.invert)
+                let d1 = s.map(this.y.invert)
+
+                this.selectedIds = this.findIdsInRegion(d0[0], d0[1], d1[0], d1[1])
+
+                // set the scale domains based on selection
+                this.x.domain([s[0][0], s[1][0]].map(this.x.invert, this.x))
+                this.y.domain([s[1][1], s[0][1]].map(this.y.invert, this.y))
+
+
+                // console.log(d3.brushSelection(this.brushSvg.node()))
+
+                // https://github.com/d3/d3-brush/issues/10
+                if (!d3.event.sourceEvent) return
+
+                // to set the brush movement to null. But doesnt do the required trick.
+                // Reason: maybe webpack
+                // https://github.com/d3/d3-brush/issues/10
+                d3.select(".brush").call(this.brush.move, null)
+            }
+            this.zoom()
+            this.select()
+        },
+
+        idled() {
+            this.idleTimeout = null;
+        },
+
+
     },
 }
 

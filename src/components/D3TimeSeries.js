@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 // import { selection } from "d3-selection";
 import "d3-selection-multi";
 import template from '../html/D3TimeSeries.html'
+import EventHandler from './EventHandler'
 
 // References: http://bl.ocks.org/ludwigschubert/0236fa8594c4b02711b2606a8f95f605
 
@@ -21,8 +22,6 @@ export default {
         metrics: null,
         showCPD: false,
         selectedMeasure: null,
-        methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-        selectedMethod: 'AFF',
         current_views: [],
         selectedIds: [],
         cpds: [],
@@ -30,9 +29,16 @@ export default {
         yMin: 0,
         yMax: 0,
         isLabelled: false,
-        colorSet: ["#F8A51F", "#F8394E", "#517FB2"], 
+        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         brushes: [],
         cpds: [],
+        prev_cpd: 0,
+        message: "Time-series view",
+        showMessage: true,
+        timepointMoveThreshold: 50,
+        actualTime: 0,
+        clusterMap: {},
+        cluster: []
     }),
     watch: {
         selectedIds: function (val) {
@@ -68,16 +74,63 @@ export default {
         },
     },
     mounted() {
-        this.id = 'time-overview' + this._uid        
+        this.id = 'time-overview' + this._uid
     },
     methods: {
         init() {
             let visContainer = document.getElementById(this.id)
             this.width = visContainer.clientWidth
-            this.height = window.innerHeight / 3 - 20
-            this.padding = { left: 50, top: 0, right: 60, bottom: 35 }
+            this.height = (window.innerHeight / 3 - 20)
+
+            this.padding = { left: 75, top: 10, right: 0, bottom: 40 }
             this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
-            this.y = d3.scaleLinear().range([this.height - this.padding.bottom, 0]);
+            this.y = d3.scaleLinear().range([this.height - this.padding.bottom - this.padding.top, 0]);
+        },
+
+        showLabels() {
+            let width = 600;
+            let height = 50;
+            let x_offset = 40
+            let y_offset = 0
+            let radius = 10
+            let gap = 200
+            d3.select('.clusterLabelSVG').remove()
+            let svg = d3.select("#labels").append('svg')
+                .attrs({
+                    transform: `translate(${x_offset}, ${y_offset})`,
+                    "width": width,
+                    "height": height,
+                    "class": "clusterLabelSVG"
+                })
+                .append("g");
+
+            let circles = svg.selectAll("circle")
+                .data(this.colorSet)
+                .enter().append("circle")
+                .style("stroke", "gray")
+                .style("fill", (d, i) => {
+                    return this.colorSet[i]
+                })
+                .attrs({
+                    "r": (d, i) => { return radius },
+                    "cx": (d, i) => { return i * gap + radius },
+                    "cy": (d, i) => { return 2 * radius},
+                })
+
+            let padding = 10
+            let text = svg.selectAll("text")
+                .data(this.colorSet)
+                .enter()
+                .append("text")
+                .text( (d, i) => { return "Cluster-" + i + ' (' + this.clusterMap[i] + ')' })
+                .attrs({
+                    "x": (d, i) => { return i * gap + 2 * radius + padding },
+                    "y": (d, i) => { return 2 * radius + padding; },
+                    "font-family": "sans-serif",
+                    "font-size": "24px",
+                    "fill": "black"
+                })
+
         },
 
         axis() {
@@ -90,9 +143,9 @@ export default {
 
             this.xAxisSVG = this.svg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left}, ${this.height - this.padding.bottom})`,
+                    transform: `translate(${this.padding.left}, ${this.height - 1.0 * this.padding.bottom})`,
                     class: 'x-axis',
-                    'stroke-width': '2px'
+                    'stroke-width': '1.5px'
                 })
                 .call(this.xAxis);
 
@@ -100,31 +153,37 @@ export default {
                 .attrs({
                     transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     class: 'y-axis',
-                    'stroke-width': '2px'
+                    'stroke-width': '1.5px'
                 })
                 .call(this.yAxis);
+
+            this.areaPath = this.svg.append('path')
+                .attrs({
+                    "clip-path": "url(#clip)",
+                })
 
             this.yDom = [0, 0]
         },
 
-        clearLabel(){
-            d3.select('#'+ this.id).selectAll(".axis-labels").remove()
-
+        clearLabel() {
+            d3.select('#' + this.id).selectAll(".axis-labels").remove()
         },
 
         label() {
             this.isLabelled = true
             this.svg.append("text")
-                .attr("class", "axis-labels")
-                .attr("transform", "translate(" + (this.width / 2) + " ," + (this.height + this.padding.top) + ")")
+                .attrs({
+                    "class": "axis-labels",
+                    transform: `translate(${(this.width / 2)}, ${this.height - this.padding.top})`
+                })
                 .style("text-anchor", "middle")
                 .text(this.selectedTimeDomain);
 
-            this.svg.append("g")
-                .attr("class", "axis-labels")
-                .attr("transform", "translate(" + (3) + " ," + (this.height / 2) + ")")
-                .append('text')
-                .attr("transform", "rotate(90)")
+            this.svg.append("text")
+                .attrs({
+                    "class": "axis-labels",
+                    transform: `translate(${3}, ${this.height / 2}) rotate(${90})`,
+                })
                 .style("text-anchor", "middle")
                 .text(this.$parent.plotMetric)
         },
@@ -133,27 +192,56 @@ export default {
             this.line = d3.line()
                 .x((d, i) => this.x(this.actualTime[i]))
                 .y((d) => this.y(d));
+
+            this.area = d3.area()
+                .curve(d3.curveStepAfter)
+                .y0(this.y(0))
+                .y1(function (d) { return this.y(d.value); });
         },
 
         initBrushes() {
             this.brushSvg = this.svg.append('g')
-                .attr('class', 'brushes')
+                .attrs({
+                    'class': 'brushes'
+                })
 
             this.newBrush()
             this.drawBrushes();
         },
 
-        initVis() { 
+        zoomed() {
+            let xz = d3.event.transform.rescaleX(this.x);
+            this.xAxisSVG.call(this.xAxis.scale(xz));
+            // this.areaPath.attr("d", this.area.x(function (d) { return xz(d.date); }));
+        },
+
+        enableZoom() {
+            this.zoom = d3.zoom()
+                .scaleExtent([1 / 4, 8])
+                .translateExtent([[, -Infinity], [this.width, Infinity]])
+                .on("zoom", this.zoomed);
+        },
+
+        initVis() {
             this.initLine()
+            this.enableZoom()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
-                    width: this.width,
+                    width: this.width - 2 * this.padding.left - this.padding.right,
                     height: this.height,
-                    transform: 'translate(0, 0)'
+                    transform: 'translate(0, 0)',
+                    "pointer-events": "all"
                 })
+                .call(this.zoom)
+
+            this.svg.append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("width", this.width - this.padding.left - this.padding.right)
+                .attr("height", this.height - this.padding.top - this.padding.bottom);
 
             this.initBrushes()
-            this.axis()  
+            this.axis()
         },
 
         reset(ts, cpd) {
@@ -184,16 +272,15 @@ export default {
             return ret
         },
 
-        newBrush(){
+        newBrush() {
             let id = this.brushes.length
             let brush = d3.brushX()
                 .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
                 .on('end', this.brushEnd)
-            this.brushes.push({id, brush})            
+            this.brushes.push({ id, brush })
         },
 
-        drawBrushes(){
-
+        drawBrushes() {
             let brushSelection = this.brushSvg
                 .selectAll('.brush')
                 .data(this.brushes)
@@ -202,61 +289,121 @@ export default {
                 .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
                 .on('end', this.brushEnd)
 
-                
+
             brushSelection.enter()
                 .insert("g", ".brush")
                 .attr("class", "brush")
-                .attr("id", (brush) => "brush-"+ brush.id)
+                .attr("id", (brush) => "brush-" + brush.id)
                 // .each( (brushObj) => { brushObj.brush(d3.select('#brush' + brushObj.id)) })
                 .call(brush)
 
-            brushSelection.each( (brushObj) =>{
+            brushSelection.each((brushObj) => {
                 d3.select('#brush' + brushObj.id)
                     .attr('class', 'brush')
                     .selectAll('.overlay')
                     .style('pointer-events', () => {
                         let brush = brushObj.brush
-                        if (brushObj.id == brushes.length - 1 && brush !== undefined){
+                        if (brushObj.id == brushes.length - 1 && brush !== undefined) {
                             return 'all'
                         }
-                        else{
+                        else {
                             return 'none'
                         }
                     })
             })
 
             // brushSelection.exit()
-                // .remove()
-        },  
+            // .remove()
+        },
 
-        drawCPDs(){
-            d3.selectAll('.cpdline').remove()
+        drawCPDs() {
+            d3.selectAll('.cpdline' + this.id).remove()
 
             let xPoints = [];
-            for(let i = 0; i < this.cpds.length; i += 1){
+            for (let i = 0; i < this.cpds.length; i += 1) {
                 xPoints.push(this.actualTime[this.cpds[i]])
             }
-            console.log(xPoints)
-            this.svg.append('line')
+
+            this.svg.selectAll('cpdline')
                 .data(xPoints)
-                .attr('class', 'cpdline')
-                .attr('x1', (d) => { return this.x(d) })
-                .attr('y1', 0)
-                .attr('x2', (d) => { return this.x(d) })
-                .attr('y2', 20)
+                .enter()
+                .append('line')
+                .attrs({
+                    'class': 'cpdline cpdline' + this.id,
+                    'x1': (d) => { return this.x(d) },
+                    'y1': 0,
+                    'x2': (d) => { return this.x(d) },
+                    'y2': this.height - this.padding.bottom,
+                })
+                .style('stroke', '#DA535B')
+                .style('stroke-width', '3.5px')
+                .style('z-index', 100)
         },
+
+
+        // clusterLabel() {
+        //     d3.select('#timeseries-chip')
+        //         .append('svg')
+        //         .enter().
+        // }
+
+        // enablePanning() {
+        //     // Zoom/Pan behavior
+        //     let pan = d3.behavior.zoom()
+        //         .x(x_scale)
+        //         .scale(scale)
+        //         .size([this.width, this.height])
+        //         .scaleExtent([scale, scale])
+        //         .on('zoom', function (e) {
+        //             var current_domain = x_scale.domain(),
+        //                 current_max = current_domain[1].getTime();
+
+        //             // If we go past the max (i.e. now), reset translate to the max
+        //             if (!isNaN(max_translate_x) && current_max > now)
+        //                 pan.translate([max_translate_x, 0]);
+
+        //             // Update the data once user hits the point where current data ends
+        //             if (pan.translate()[0] > min_translate_x) {
+        //                 updateData();
+        //                 addNewPoints();
+
+        //                 // Just to illustrate what's happening
+        //                 console.debug('Updated data: ', chart_data);
+        //                 console.debug('Updated selection: ', circles);
+        //             }
+
+        //             // Redraw any components defined by the x axis
+        //             x_axis.call(x_axis_generator);
+        //             circles.attr('cx', function (d) {
+        //                 return x_scale(new Date(d.registered));
+        //             });
+        //         });
+
+        //     // Apply the behavior 
+        //     this.svg.call(pan);
+
+        //     // Now that we've scaled in, find the farthest point that
+        //     // we'll allow users to pan forward in time (to the right)
+        //     max_translate_x = width - x_scale(new Date(now));
+        //     this.svg.call(pan.translate([max_translate_x, 0]).event);
+        // },
 
         visualize(ts, cpd) {
             if (!this.isLabelled) {
                 this.label()
             }
 
-            if(cpd == 1){
-                this.cpds.push(this.$parent.stream_count - 1)
+            if (cpd == 1) {
+                let current_cpd_idx = this.$parent.stream_count
+                let current_cpd = this.actualTime[current_cpd_idx]
+                EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
+                this.prev_cpd = current_cpd
+                this.cpds.push(this.$parent.stream_count)
             }
-            
+
             this.drawCPDs()
 
+            this.clusterMap = {}
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
                 this.data = this.svg.append('path')
@@ -266,9 +413,18 @@ export default {
                 this.actualTime = res[this.plotMetric]
                 let data = res['ts']
                 let cluster = res['cluster'][0]
+                if(this.clusterMap[cluster] == undefined){
+                    this.clusterMap[cluster] = 0
+                }
+                this.clusterMap[cluster] += 1
                 this.cluster[id] = res['cluster'][0]
-                
-                this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
+
+                if (this.actualTime.length > this.timepointMoveThreshold) {
+                    this.x.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
+                }
+                else {
+                    this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
+                }
                 let yDomTemp = d3.extent(data)
                 if (yDomTemp[1] > this.yDom[1])
                     this.yDom[1] = yDomTemp[1]
@@ -286,11 +442,18 @@ export default {
                         'id': 'line' + id,
                         d: this.line,
                         stroke: this.colorSet[cluster],
-                        'stroke-width': 1.0,
+                        'stroke-width': (d) => {
+                            if (Object.entries(ts).length < 16) return 2.0
+                            else return 1.0
+                        },
                         fill: 'transparent',
                         transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     })
+                    .style('z-index', 0)
             }
+            console.log(this.clusterMap)
+            this.showLabels()
+
         },
 
         brushEnd() {
@@ -303,7 +466,7 @@ export default {
             let selection = d3.brushSelection(lastBrush)
 
             // if(selection && selection[0] !== selection[1]){
-                this.newBrush()
+            this.newBrush()
             // }
 
             this.drawBrushes()
@@ -311,9 +474,9 @@ export default {
             // There is some bug here, it does not return the correct this.x.invert
             let d0 = d3.event.selection.map(this.x.invert)
             let correction = 4824.0
-            
+
             d0[0] = d0[0] - correction
-            d0[1] = d0[1] - correction*1.5
+            d0[1] = d0[1] - correction * 1.5
             this.$parent.addBrushTime.push(d0)
 
             // // If empty when rounded, use floor & ceil instead.
