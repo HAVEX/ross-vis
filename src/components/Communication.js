@@ -223,6 +223,7 @@ export default {
         })
   
         container.appendChild(div)
+        // obtain max and min color values for multiple picos views.
         this.rings[tii].forEach( (ring, rii) => {
           if (Array.isArray(colorDomains[rii])) {
             colorDomains[rii][0] = Math.min(colorDomains[rii][0], ring.colorDomain[0])

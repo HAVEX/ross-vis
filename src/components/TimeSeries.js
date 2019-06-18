@@ -14,14 +14,26 @@ export default {
     enableInteraction: true,
     height: 0,
     width: 0,
-    metrics: null,
-    selectedTimeDomain: null,
-    showCPD: false,
-    selectedMeasure: null,
-    methods: ['AFF', 'CUSUM', 'EMMV', 'PCA'],
-    selectedMethod: 'AFF',
-    current_views: [],
-    cpds: []
+    metrics: [],
+    timeDomains: ['LastGvt', 'RealTs', 'VirtualTime'],
+    timeRange: [0, 10],
+    timeValues: null,
+    granularities: ['System', 'PE', 'KP'],
+    measures: ['avg', 'sum', 'max', 'min'],
+    selectedTimeDomain: 'LastGvt',
+    granularity: 'System',
+    selectedMeasure: 'sum',
+    selectedMetrics: ['NeventProcessed', 'RbTotal'],
+    callback: null,
+    colors: ['teal', 'purple', 'orange', 'steelblue'],
+    visMarks: {
+      System: 'area',
+      PE: 'line',
+      KP: 'line'
+    },
+    clusters: null,
+    colorEncoding: null,
+    colorSet: ['green', 'orange', 'purple', 'steelblue', 'red']
   }),
   mounted() {
     this.id = this._uid + '-overview'
@@ -35,6 +47,7 @@ export default {
         container: this.id,
         viewport: [this.width, this.height]
       }
+<<<<<<< HEAD
       this.views = [{
         id: 'view-right',
         width: this.width / 2,
@@ -50,6 +63,10 @@ export default {
 
     initVis(ts) {
       this.vis = p4(this.config).data(ts).view(this.views)
+=======
+      this.vis = p4(config).data(this.data)
+      this.timeValues = this.data.uniqueValues;
+>>>>>>> a38f97c89666189f635f81746dac3fe9fc30bc9c
     },
 
     removeVis(elms) {
@@ -67,10 +84,28 @@ export default {
       //this.vis.head().updateData(ts)
     },
 
+<<<<<<< HEAD
     visualize(metrics, callback, cpd, clusters) {
       this.metrics = metrics
       if (cpd == 1) {
         this.cpds.push(this.$parent.stream_count - 1)
+=======
+    forward() {
+      this.timeRange[1] += 5;
+      this.$emit('update', [this.timeValues[this.selectedTimeDomain][0], this.timeValues[this.selectedTimeDomain][this.timeRange[1]]])
+      this.visualize();
+    },
+
+    backward() {
+      this.timeRange[1] -= 5;
+      this.$emit('update', [this.timeValues[this.selectedTimeDomain][0], this.timeValues[this.selectedTimeDomain][this.timeRange[1]]])
+      this.visualize();
+    },
+
+    visualize (callback) {
+      if(typeof(callback) === 'function') {
+        this.callback = callback
+>>>>>>> a38f97c89666189f635f81746dac3fe9fc30bc9c
       }
 
       let viewSetting = {
@@ -129,6 +164,7 @@ export default {
         collection[this.colorEncoding] = { $max: this.colorEncoding }
       }
 
+<<<<<<< HEAD
       let aggregation = [this.timeAttribute]
 
       if (!this.isAggregated) {
@@ -141,6 +177,19 @@ export default {
       }
 
       collection['cluster'] = { $max: 'cluster' }
+=======
+      let t = this.vis.view([]).head()
+      .aggregate({
+        $group: aggregation,
+        $collect: collection
+      })
+
+      if(Array.isArray(this.timeRange)) {
+        t.match({LastGvt: this.timeRange})
+      }
+
+      t.visualize(vmap)
+>>>>>>> a38f97c89666189f635f81746dac3fe9fc30bc9c
 
 
       this.vis.view(this.current_views).head()

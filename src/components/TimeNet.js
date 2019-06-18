@@ -43,7 +43,11 @@ export default {
       this.visualize()
       
     },
-    updateCommunication() {
+    updateCommunication(timeInterval) {
+      if(Array.isArray(timeInterval)) {
+        console.log(timeInterval)
+        this.selectedTimeInterval = timeInterval
+      }
       this.$refs.Communication.visualize({
         data: this.data,
         measure: this.selectedMeasure,
