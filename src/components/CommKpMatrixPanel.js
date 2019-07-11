@@ -43,8 +43,7 @@ export default {
         message: "Aggregated Communication view",
         track_cpds: [],
         value: 100,
-        max: 100,
-        min: 0,
+        min: 100,
         mark_points: [0],
         weights: [],
         max_weight: 0,
@@ -95,6 +94,10 @@ export default {
             }
         })
 
+        EventHandler.$on('update_comm_max_weight', (max_weight) => {
+            this.max_weight = max_weight
+        })
+
         this.id = + 'Communication-overview'
         this.init()
     },
@@ -110,6 +113,8 @@ export default {
                 .style('fill-opacity', d => {
                     return (d.weight * 100) / (this.max_weight*(this.min))
                 })
+            
+            EventHandler.$emit('update_comm_min', this.min)
         },
 
         updateMarks(matrixData){
@@ -137,7 +142,6 @@ export default {
             if (this.data != null) {
                 console.log('Communication Panel [init]', this.data)
                 let number_of_ids = this.data.length
-                console.log(this.track_cpds)
                 for (let id = 0; id < number_of_ids; id += 1) {
                     for (let i = 0; i < number_of_ids; i += 1) {
                         if (this.kpMatrix[id] == undefined) {
@@ -149,12 +153,12 @@ export default {
                             z: this.data[id]['CommData'][i],
                             id: this.processIds[i],
                             cluster: this.clusterIds[i],
+                            clusters: this.clusterIds,
                             changePoint: this.track_cpds[i],
                             changeIdx: this.track_cpds.length - 1
                         }
                     }
                 }
-
                 this.$refs.AggrKpMatrix.matrix = this.kpMatrix
                 this.$refs.AggrKpMatrix.clusterIds = this.clusterIds;
                 this.$refs.AggrKpMatrix.visualize()

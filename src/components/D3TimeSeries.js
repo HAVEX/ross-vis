@@ -1,6 +1,6 @@
 import * as d3 from 'd3'
 // import { selection } from "d3-selection";
-import "d3-selection-multi";
+import "d3-selection-multi"
 import template from '../html/D3TimeSeries.html'
 import EventHandler from './EventHandler'
 
@@ -38,7 +38,8 @@ export default {
         timepointMoveThreshold: 50,
         actualTime: 0,
         clusterMap: {},
-        cluster: []
+        cluster: [], 
+        showCircleLabels: true,
     }),
     watch: {
         selectedIds: function (val) {
@@ -82,20 +83,23 @@ export default {
             this.width = visContainer.clientWidth
             this.height = (window.innerHeight / 3 - 20)
 
-            this.padding = { left: 75, top: 10, right: 0, bottom: 40 }
+            this.padding = { left:10, top: 0, right: 0, bottom: 20 }
             this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
             this.y = d3.scaleLinear().range([this.height - this.padding.bottom - this.padding.top, 0]);
         },
 
         showLabels() {
-            let width = 600;
-            let height = 50;
-            let x_offset = 40
-            let y_offset = 0
+            let n_clusters = 3
+            let width = document.getElementById(this.id).clientWidth - document.getElementById('timeseries-chip').clientWidth;
+            let x_offset = 10
+            let y_offset = 10
             let radius = 10
-            let gap = 200
+            let padding = 10
+            let height = 2*radius + padding
+            let gap = width / n_clusters
             d3.select('.clusterLabelSVG').remove()
-            let svg = d3.select("#labels").append('svg')
+            let svg = d3.select("#labels")
+                .append('svg')
                 .attrs({
                     transform: `translate(${x_offset}, ${y_offset})`,
                     "width": width,
@@ -114,10 +118,9 @@ export default {
                 .attrs({
                     "r": (d, i) => { return radius },
                     "cx": (d, i) => { return i * gap + radius },
-                    "cy": (d, i) => { return 2 * radius},
+                    "cy": (d, i) => { return radius},
                 })
 
-            let padding = 10
             let text = svg.selectAll("text")
                 .data(this.colorSet)
                 .enter()
@@ -125,9 +128,9 @@ export default {
                 .text( (d, i) => { return "Cluster-" + i + ' (' + this.clusterMap[i] + ')' })
                 .attrs({
                     "x": (d, i) => { return i * gap + 2 * radius + padding },
-                    "y": (d, i) => { return 2 * radius + padding; },
+                    "y": (d, i) => { return radius + padding; },
                     "font-family": "sans-serif",
-                    "font-size": "24px",
+                    "font-size": 2*radius + "px",
                     "fill": "black"
                 })
 
@@ -227,9 +230,9 @@ export default {
             this.enableZoom()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
-                    width: this.width - 2 * this.padding.left - this.padding.right,
-                    height: this.height,
-                    transform: 'translate(0, 0)',
+                    width: this.width - this.padding.left - this.padding.right,
+                    height: this.height - this.padding.top - this.padding.bottom,
+                    transform: `translate(${this.padding.left}, ${this.padding.top})`,
                     "pointer-events": "all"
                 })
                 .call(this.zoom)
@@ -440,6 +443,7 @@ export default {
                     .datum(data)
                     .attrs({
                         'id': 'line' + id,
+                        // class: 'line',
                         d: this.line,
                         stroke: this.colorSet[cluster],
                         'stroke-width': (d) => {
@@ -451,7 +455,6 @@ export default {
                     })
                     .style('z-index', 0)
             }
-            console.log(this.clusterMap)
             this.showLabels()
 
         },

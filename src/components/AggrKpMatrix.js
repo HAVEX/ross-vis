@@ -19,6 +19,7 @@ export default {
         matrixScale: 0.85,
         offset: 30,
         colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
+        currentClustersIds: [],
         clusterIds: [],
         idx: 0,
         weights: [],
@@ -76,8 +77,6 @@ export default {
             this.containerHeight = window.innerHeight - panel1Height - panel2Height;
             this.containerWidth = this.containerHeight
 
-            console.log(panel1Height, panel2Height, this.containerHeight, this.containerWidth)
-            console.log(this.containerHeight, this.containerWidth)
             this.matrixWidth = this.containerWidth * this.matrixScale
             this.matrixHeight = this.containerHeight * this.matrixScale
 
@@ -148,13 +147,68 @@ export default {
                     return "#8e0b0b";
                 })
                 .style('fill-opacity', d => {
-                    return (d.weight * 100) / (this.$parent.max_weight * (this.$parent.max - this.$parent.min))
+                    return (d.weight * 100) / (this.$parent.max_weight * (this.$parent.min))
                 })
-                .on('click', (d) => {
-                    console.log(d.id)
-                })
+                // .on('click', (d) => {
+                //     d3.selectAll('.line')
+                //         .attrs({
+                //             opacity: 1.0,
+                //             stroke: 'rgba(0, 0, 0, 0.3)',
+                //         })
+
+                //     d3.selectAll('circle')
+                //         .attrs({
+                //             opacity: 0.1,
+                //             // stroke: 'rgba(0, 0, 0, 0.3)',
+                //         })
+
+                //     d3.selectAll('#line' + d.source)
+                //         .attrs({
+                //             opacity: 1.0,
+                //             'stroke-width': 5.0,
+                //             stroke: this.colorSet[this.currentClustersIds[d.source]]
+                //         })
+
+                //     d3.selectAll('.dot' + d.source)
+                //         .attrs({
+                //             opacity: 1.0,
+                //             'fill': this.colorSet[this.currentClustersIds[d.source]]
+                //         })
+
+                //     d3.selectAll('#line' + d.target)
+                //         .attrs({
+                //             opacity: 1.0,
+                //             stroke: this.colorSet[this.currentClustersIds[d.target]]
+                //         })
+
+                //     d3.selectAll('.dot' + d.target)
+                //         .attrs({
+                //             opacity: 1.0,
+                //             'stroke-width': 5.0,
+                //             fill: this.colorSet[this.currentClustersIds[d.target]]
+                //         })
+                // })
                 .on('dblclick', (d) => {
-                    console.log(d)
+                    d3.selectAll('circle')
+                    .attrs({
+                        opacity: 1.0,
+                        // stroke: 'rgba(0, 0, 0, 0.3)',
+                    })
+
+                    this.currentClustersIds = d.clusters
+                    for (let i = 0; i < this.currentClustersIds.length; i += 1) {
+                        d3.selectAll('#line' + i)
+                            .attrs({
+                                'stroke-width': 1.0,
+                                'stroke': this.colorSet[this.currentClustersIds[i]]
+                            })
+
+                        d3.selectAll('.dot' + i)
+                            .attr({
+                                opacity:1.0, 
+                                'fill': this.colorSet[this.currentClustersIds[i]]
+                            })
+                    }
                 })
 
             // this.svg.selectAll(".cell")

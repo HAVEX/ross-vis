@@ -22,7 +22,14 @@ export default {
 		from_items: [],
 		causality: ['from', 'to'],
 		selectedCausality: 'to',
-		message: 'Causality view'
+		message: 'Causality view',
+		nameMapper : {
+			"NetworkRecv": "Recv",
+			"NetworkSend": "Send",
+			"NeventProcessed": "n_events",
+			"NeventRb": "Prm. rollback",
+			"RbSec": "Sec. rollback"
+		}
 	}),
 	methods: {
 		rowClass(item, type) {
@@ -43,7 +50,7 @@ export default {
 			for (let i = 0; i < data['from'].length; i++) {
 				if (data['from'][i]['causality'] == "true") {
 					data['from'][i]['_rowVariant'] = 'success'
-					data['from']['metric'][i] = data['from']['metric'] + "*"
+					data['from']['metric'][i] = this.nameMapper[data['from']['metric']] + "*"
 				}
 				else {
 					data['from'][i]['_rowVariant'] = 'success'

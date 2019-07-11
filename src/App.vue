@@ -17,22 +17,28 @@ export default {
 
 .panel{
   height: 50px;
+  background: "#637B8A";
+  color: white;
+}
+
+.panel span{
+  font-size: 14px;
 }
 
 .x-axis { 
-  font: 16px sans-serif; 
+  font: 10px sans-serif; 
 }
 
 .y-axis {
-  font: 16px sans-serif;
+  font: 10px sans-serif;
 }
 
 .axis-labels{
-  font:28px sans-serif;
+  font: 13px sans-serif;
 }
 
 .vue-slider-mark-label{
-  font: 20px sans-serif
+  font: 13px sans-serif
 }
 
 
@@ -134,7 +140,7 @@ export default {
 .table-container table tbody td {
   padding: 16px;
   cursor: pointer;
-  font-size: 0.5vw;
+  font-size: 0.7vw;
 }
 .table-container table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.5);

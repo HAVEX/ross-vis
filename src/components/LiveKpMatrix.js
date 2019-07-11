@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 import "d3-selection-multi";
 import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
 import template from '../html/LiveKpMatrix.html'
+import EventHandler from './EventHandler'
 
 export default {
     name: 'LiveKpMatrix',
@@ -24,6 +25,8 @@ export default {
         clusterIds: [],
         scaleKpCount: 16,
         pes:0, 
+        max_weight:0,
+        min:100,
     }),
 
     watch: {
@@ -31,6 +34,11 @@ export default {
 
     mounted() {
         this.id = 'live-kpmatrix-overview' 
+
+        EventHandler.$on('update_comm_min', (min) => {
+            this.min = min
+        })
+
     },
 
     methods: {
@@ -64,6 +72,11 @@ export default {
                 .adj(this.matrix[idx])
 
             let matrixData = adjacencyMatrix()
+            for (let i = 0; i < matrixData.length; i += 1) {
+                this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
+                EventHandler.$emit('update_comm_max_weight', this.max_weight)
+            }
+
             if (!Number.isNaN(matrixData[0].x)) {
                 this.max_weight = 0
                 for (let i = 0; i < matrixData.length; i += 1) {
@@ -103,7 +116,10 @@ export default {
                     })
                     .style('stroke-opacity', 1)
                     .style('fill', d => "#8e0b0b")
-                    .style('fill-opacity', d => d.weight / this.max_weight)
+                    .style('fill-opacity', d => { 
+                        let opacity = (d.weight * 100) / (this.max_weight * (this.min))
+                        return opacity
+                    })
                     .on('click', (d) => {
                         console.log(d.id)
                     })                   
