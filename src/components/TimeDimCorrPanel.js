@@ -10,6 +10,8 @@ import LiveKpMatrix from './LiveKpMatrix'
 import Causality from './Causality'
 
 import EventHandler from './EventHandler.js'
+import Splitpanes from 'splitpanes'
+import 'splitpanes/dist/splitpanes.css'
 
 
 export default {
@@ -33,6 +35,7 @@ export default {
 		D3TimeSeries,
 		Causality,
 		LiveKpMatrix,
+		Splitpanes
 	},
 	data: () => ({
 		ts: null,
@@ -376,8 +379,6 @@ export default {
 				console.log('data is null or undefined')
 			}
 		},
-
-
 
 		checkClustering() {
 			for (let KpGid in this.timeCluster) {

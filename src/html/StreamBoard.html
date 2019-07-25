@@ -1,7 +1,7 @@
-<v-container fluid class="pa-0">
+<splitpanes id="streamboard" class="default-theme" horizontal>
     <TimeDimCorrPanel ref="TimeDimCorrPanel1"
     id="panel1"
-    v-show="isTsDataLoaded" 
+    v-show="isTsDataLoaded == true" 
     v-bind:plot-metric="plotMetric1"   
     v-bind:granularity="granularity"
     v-bind:measure="measure" 
@@ -32,6 +32,6 @@
     v-bind:comm-data="isTsDataLoaded ? commData : null" 
     v-bind:cluster-map="clusterMap" />
      
-</v-container>
+</splitpanes>
 
  

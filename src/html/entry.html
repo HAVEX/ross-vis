@@ -105,12 +105,19 @@
   </v-dialog> -->
 
 	<v-content id="dashboard" style="padding: 64px 18px 0px">
-		<StreamBoard ref="StreamBoard" v-bind:stream-data="streamData" v-bind:plot-metric1="plotMetric1"
-			v-bind:plot-metric2="plotMetric2" v-bind:granularity="selectedGranID" v-bind:time-domain="selectedTimeDomain"
-			v-bind:measure="selectedMeasure" v-bind:cluster-metric="selectedClusterMetric" v-if="selectedMode == 'In Situ'"
-			v-bind:comm-data="commData" />
-		<HocBoard ref="HocBoard" v-bind:hoc-data="hocData" v-bind:plot-metric1="plotMetric1"
-			v-bind:plot-metric2="plotMetric2" v-if="selectedMode == 'Post Hoc'" />
+		<StreamBoard ref="StreamBoard" 
+			v-bind:stream-data="streamData" 
+			v-bind:plot-metric1="plotMetric1"
+			v-bind:plot-metric2="plotMetric2" 
+			v-bind:granularity="selectedGranID" 
+			v-bind:time-domain="selectedTimeDomain"
+			v-bind:measure="selectedMeasure" 
+			v-bind:cluster-metric="selectedClusterMetric" 
+			v-bind:comm-data="commData" 
+			v-show="selectedMode == 'In Situ'"	
+		/>
+		<!-- <HocBoard ref="HocBoard" v-bind:hoc-data="hocData" v-bind:plot-metric1="plotMetric1"
+			v-bind:plot-metric2="plotMetric2" v-show="selectedMode == 'Post Hoc'" /> -->
 
 	</v-content>
 	<!-- <v-footer color="blue-grey" class="white--text" app>

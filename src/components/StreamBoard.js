@@ -1,6 +1,8 @@
 import tpl from '../html/StreamBoard.html'
 import '../css/dashboard1.css'
 import Vue from 'vue'
+import Splitpanes from 'splitpanes'
+import 'splitpanes/dist/splitpanes.css'
 
 import TimeDimCorrPanel from './TimeDimCorrPanel'
 import CommKpMatrixPanel from './CommKpMatrixPanel'
@@ -12,7 +14,8 @@ export default {
 	components: {
 		TimeDimCorrPanel,
 		CommKpMatrixPanel,
-		Overview
+		Overview,
+		Splitpanes
 	},
 	props: [
 		'plotMetric1',
@@ -54,6 +57,7 @@ export default {
 	methods: {
 		init() {
 			this.isTsDataLoaded = true
+			console.log('Data loaded.')
 			if (this.isTsDataLoaded) {
 				Vue.nextTick(() => {
 					this.$refs.TimeDimCorrPanel1.init()
