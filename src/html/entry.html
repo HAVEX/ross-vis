@@ -1,8 +1,22 @@
-<v-app id="inspire">
-	<v-toolbar color="blue-grey" dark fixed app clipped-right>
+<v-app>
+	<v-toolbar id="toolbar" color="blue-grey" dark fixed app clipped-right>
 		<v-toolbar-side-icon @click.stop="left = !left">
 		</v-toolbar-side-icon>
-		<v-toolbar-title style="margin-right: 3em;">{{ appName }}</v-toolbar-title>
+		<v-toolbar-title xs3 id="title">{{ appName }}</v-toolbar-title>
+		<v-spacer></v-spacer>
+		<v-flex xs3 dense>
+				<!-- <v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePrevStep">
+					<v-icon>skip_previous</v-icon>
+				</v-btn> -->
+				<v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePlay">
+					<v-icon>play_arrow</v-icon>
+				</v-btn>
+				<v-btn outline fab small color="white" v-if="play == 1" v-on:click="updatePause">
+					<v-icon>pause</v-icon>
+				</v-btn>
+				<v-spacer></v-spacer>
+	
+			</v-flex>
 		<v-flex xs2 class="ma-2">
 			<v-select label="TimeMode" :items="timeDomains" v-model="selectedTimeDomain" :menu-props="{ maxHeight: '400' }"
 				box v-on:change="updateTimeDomain()">
@@ -13,21 +27,7 @@
 				:menu-props="{ maxHeight: '400' }" box v-on:change="updateGran()">
 			</v-select>
 		</v-flex>
-		<v-spacer></v-spacer>
-		<v-flex xs6 dense>
-			<v-spacer></v-spacer>
-			<!-- <v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePrevStep">
-				<v-icon>skip_previous</v-icon>
-			</v-btn> -->
-			<v-btn outline fab small color="white" v-if="play == 0" v-on:click="updatePlay">
-				<v-icon>play_arrow</v-icon>
-			</v-btn>
-			<v-btn outline fab small color="white" v-if="play == 1" v-on:click="updatePause">
-				<v-icon>pause</v-icon>
-			</v-btn>
-			<v-spacer></v-spacer>
-
-		</v-flex>
+		
 		<v-spacer></v-spacer>
 		<v-flex xs2>
 			<v-select label="Analysis Mode" :items="modes" v-model="selectedMode" box :menu-props="{ maxHeight: '400' }"
@@ -63,6 +63,11 @@
 				<v-flex xs12 class="ma-1">
 					<v-select label="Cluster by Metric" :items="clusterMetrics" v-model="selectedClusterMetric"
 						v-on:change="updateClusterMetric()">
+					</v-select>
+				</v-flex>
+				<v-flex xs12 class="ma-1">
+					<v-select label="Metric (to/from)" :items="causality" v-model="selectedCausality"
+						:menu-props="{ maxHeight: '200' }" persistent-hint>
 					</v-select>
 				</v-flex>
 				<!-- <v-flex xs12 class="ma-1">

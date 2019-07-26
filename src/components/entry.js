@@ -17,7 +17,7 @@ export default {
 		streamData: null,
 		commData: null,
 		hocData: null,
-		appName: 'ROSS-Vis',
+		appName: 'Progressive-ROSS Analytics',
 		socketError: false,
 		server: 'localhost:8899',
 		modes: ['Post Hoc', 'In Situ'],
@@ -59,6 +59,8 @@ export default {
 		commThreshold: 0,
 		thresholdValue: 0,
 		showIntraComm: false,
+		causality: ['from', 'to'],
+		selectedCausality: 'to',
 	}),
 
 	watch: {

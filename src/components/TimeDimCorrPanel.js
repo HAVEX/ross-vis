@@ -94,7 +94,7 @@ export default {
 					this.$refs.TimeSeries.init()
 					this.$refs.Dimensionality.init()
 				}
-				// this.$refs.Causality.init()
+				this.$refs.Causality.init()
 			}
 			else if (this.panelId == '2') {
 				if (this.useD3) {

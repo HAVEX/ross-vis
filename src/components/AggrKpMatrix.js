@@ -74,7 +74,8 @@ export default {
         visualize(prev_cpd, cpd) {
             let panel1Height = document.getElementById('panel1').clientHeight
             let panel2Height = document.getElementById('panel2').clientHeight
-            this.containerHeight = window.innerHeight - panel1Height - panel2Height;
+            let chipContainerHeight = document.getElementById('chip-container').clientHeight
+            this.containerHeight = window.innerHeight - panel1Height - panel2Height - 3*chipContainerHeight;
             this.containerWidth = this.containerHeight
 
             this.matrixWidth = this.containerWidth * this.matrixScale

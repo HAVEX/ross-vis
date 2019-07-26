@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-// import { selection } from "d3-selection";
 import "d3-selection-multi"
 import template from '../html/D3TimeSeries.html'
 import EventHandler from './EventHandler'
@@ -80,11 +79,16 @@ export default {
     methods: {
         init() {
             let visContainer = document.getElementById(this.id)
+            let dashboardHeight = document.getElementById('dashboard').clientHeight
+            let toolbarHeight = document.getElementById('toolbar').clientHeight
+            let chipContainerHeight = document.getElementById('chip-container').clientHeight
+        
             this.width = visContainer.clientWidth
-            this.height = (window.innerHeight / 3 - 20)
+            this.height = (dashboardHeight - toolbarHeight - chipContainerHeight)/3
+            console.log(this.height)
 
-            this.padding = { left:10, top: 0, right: 0, bottom: 20 }
-            this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left]);
+            this.padding = { left:30, top: 0, right: 20, bottom: 30 }
+            this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left*1.5]);
             this.y = d3.scaleLinear().range([this.height - this.padding.bottom - this.padding.top, 0]);
         },
 
@@ -146,7 +150,7 @@ export default {
 
             this.xAxisSVG = this.svg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left}, ${this.height - 1.0 * this.padding.bottom})`,
+                    transform: `translate(${this.padding.left*1.5}, ${this.height - 1.0 * this.padding.bottom})`,
                     class: 'x-axis',
                     'stroke-width': '1.5px'
                 })
@@ -154,7 +158,7 @@ export default {
 
             this.yAxisSVG = this.svg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`,
+                    transform: `translate(${this.padding.left*1.5}, ${this.padding.top})`,
                     class: 'y-axis',
                     'stroke-width': '1.5px'
                 })
@@ -185,7 +189,7 @@ export default {
             this.svg.append("text")
                 .attrs({
                     "class": "axis-labels",
-                    transform: `translate(${3}, ${this.height / 2}) rotate(${90})`,
+                    transform: `translate(${0}, ${this.height / 2}) rotate(${90})`,
                 })
                 .style("text-anchor", "middle")
                 .text(this.$parent.plotMetric)
@@ -230,9 +234,9 @@ export default {
             this.enableZoom()
             this.svg = d3.select('#' + this.id).append('svg')
                 .attrs({
-                    width: this.width - this.padding.left - this.padding.right,
-                    height: this.height - this.padding.top - this.padding.bottom,
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`,
+                    width: this.width,
+                    height: this.height,
+                    transform: `translate(${0}, ${this.padding.top})`,
                     "pointer-events": "all"
                 })
                 .call(this.zoom)
@@ -451,7 +455,7 @@ export default {
                             else return 1.0
                         },
                         fill: 'transparent',
-                        transform: `translate(${this.padding.left}, ${this.padding.top})`,
+                        transform: `translate(${this.padding.left*1.5}, ${this.padding.top})`,
                     })
                     .style('z-index', 0)
             }

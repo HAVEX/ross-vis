@@ -1,5 +1,5 @@
-<v-container fluid class="pa-0">
-    <v-card :id="id" class="panel">
-        <v-chip> {{ message }} </v-chip>
-    </v-card>
-</v-container>
+<v-card :id="id">
+    <v-layout class="chip-container">
+        <v-chip class="chip"> {{ message }} </v-chip>
+    </v-layout>
+</v-card>

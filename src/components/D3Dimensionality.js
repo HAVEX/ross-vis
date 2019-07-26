@@ -27,8 +27,12 @@ export default {
     methods: {
         init() {
             let visContainer = document.getElementById(this.id)
+            let dashboardHeight = document.getElementById('dashboard').clientHeight
+            let toolbarHeight = document.getElementById('toolbar').clientHeight
+            let chipContainerHeight = document.getElementById('chip-container').clientHeight
+
             this.width = visContainer.clientWidth
-            this.height = window.innerHeight / 3 - 20
+            this.height = (dashboardHeight - toolbarHeight - chipContainerHeight)/ 3 
             this.padding = { left: 50, top: 0, right: 50, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.width]);
             this.y = d3.scaleLinear().range([this.height, 0]);

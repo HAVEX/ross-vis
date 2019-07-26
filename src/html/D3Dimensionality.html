@@ -1,5 +1,9 @@
-<v-card :id="id">
-    <v-chip v-if="showMessage==true"> {{ message }} </v-chip>
+<v-card :id="id" fill-height flex>
+    <v-layout row wrap id="chip-container">
+        <v-flex xs2>
+            <v-chip class="chip" id="dimensionality-chip" v-if="showMessage==true"> {{ message }} </v-chip>
+        </v-flex>
+    </v-layout>
     <!-- <v-btn icon>
         <v-icon v-if="zoomed==true" v-on:click="unzoom()">clear</v-icon>
     </v-btn> -->

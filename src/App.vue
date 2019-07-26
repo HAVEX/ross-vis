@@ -11,6 +11,27 @@ export default {
 </script>
 
 <style>
+
+#toolbar {
+}
+
+.chip > span{
+  background: #637B8A !important;
+  color: #fff !important;
+  font-size: 16px !important;
+  height: 32px !important;
+}
+
+#fromToMetric{
+
+}
+
+#title {
+  font-size: 20px;
+  text-overflow:unset;
+  padding-right: 10em
+}
+
 #dashboard {
   padding: 64px 15px 0px;
 }

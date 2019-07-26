@@ -27,6 +27,7 @@ export default {
         pes:0, 
         max_weight:0,
         min:100,
+        firstRender: true
     }),
 
     watch: {
@@ -45,16 +46,42 @@ export default {
         init() {
             let visContainer = document.getElementById(this.id)
             this.containerWidth = visContainer.clientWidth
-            this.containerHeight = this.containerWidth
-            this.matrixWidth = this.containerWidth*this.matrixScale
-            this.matrixHeight = this.containerHeight*this.matrixScale
+
+            let dashboardHeight = document.getElementById('dashboard').clientHeight
+            let toolbarHeight = document.getElementById('toolbar').clientHeight
+            this.chipContainerHeight = document.getElementById('chip-container').clientHeight
+
+            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight)/3
+
+            this.matrixLength = Math.min(this.containerHeight, this.containerWidth)
+            this.matrixWidth = this.matrixLength*this.matrixScale
+            this.matrixHeight = this.matrixLength*this.matrixScale
         },
 
         reset() {
+            if(this.firstRender){
+                this.addDummySVG()
+                this.firstRender = false
+            }
+
             this.visualize()
         },
 
+        addDummySVG(){
+            let kpMatrixHeight = document.getElementsByClassName('.KpMatrix0').clientHeight
+            console.log(this.matrixHeight, this.chipContainerHeight)
+            this.svg = d3.select('#' + this.id)
+                .append('svg')
+                .attrs({
+                    transform: `translate(${0}, ${0})`,
+                    width: this.matrixLength, 
+                    height: 0.5*(this.containerHeight - this.matrixHeight - this.chipContainerHeight),
+                })
+
+        },
+
         visualize(idx) {
+           
             this.pes = this.matrix[idx].length
             this.nodeWidth = (this.matrixWidth / this.pes)
             this.nodeHeight = (this.matrixHeight / this.pes) 
@@ -87,7 +114,7 @@ export default {
                 this.svg = d3.select('#' + this.id)
                     .append('svg')
                     .attrs({
-                        transform: `translate(${0}, ${0})`,
+                        transform: `translate(${5}, ${0})`,
                         width: this.matrixWidth + this.clusterNodeOffset, 
                         height: this.matrixHeight + this.clusterNodeOffset, 
                         class: 'KpMatrix' + idx,
@@ -160,6 +187,7 @@ export default {
                 d3.select('.KpMatrix')
                     .call(adjacencyMatrix.yAxis);
             }
+
         },
 
         clear() {

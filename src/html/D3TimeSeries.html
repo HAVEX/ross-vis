@@ -1,10 +1,10 @@
-<v-card :id="id">
-    <v-layout row wrap >
+<v-card :id="id" fill-height flex>
+    <v-layout row wrap id="chip-holder" >
         <v-flex xs2>
-            <v-chip id="timeseries-chip" v-if="showMessage==true"> {{ message }} </v-chip>
+            <v-chip class="chip" id="timeseries-chip" v-if="showMessage==true"> {{ message }} </v-chip>
         </v-flex>
         <v-flex xs10>
             <div v-if="showCircleLabels==true" id="labels"></div>
         </v-flex> 
-    </v-layout->
+    </v-layout>
 </v-card>

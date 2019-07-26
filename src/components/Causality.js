@@ -27,9 +27,10 @@ export default {
 			"NetworkRecv": "Recv",
 			"NetworkSend": "Send",
 			"NeventProcessed": "n_events",
-			"NeventRb": "Prm. rollback",
-			"RbSec": "Sec. rollback"
-		}
+			"NeventRb": "Prm. Rb.",
+			"RbSec": "Sec. Rb."
+		},
+		topParameters: 5
 	}),
 	methods: {
 		rowClass(item, type) {
@@ -43,7 +44,7 @@ export default {
 
 	methods: {
 		init() {
-
+	
 		},
 
 		preprocess(data) {
@@ -68,15 +69,22 @@ export default {
 		},
 
 		initVis(data) {
+			let dashboardHeight = document.getElementById('dashboard').clientHeight
+			let toolbarHeight = document.getElementById('toolbar').clientHeight
+			let chipContainerHeight = document.getElementById('chip-container').clientHeight
+
+			this.height = (dashboardHeight - toolbarHeight - chipContainerHeight)/ 3 
+			
+			document.getElementById('correlation-table').style.height = this.height
 			data = this.preprocess(data)
-			this.from_items = data['from'].slice(0, 7)
-			this.to_items = data['to'].slice(0, 7)
+			this.from_items = data['from'].slice(0, this.topParameters)
+			this.to_items = data['to'].slice(0, this.topParameters)
 		},
 
 		clear(data) {
 			this.preprocess(data)
-			this.from_items = data['from'].slice(0, 7)
-			this.to_items = data['to'].slice(0, 7)
+			this.from_items = data['from'].slice(0, this.topParameters)
+			this.to_items = data['to'].slice(0, this.topParameters)
 		},
 
 		updateCausality(){
