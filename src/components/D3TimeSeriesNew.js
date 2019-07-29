@@ -34,11 +34,27 @@ export default {
         prev_cpd: 0,
         message: "Time-series view",
         showMessage: true,
-        timepointMoveThreshold: 5,
+        timepointMoveThreshold: 15,
         actualTime: 0,
         clusterMap: {},
         cluster: [],
         showCircleLabels: true,
+        padding: {
+            top: 20,
+            bottom: 20,
+            left: 100,
+            right: 30,
+            topNav: 10,
+            bottomNav: 20
+        },
+        dimension: {
+            chartTitle: 20,
+            xAxis: 20,
+            yAxis: 20,
+            xTitle: 20,
+            yTitle: 20,
+            navChart: 70
+        },
     }),
     watch: {
         selectedIds: function (val) {
@@ -86,9 +102,26 @@ export default {
             this.width = visContainer.clientWidth
             this.height = (dashboardHeight - toolbarHeight - chipContainerHeight) / 3
 
-            this.padding = { left: 30, top: 0, right: 20, bottom: 30 }
-            this.x = d3.scaleLinear().range([0, this.width - this.padding.right - this.padding.left * 1.5]);
-            this.y = d3.scaleLinear().range([this.height - this.padding.bottom - this.padding.top, 0]);
+            this.$store.drawBrush = true
+
+            if(this.$store.drawBrush){
+                this.navHeight = this.height*0.20
+                this.navWidth = this.width
+                this.mainHeight = this.height - this.navHeight
+                this.mainWidth = this.width
+                this.navX = d3.scaleLinear().range([0, this.navWidth])
+            }
+            else{
+                this.navHeight = 0
+                this.navWidth = 0
+                this.mainHeight = this.height
+                this.mainWidth = this.width
+            }
+            
+            this.padding = { left: 40, top: 0, right: 20, bottom: 30 }
+            this.x = d3.scaleLinear().range([0, this.mainWidth - this.padding.right - this.padding.left * 1.5]);
+            this.y = d3.scaleLinear().range([this.mainHeight - this.padding.bottom - this.padding.top, 0]);
+
         },
 
         showLabels() {
@@ -147,7 +180,6 @@ export default {
                     let temp = d;
                     if (i % 2 == 0) {
                         let value = temp / 1000
-                        console.log(value)
                         return `${xFormat(value)}k`
                     }
                     return '';
@@ -165,28 +197,50 @@ export default {
                     return '';
                 })
 
-            this.xAxisSVG = this.svg.append('g')
+            this.xAxisSVG = this.mainSvg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left * 1.5}, ${this.height - 1.0 * this.padding.bottom})`,
+                    transform: `translate(${0}, ${this.mainHeight - 1.0 * this.padding.bottom})`,
                     class: 'x-axis',
                     'stroke-width': '1.5px'
                 })
                 .call(this.xAxis);
 
-            this.yAxisSVG = this.svg.append('g')
+            this.yAxisSVG = this.mainSvg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left * 1.5}, ${this.padding.top})`,
+                    transform: `translate(${0}, ${0})`,
                     class: 'y-axis',
                     'stroke-width': '1.5px'
                 })
                 .call(this.yAxis);
 
-            this.areaPath = this.svg.append('path')
-                .attrs({
-                    "clip-path": "url(#clip)",
-                })
+            // this.areaPath = this.mainSvg.append('path')
+            //     .attrs({
+            //         "clip-path": "url(#clip)",
+            //     })
 
             this.yDom = [0, 0]
+        },
+
+        navAxis() {
+            const xFormat = d3.format('0.1f')
+            this.xNavAxis = d3.axisBottom(this.x)
+                .tickPadding(10)
+                .tickFormat((d, i) => {
+                    let temp = d;
+                    if (i % 2 == 0) {
+                        let value = temp / 1000
+                        return `${xFormat(value)}k`
+                    }
+                    return '';
+                })
+
+            this.xNavAxisSVG = this.navSvg.append('g')
+                .attrs({
+                    transform: `translate(${0}, ${this.navHeight - 1.0 * this.padding.bottom})`,
+                    class: 'x-axis',
+                    'stroke-width': '1.5px'
+                })
+                .call(this.xNavAxis);
         },
 
         clearLabel() {
@@ -217,14 +271,14 @@ export default {
                 .x((d, i) => this.x(this.actualTime[i]))
                 .y((d) => this.y(d));
 
-            this.area = d3.area()
-                .curve(d3.curveStepAfter)
-                .y0(this.y(0))
-                .y1(function (d) { return this.y(d.value); });
+            // this.area = d3.area()
+            //     .curve(d3.curveStepAfter)
+            //     .y0(this.y(0))
+            //     .y1(function (d) { return this.y(d.value); });
         },
 
         initBrushes() {
-            this.brushSvg = this.svg.append('g')
+            this.brushSvg = this.navSvg.append('g')
                 .attrs({
                     'class': 'brushes'
                 })
@@ -236,9 +290,10 @@ export default {
         zoomed() {
             let xz = d3.event.transform.rescaleX(this.x);
             this.xAxisSVG.call(this.xAxis.scale(xz));
-            this.areaPath.attr("d", this.area.x(function (d) { 
-                console.log(d)
-                return xz(); }));
+            // this.areaPath.attr("d", this.area.x(function (d) {
+            //     console.log(d)
+            //     return xz();
+            // }));
         },
 
         enableZoom() {
@@ -256,17 +311,58 @@ export default {
                     width: this.width,
                     height: this.height,
                     transform: `translate(${0}, ${this.padding.top})`,
-                    "pointer-events": "all"
+                    "pointer-events": "all",
+                    "border": "1px solid lightgray"
                 })
-                .call(this.zoom)
+            // .call(this.zoom)
 
-            this.svg.append("clipPath")
+            this.mainSvg = this.svg.append('g')
+                .attrs({
+                    height: this.mainHeight,
+                    width: this.mainWidth,
+                    id: 'mainSVG',
+                    transform: `translate(${this.padding.left}, ${this.padding.top})`
+                })
+
+            if (this.$store.drawBrush) {
+                this.navSvg = this.svg.append('g')
+                    .attrs({
+                        height: this.navHeight,
+                        width: this.navWidth,
+                        id: 'navSVG',
+                        transform: `translate(${this.padding.left}, ${this.padding.top + this.mainHeight})`
+                    })
+
+                // add nav background
+                this.navSvg.append("rect")
+                    .attrs({
+                        "x": 0, 
+                        "y": 0,
+                        "width": this.navWidth - this.padding.right - this.padding.left,
+                        "height": this.navHeight,
+                    })
+                    .style("fill", "#F5F5F5")
+                    .style("shape-rendering", "crispEdges")
+
+                // add group to data items
+                this.navG = this.navSvg.append("g")
+                    .attr("class", "nav");
+    
+                this.initBrushes()
+
+            }
+
+            this.mainSvg.append('defs')
+                .append("clipPath")
                 .attr("id", "clip")
                 .append("rect")
-                .attr("width", this.width - this.padding.left - this.padding.right)
-                .attr("height", this.height - this.padding.top - this.padding.bottom);
+                .attrs({
+                    "x": 0,
+                    "y": 0,
+                    "width": this.width - this.padding.left - this.padding.right,
+                    "height": this.height - this.padding.top - this.padding.bottom
+                })
 
-            this.initBrushes()
         },
 
         reset(ts, cpd) {
@@ -313,7 +409,6 @@ export default {
             let brush = d3.brushX()
                 .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
                 .on('end', this.brushEnd)
-
 
             brushSelection.enter()
                 .insert("g", ".brush")
@@ -386,52 +481,13 @@ export default {
                 .style('z-index', 100)
         },
 
-
-        // enablePanning() {
-        //     // Zoom/Pan behavior
-        //     let pan = d3.behavior.zoom()
-        //         .x(x_scale)
-        //         .scale(scale)
-        //         .size([this.width, this.height])
-        //         .scaleExtent([scale, scale])
-        //         .on('zoom', function (e) {
-        //             var current_domain = x_scale.domain(),
-        //                 current_max = current_domain[1].getTime();
-
-        //             // If we go past the max (i.e. now), reset translate to the max
-        //             if (!isNaN(max_translate_x) && current_max > now)
-        //                 pan.translate([max_translate_x, 0]);
-
-        //             // Update the data once user hits the point where current data ends
-        //             if (pan.translate()[0] > min_translate_x) {
-        //                 updateData();
-        //                 addNewPoints();
-
-        //                 // Just to illustrate what's happening
-        //                 console.debug('Updated data: ', chart_data);
-        //                 console.debug('Updated selection: ', circles);
-        //             }
-
-        //             // Redraw any components defined by the x axis
-        //             x_axis.call(x_axis_generator);
-        //             circles.attr('cx', function (d) {
-        //                 return x_scale(new Date(d.registered));
-        //             });
-        //         });
-
-        //     // Apply the behavior 
-        //     this.svg.call(pan);
-
-        //     // Now that we've scaled in, find the farthest point that
-        //     // we'll allow users to pan forward in time (to the right)
-        //     max_translate_x = width - x_scale(new Date(now));
-        //     this.svg.call(pan.translate([max_translate_x, 0]).event);
-        // },
-
         visualize(ts, cpd) {
             if (!this.isLabelled) {
                 this.label()
                 this.axis()
+                // if(this.$store.drawBrush){
+                //     this.navAxis()
+                // }
             }
 
             if (cpd == 1) {
@@ -448,7 +504,7 @@ export default {
             this.clusterMap = {}
             d3.selectAll('.line' + this.id).remove()
             for (let [id, res] of Object.entries(ts)) {
-                this.data = this.svg.append('path')
+                this.data = this.mainSvg.append('path')
                     .attr('class', 'line line' + this.id)
 
                 let time = res['time']
@@ -490,7 +546,6 @@ export default {
                             else return 1.0
                         },
                         fill: 'transparent',
-                        transform: `translate(${this.padding.left * 1.5}, ${this.padding.top})`,
                     })
                     .style('z-index', 0)
             }

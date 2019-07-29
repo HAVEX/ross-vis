@@ -16,7 +16,11 @@
 				</v-btn>
 				<v-spacer></v-spacer>
 	
-			</v-flex>
+		</v-flex>
+		<v-flex xs2 class="ma-2">
+			<v-switch v-model="drawBrush" :label="`Brush`"
+			  ></v-switch>
+		</v-flex>
 		<v-flex xs2 class="ma-2">
 			<v-select label="TimeMode" :items="timeDomains" v-model="selectedTimeDomain" :menu-props="{ maxHeight: '400' }"
 				box v-on:change="updateTimeDomain()">

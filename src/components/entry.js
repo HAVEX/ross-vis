@@ -61,6 +61,7 @@ export default {
 		showIntraComm: false,
 		causality: ['from', 'to'],
 		selectedCausality: 'to',
+		drawBrush: true,
 	}),
 
 	watch: {
