@@ -104,20 +104,21 @@ export default {
 
             this.$store.drawBrush = true
 
-            if(this.$store.drawBrush){
-                this.navHeight = this.height*0.20
+            if (this.$store.drawBrush) {
+                this.navHeight = this.height * 0.20
                 this.navWidth = this.width
                 this.mainHeight = this.height - this.navHeight
                 this.mainWidth = this.width
                 this.navX = d3.scaleLinear().range([0, this.navWidth])
+                this.navY = d3.scalePow().range([this.navHeight, 0])
             }
-            else{
+            else {
                 this.navHeight = 0
                 this.navWidth = 0
                 this.mainHeight = this.height
                 this.mainWidth = this.width
             }
-            
+
             this.padding = { left: 40, top: 0, right: 20, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.mainWidth - this.padding.right - this.padding.left * 1.5]);
             this.y = d3.scaleLinear().range([this.mainHeight - this.padding.bottom - this.padding.top, 0]);
@@ -219,6 +220,7 @@ export default {
             //     })
 
             this.yDom = [0, 0]
+            this.yNavDom = [0, 0]
         },
 
         navAxis() {
@@ -236,11 +238,30 @@ export default {
 
             this.xNavAxisSVG = this.navSvg.append('g')
                 .attrs({
-                    transform: `translate(${0}, ${this.navHeight - 1.0 * this.padding.bottom})`,
+                    transform: `translate(${0}, ${0})`,
                     class: 'x-axis',
                     'stroke-width': '1.5px'
                 })
                 .call(this.xNavAxis);
+
+            this.yNavAxis = d3.axisBottom(this.y)
+                .tickPadding(10)
+                .tickFormat((d, i) => {
+                    let temp = d;
+                    if (i % 2 == 0) {
+                        let value = temp / 1000
+                        return `${xFormat(value)}k`
+                    }
+                    return '';
+                })
+
+            this.yNavAxisSVG = this.navSvg.append('g')
+                .attrs({
+                    transform: `translate(${0}, ${0})`,
+                    class: 'y-axis',
+                    'stroke-width': '1.5px'
+                })
+                .call(this.yNavAxis);
         },
 
         clearLabel() {
@@ -270,6 +291,10 @@ export default {
             this.line = d3.line()
                 .x((d, i) => this.x(this.actualTime[i]))
                 .y((d) => this.y(d));
+
+            this.navLine = d3.line()
+                .x((d, i) => this.navX(this.actualTime[i]))
+                .y((d, i) => this.navY(d))
 
             // this.area = d3.area()
             //     .curve(d3.curveStepAfter)
@@ -336,7 +361,7 @@ export default {
                 // add nav background
                 this.navSvg.append("rect")
                     .attrs({
-                        "x": 0, 
+                        "x": 0,
                         "y": 0,
                         "width": this.navWidth - this.padding.right - this.padding.left,
                         "height": this.navHeight,
@@ -347,9 +372,8 @@ export default {
                 // add group to data items
                 this.navG = this.navSvg.append("g")
                     .attr("class", "nav");
-    
-                this.initBrushes()
 
+                // this.initBrushes()
             }
 
             this.mainSvg.append('defs')
@@ -485,9 +509,9 @@ export default {
             if (!this.isLabelled) {
                 this.label()
                 this.axis()
-                // if(this.$store.drawBrush){
-                //     this.navAxis()
-                // }
+                if(this.$store.drawBrush){
+                    // this.navAxis()
+                }
             }
 
             if (cpd == 1) {
@@ -503,12 +527,15 @@ export default {
 
             this.clusterMap = {}
             d3.selectAll('.line' + this.id).remove()
+            let sum = []
+            let summer = 0
             for (let [id, res] of Object.entries(ts)) {
-                this.data = this.mainSvg.append('path')
+                this.path = this.mainSvg.append('path')
                     .attr('class', 'line line' + this.id)
 
                 let time = res['time']
                 this.actualTime = res[this.plotMetric]
+                this.startTime = 0
                 let data = res['ts']
                 let cluster = res['cluster'][0]
                 if (this.clusterMap[cluster] == undefined) {
@@ -519,14 +546,22 @@ export default {
 
                 if (this.actualTime.length > this.timepointMoveThreshold) {
                     this.x.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
+
+                    this.navX.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
                 }
+                // else if(this.actualTime.length < ) {
+                //     this.x.domain([-this.actualTime[3] + this.actualTime[this.actualTime.length - 3], this.actualTime[this.actualTime.length - 1] ])
+                // }
                 else {
-                    this.x.domain([this.actualTime[0], this.actualTime[this.actualTime.length - 1]])
+                    this.x.domain([this.startTime, this.actualTime[this.actualTime.length - 1]])
+                    this.navX.domain([this.startTime, this.actualTime[this.actualTime.length - 1]])
                 }
+
                 let yDomTemp = d3.extent(data)
                 if (yDomTemp[1] > this.yDom[1])
                     this.yDom[1] = yDomTemp[1]
                 this.y.domain(this.yDom)
+
 
                 this.xAxisSVG
                     .call(this.xAxis)
@@ -534,11 +569,10 @@ export default {
                 this.yAxisSVG
                     .call(this.yAxis)
 
-                this.data
+                this.path
                     .datum(data)
                     .attrs({
                         'id': 'line' + id,
-                        // class: 'line',
                         d: this.line,
                         stroke: this.colorSet[cluster],
                         'stroke-width': (d) => {
@@ -548,7 +582,45 @@ export default {
                         fill: 'transparent',
                     })
                     .style('z-index', 0)
+
+                if (data.length > sum.length) {
+                    for (let i = 0; i < data.length; i += 1) {
+                        if (sum[i] == undefined) {
+                            sum[i] = 0
+                        }
+                        sum[i] += data[i]
+                    }
+                }
+                else {
+                    summer += data[data.length - 1]
+                }
             }
+
+            d3.selectAll('#avgLine' + this.$parent.plotMetric).remove()
+            this.navPath = this.navSvg.append('path')
+                .attr('class', 'avgLine')
+
+            sum.push(summer)
+
+            let yNavDomTemp = d3.extent(sum)
+            if (yNavDomTemp[1] > this.yNavDom[1])
+                this.yNavDom[1] = yNavDomTemp[1]
+            console.log(this.yNavDom, sum)
+            this.navY.domain(this.yNavDom)
+
+            this.navPath
+                .datum(sum)
+                .attrs({
+                    d: this.navLine,
+                    id: 'avgLine' + this.$parent.plotMetric,
+                    stroke: "#000",
+                    'stroke-width': (d) => {
+                        if (Object.entries(ts).length < 16) return 2.0
+                        else return 1.0
+                    },
+                    fill: 'transparent',
+                })
+                .style('z-index', 0)
             this.showLabels()
 
         },
