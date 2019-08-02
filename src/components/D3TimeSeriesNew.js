@@ -35,7 +35,7 @@ export default {
         message: "Time-series view",
         showMessage: true,
         timepointMoveThreshold: 15,
-        actualTime: 0,
+        actualTime: [],
         clusterMap: {},
         cluster: [],
         showCircleLabels: true,
@@ -47,6 +47,12 @@ export default {
             topNav: 10,
             bottomNav: 20
         },
+        navPadding: {
+            top: 0,
+            bottom: 10,
+            left: 100,
+            right: 30,
+        },
         dimension: {
             chartTitle: 20,
             xAxis: 20,
@@ -55,6 +61,8 @@ export default {
             yTitle: 20,
             navChart: 70
         },
+        currentMovingAvg: 0,
+        movingAvgTs: [],
     }),
     watch: {
         selectedIds: function (val) {
@@ -109,8 +117,8 @@ export default {
                 this.navWidth = this.width
                 this.mainHeight = this.height - this.navHeight
                 this.mainWidth = this.width
-                this.navX = d3.scaleLinear().range([0, this.navWidth])
-                this.navY = d3.scalePow().range([this.navHeight, 0])
+                this.navX = d3.scaleLinear().range([0, this.navWidth - this.navPadding.right])
+                this.navY = d3.scaleLinear().range([0, this.navHeight])
             }
             else {
                 this.navHeight = 0
@@ -294,7 +302,9 @@ export default {
 
             this.navLine = d3.line()
                 .x((d, i) => this.navX(this.actualTime[i]))
-                .y((d, i) => this.navY(d))
+                .y((d, i) => {
+                    return this.navHeight - this.navY(d)
+                })
 
             // this.area = d3.area()
             //     .curve(d3.curveStepAfter)
@@ -348,12 +358,17 @@ export default {
                     id: 'mainSVG',
                     transform: `translate(${this.padding.left}, ${this.padding.top})`
                 })
+            
+            this.mainPathG = this.mainSvg.append('g')
+                .attrs({
+                    transform: `translate(${this.padding.left}, ${this.padding.top})`
+                })
 
             if (this.$store.drawBrush) {
                 this.navSvg = this.svg.append('g')
                     .attrs({
                         height: this.navHeight,
-                        width: this.navWidth,
+                        width: this.navWidth - this.padding.right,
                         id: 'navSVG',
                         transform: `translate(${this.padding.left}, ${this.padding.top + this.mainHeight})`
                     })
@@ -462,13 +477,14 @@ export default {
 
         drawCPDs() {
             d3.selectAll('.cpdline' + this.id).remove()
+            d3.selectAll('.cpdnavline' + this.$parent.plotMetric).remove()
 
             let xPoints = [];
             for (let i = 0; i < this.cpds.length; i += 1) {
                 xPoints.push(this.actualTime[this.cpds[i]])
             }
 
-            this.svg.selectAll('cpdline')
+            this.mainSvg.selectAll('cpdline')
                 .data(xPoints)
                 .enter()
                 .append('line')
@@ -477,7 +493,23 @@ export default {
                     'x1': (d) => { return this.x(d) },
                     'y1': 0,
                     'x2': (d) => { return this.x(d) },
-                    'y2': this.height - this.padding.bottom,
+                    'y2': this.mainHeight - this.padding.bottom,
+                })
+                .style('stroke', '#DA535B')
+                .style('stroke-width', '3.5px')
+                .style('z-index', 100)
+
+
+            this.navSvg.selectAll('cpdnavline')
+                .data(xPoints)
+                .enter()
+                .append('line')
+                .attrs({
+                    'class': 'cpdnavline cpdnavline' + this.$parent.plotMetric,
+                    'x1': (d) => { return this.navX(d) },
+                    'y1': 0,
+                    'x2': (d) => { return this.navX(d) },
+                    'y2': this.navHeight - this.navPadding.bottom,
                 })
                 .style('stroke', '#DA535B')
                 .style('stroke-width', '3.5px')
@@ -509,7 +541,7 @@ export default {
             if (!this.isLabelled) {
                 this.label()
                 this.axis()
-                if(this.$store.drawBrush){
+                if (this.$store.drawBrush) {
                     // this.navAxis()
                 }
             }
@@ -525,18 +557,48 @@ export default {
             this.drawCPDs()
             this.drawDragLine()
 
-            this.clusterMap = {}
-            d3.selectAll('.line' + this.id).remove()
-            let sum = []
-            let summer = 0
-            for (let [id, res] of Object.entries(ts)) {
-                this.path = this.mainSvg.append('path')
-                    .attr('class', 'line line' + this.id)
+            this.clearLines()
+            this.drawLines(ts)
 
-                let time = res['time']
-                this.actualTime = res[this.plotMetric]
+            this.clearNavLines()
+            this.drawNavLines(cpd)
+
+            this.showLabels()
+        },
+
+        clearLines() {
+            d3.selectAll('.line' + this.id).remove()
+        },
+
+        clearNavLines() {
+            d3.selectAll('.avgLine' + this.$parent.plotMetric).remove()
+        },
+
+        drawLines(data) {
+            // Reset the clusterMap every time we visualize. 
+            this.clusterMap = {}
+            // Assign the number of processors. 
+            this.numberOfProcs = Object.entries(data).length
+
+            for (let [id, res] of Object.entries(data)) {
                 this.startTime = 0
-                let data = res['ts']
+
+                // let time = res['time']
+                // ts is the main data. (Data of the plot metric chosen.)
+                let ts = res['ts']
+                // Add zero to the data array.  
+                ts.unshift(0)
+
+
+                // Add zero to the time array. 
+                let actualTime = res[this.plotMetric]
+                if (id == 0) {
+                    actualTime.unshift(0)
+                }
+                // Actualtime corresponds to the x-axis data but store on the global props.
+                this.actualTime = actualTime
+
+                // Assign a cluster Map.
                 let cluster = res['cluster'][0]
                 if (this.clusterMap[cluster] == undefined) {
                     this.clusterMap[cluster] = 0
@@ -544,6 +606,7 @@ export default {
                 this.clusterMap[cluster] += 1
                 this.cluster[id] = res['cluster'][0]
 
+                // Set the X domain for Line and navLine
                 if (this.actualTime.length > this.timepointMoveThreshold) {
                     this.x.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
 
@@ -554,75 +617,77 @@ export default {
                 // }
                 else {
                     this.x.domain([this.startTime, this.actualTime[this.actualTime.length - 1]])
-                    this.navX.domain([this.startTime, this.actualTime[this.actualTime.length - 1]])
                 }
 
-                let yDomTemp = d3.extent(data)
+                // Set the Y domain for line. 
+                let yDomTemp = d3.extent(ts)
                 if (yDomTemp[1] > this.yDom[1])
                     this.yDom[1] = yDomTemp[1]
                 this.y.domain(this.yDom)
 
-
+                // Draw Axis
                 this.xAxisSVG
                     .call(this.xAxis)
-
                 this.yAxisSVG
                     .call(this.yAxis)
 
+                // Draw line to main TimeLine. 
+                this.path = this.mainSvg
+                    .append('path')
+                    .attr('class', 'line line' + this.id)
                 this.path
-                    .datum(data)
+                    .datum(ts)
                     .attrs({
                         'id': 'line' + id,
                         d: this.line,
                         stroke: this.colorSet[cluster],
                         'stroke-width': (d) => {
-                            if (Object.entries(ts).length < 16) return 2.0
+                            if (this.numberOfProcs < 16) return 2.0
                             else return 1.0
                         },
                         fill: 'transparent',
                     })
                     .style('z-index', 0)
 
-                if (data.length > sum.length) {
-                    for (let i = 0; i < data.length; i += 1) {
-                        if (sum[i] == undefined) {
-                            sum[i] = 0
-                        }
-                        sum[i] += data[i]
-                    }
+                // Calculate the avg out of the data (ts).
+                if (this.movingAvgTs.length == 0) {
+                    this.movingAvgTs.push(0)
                 }
-                else {
-                    summer += data[data.length - 1]
+                this.currentMovingAvg += ts[this.movingAvgTs.length - 1] / this.numberOfProcs
+                if (id == 0) {
+                    this.currentMovingAvg = 0
+                }
+                if (id == this.numberOfProcs - 1) {
+                    console.log(this.currentMovingAvg, this.numberOfProcs)
+                    this.movingAvgTs.push(this.currentMovingAvg)
                 }
             }
+        },
 
-            d3.selectAll('#avgLine' + this.$parent.plotMetric).remove()
+        drawNavLines() {
             this.navPath = this.navSvg.append('path')
                 .attr('class', 'avgLine')
 
-            sum.push(summer)
+            this.navX.domain([this.startTime, this.actualTime[this.actualTime.length - 1] * 1.5])
 
-            let yNavDomTemp = d3.extent(sum)
+            let yNavDomTemp = d3.extent(this.movingAvgTs)
             if (yNavDomTemp[1] > this.yNavDom[1])
                 this.yNavDom[1] = yNavDomTemp[1]
-            console.log(this.yNavDom, sum)
             this.navY.domain(this.yNavDom)
 
             this.navPath
-                .datum(sum)
+                .datum(this.movingAvgTs)
                 .attrs({
                     d: this.navLine,
-                    id: 'avgLine' + this.$parent.plotMetric,
+                    class: 'avgLine' + this.$parent.plotMetric,
                     stroke: "#000",
                     'stroke-width': (d) => {
-                        if (Object.entries(ts).length < 16) return 2.0
+                        if (this.numberOfProcs < 16) return 2.0
                         else return 1.0
                     },
                     fill: 'transparent',
                 })
                 .style('z-index', 0)
-            this.showLabels()
-
         },
 
         brushEnd() {
@@ -658,4 +723,3 @@ export default {
         },
     }
 }
-

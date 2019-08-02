@@ -1,17 +1,16 @@
 <v-layout row wrap>
     <v-flex xs12>
         <v-layout row wrap class='panel'>
-                <v-chip class="chip"> {{ message }} </v-chip>
+                <v-chip id="communication-chip" class="chip"> {{ message }} </v-chip>
                 <!-- <v-flex xs1 class="ma-2">
                     <v-text-field label="Change opacity"> </v-text-field>
                 </v-flex> -->
-                <text x="30" y="20"></text>                
-
+                <!-- <text x="30" y="20"></text>                 -->
+                <div id="sliderText"></div>
                 <vue-slider
-                    width="500px"
+                    width="200px"
                     :order="false"
                     :marks="mark_points"
-                    :tooltip="'always'"
                     :process="true"
                     @change="change"
                     style="display: inline-block; margin: 10px 0px 10px 70px;" 

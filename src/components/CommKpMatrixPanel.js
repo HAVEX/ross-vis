@@ -47,6 +47,8 @@ export default {
         mark_points: [0],
         weights: [],
         max_weight: 0,
+        maxComm: 0,
+        minComm: 0
 
     }),
     computed: {
@@ -106,6 +108,49 @@ export default {
             this.$refs.AggrKpMatrix.init()
         },
 
+        showSliderText() {
+            let width = 50;
+            let x_offset = 10
+            let y_offset = 10
+            let radius = 5
+            let padding = 10
+            let height = 20
+            d3.select('.sliderTextSVG').remove()
+            let svg = d3.select("#sliderText")
+                .append('svg')
+                .attrs({
+                    transform: `translate(${x_offset}, ${y_offset})`,
+                    "width": width,
+                    "height": height,
+                    "class": "sliderTextSVG"
+                })
+                
+            let min = [0, 2000]
+            let text = svg.selectAll("text")
+                .enter()
+                .append("text")
+                .text(this.minComm)
+                .attrs({
+                    // "x": (d, i) => { return i * gap + 2 * radius + padding },
+                    // "y": (d, i) => { return radius + padding; },
+                    "font-family": "sans-serif",
+                    "font-size": 2 * radius + "px",
+                    "fill": "black"
+                })
+
+            // let text = svg.selectAll("text")
+            //     .enter()
+            //     .append("text")
+            //     .text(this.minComm)
+            //     .attrs({
+            //         // "x": (d, i) => { return i * gap + 2 * radius + padding },
+            //         // "y": (d, i) => { return radius + padding; },
+            //         "font-family": "sans-serif",
+            //         "font-size": 2 * radius + "px",
+            //         "fill": "black"
+            //     })
+        },
+
         change(type, msg){
             this.min = type
 
@@ -157,6 +202,8 @@ export default {
                             changePoint: this.track_cpds[i],
                             changeIdx: this.track_cpds.length - 1
                         }
+                        this.minComm = Math.min(this.minComm, this.data[id]['CommData'])
+                        this.maxComm = Math.max(this.maxComm, this.data[id]['CommData'])
                     }
                 }
                 this.$refs.AggrKpMatrix.matrix = this.kpMatrix
