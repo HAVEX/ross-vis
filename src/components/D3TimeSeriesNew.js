@@ -133,7 +133,85 @@ export default {
 
         },
 
-        showLabels() {
+        initVis() {
+            this.initLine()
+            this.initZoom()
+            this.svg = d3.select('#' + this.id).append('svg')
+                .attrs({
+                    width: this.width,
+                    height: this.height,
+                    transform: `translate(${0}, ${this.padding.top})`,
+                    "pointer-events": "all",
+                    "border": "1px solid lightgray"
+                })
+            // .call(this.zoom)
+
+            if (this.$store.drawBrush) {
+                this.initNavView()
+            }
+
+            this.initMainView()
+        },
+
+        reset(ts, cpd) {
+            this.visualize(ts, cpd)
+        },
+
+        preprocess(data) {
+            let ret = []
+            for (let [id, res] of Object.entries(data)) {
+                if (ret[id] == undefined) {
+                    ret[id] = []
+                }
+                ret[id].push(res['time'])
+                ret[id].push(res['ts'])
+                ret[id].push(res['cluster'][0])
+                ret[id].push(id)
+
+                let max = Math.max.apply(null, res['time'])
+                if (max > this.yMax) {
+                    this.yMax = max
+                }
+
+                let min = Math.min.apply(null, res['time'])
+                if (min < this.yMin) {
+                    this.yMin = yMin
+                }
+            }
+            return ret
+        },
+
+        visualize(ts, cpd) {
+            if (!this.isLabelled) {
+                this.label()
+                this.axis()
+                if (this.$store.drawBrush) {
+                    // this.navAxis()
+                }
+            }
+
+            if (cpd == 1) {
+                let current_cpd_idx = this.$parent.stream_count
+                let current_cpd = this.actualTime[current_cpd_idx]
+                EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
+                this.prev_cpd = current_cpd
+                this.cpds.push(this.$parent.stream_count)
+            }
+
+            this.drawCPDs()
+            this.drawDragLine()
+
+            this.clearMainView()
+            this.drawMainView(ts)
+
+            this.clearNavView()
+            this.drawNavView(cpd)
+
+            this.drawClusterLabels()
+        },
+
+        // Visualize cluster labels.
+        drawClusterLabels() {
             let n_clusters = 3
             let width = document.getElementById(this.id).clientWidth - document.getElementById('timeseries-chip').clientWidth;
             let x_offset = 10
@@ -181,6 +259,24 @@ export default {
 
         },
 
+        initLine() {
+            this.line = d3.line()
+                .x((d, i) => this.x(this.actualTime[i]))
+                .y((d) => this.y(d));
+
+            this.navLine = d3.line()
+                .x((d, i) => this.navX(this.actualTime[i]))
+                .y((d, i) => {
+                    return this.navHeight - this.navY(d)
+                })
+
+            // this.area = d3.area()
+            //     .curve(d3.curveStepAfter)
+            //     .y0(this.y(0))
+            //     .y1(function (d) { return this.y(d.value); }); 
+        },
+
+        // Axis for timeline view
         axis() {
             const xFormat = d3.format('0.1f')
             this.xAxis = d3.axisBottom(this.x)
@@ -231,6 +327,7 @@ export default {
             this.yNavDom = [0, 0]
         },
 
+        // Axis for navigation timeline view.
         navAxis() {
             const xFormat = d3.format('0.1f')
             this.xNavAxis = d3.axisBottom(this.x)
@@ -272,10 +369,12 @@ export default {
                 .call(this.yNavAxis);
         },
 
+        // Clear Axis labels
         clearLabel() {
             d3.select('#' + this.id).selectAll(".axis-labels").remove()
         },
 
+        // draw axis label
         label() {
             this.isLabelled = true
             this.svg.append("text")
@@ -295,186 +394,7 @@ export default {
                 .text(this.$parent.plotMetric)
         },
 
-        initLine() {
-            this.line = d3.line()
-                .x((d, i) => this.x(this.actualTime[i]))
-                .y((d) => this.y(d));
-
-            this.navLine = d3.line()
-                .x((d, i) => this.navX(this.actualTime[i]))
-                .y((d, i) => {
-                    return this.navHeight - this.navY(d)
-                })
-
-            // this.area = d3.area()
-            //     .curve(d3.curveStepAfter)
-            //     .y0(this.y(0))
-            //     .y1(function (d) { return this.y(d.value); });
-        },
-
-        initBrushes() {
-            this.brushSvg = this.navSvg.append('g')
-                .attrs({
-                    'class': 'brushes'
-                })
-
-            this.newBrush()
-            this.drawBrushes();
-        },
-
-        zoomed() {
-            let xz = d3.event.transform.rescaleX(this.x);
-            this.xAxisSVG.call(this.xAxis.scale(xz));
-            // this.areaPath.attr("d", this.area.x(function (d) {
-            //     console.log(d)
-            //     return xz();
-            // }));
-        },
-
-        enableZoom() {
-            this.zoom = d3.zoom()
-                .scaleExtent([1 / 4, 8])
-                .translateExtent([[0, -Infinity], [this.width, Infinity]])
-                .on("zoom", this.zoomed);
-        },
-
-        initVis() {
-            this.initLine()
-            this.enableZoom()
-            this.svg = d3.select('#' + this.id).append('svg')
-                .attrs({
-                    width: this.width,
-                    height: this.height,
-                    transform: `translate(${0}, ${this.padding.top})`,
-                    "pointer-events": "all",
-                    "border": "1px solid lightgray"
-                })
-            // .call(this.zoom)
-
-            this.mainSvg = this.svg.append('g')
-                .attrs({
-                    height: this.mainHeight,
-                    width: this.mainWidth,
-                    id: 'mainSVG',
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`
-                })
-            
-            this.mainPathG = this.mainSvg.append('g')
-                .attrs({
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`
-                })
-
-            if (this.$store.drawBrush) {
-                this.navSvg = this.svg.append('g')
-                    .attrs({
-                        height: this.navHeight,
-                        width: this.navWidth - this.padding.right,
-                        id: 'navSVG',
-                        transform: `translate(${this.padding.left}, ${this.padding.top + this.mainHeight})`
-                    })
-
-                // add nav background
-                this.navSvg.append("rect")
-                    .attrs({
-                        "x": 0,
-                        "y": 0,
-                        "width": this.navWidth - this.padding.right - this.padding.left,
-                        "height": this.navHeight,
-                    })
-                    .style("fill", "#F5F5F5")
-                    .style("shape-rendering", "crispEdges")
-
-                // add group to data items
-                this.navG = this.navSvg.append("g")
-                    .attr("class", "nav");
-
-                // this.initBrushes()
-            }
-
-            this.mainSvg.append('defs')
-                .append("clipPath")
-                .attr("id", "clip")
-                .append("rect")
-                .attrs({
-                    "x": 0,
-                    "y": 0,
-                    "width": this.width - this.padding.left - this.padding.right,
-                    "height": this.height - this.padding.top - this.padding.bottom
-                })
-
-        },
-
-        reset(ts, cpd) {
-            this.visualize(ts, cpd)
-        },
-
-        preprocess(data) {
-            let ret = []
-            for (let [id, res] of Object.entries(data)) {
-                if (ret[id] == undefined) {
-                    ret[id] = []
-                }
-                ret[id].push(res['time'])
-                ret[id].push(res['ts'])
-                ret[id].push(res['cluster'][0])
-                ret[id].push(id)
-
-                let max = Math.max.apply(null, res['time'])
-                if (max > this.yMax) {
-                    this.yMax = max
-                }
-
-                let min = Math.min.apply(null, res['time'])
-                if (min < this.yMin) {
-                    this.yMin = yMin
-                }
-            }
-            return ret
-        },
-
-        newBrush() {
-            let id = this.brushes.length
-            let brush = d3.brushX()
-                .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
-                .on('end', this.brushEnd)
-            this.brushes.push({ id, brush })
-        },
-
-        drawBrushes() {
-            let brushSelection = this.brushSvg
-                .selectAll('.brush')
-                .data(this.brushes)
-
-            let brush = d3.brushX()
-                .extent([[this.padding.left, this.padding.top], [this.width - this.padding.right, this.height - this.padding.bottom]])
-                .on('end', this.brushEnd)
-
-            brushSelection.enter()
-                .insert("g", ".brush")
-                .attr("class", "brush")
-                .attr("id", (brush) => "brush-" + brush.id)
-                // .each( (brushObj) => { brushObj.brush(d3.select('#brush' + brushObj.id)) })
-                .call(brush)
-
-            brushSelection.each((brushObj) => {
-                d3.select('#brush' + brushObj.id)
-                    .attr('class', 'brush')
-                    .selectAll('.overlay')
-                    .style('pointer-events', () => {
-                        let brush = brushObj.brush
-                        if (brushObj.id == brushes.length - 1 && brush !== undefined) {
-                            return 'all'
-                        }
-                        else {
-                            return 'none'
-                        }
-                    })
-            })
-
-            // brushSelection.exit()
-            // .remove()
-        },
-
+        // Draw change point detection lines. 
         drawCPDs() {
             d3.selectAll('.cpdline' + this.id).remove()
             d3.selectAll('.cpdnavline' + this.$parent.plotMetric).remove()
@@ -516,6 +436,8 @@ export default {
                 .style('z-index', 100)
         },
 
+        // Draw a drag line to travel in the past.
+        // Use case is to be able to see what clustering was there previously.
         drawDragLine() {
             d3.selectAll('.dragline' + this.id).remove()
 
@@ -537,44 +459,40 @@ export default {
                 .style('z-index', 100)
         },
 
-        visualize(ts, cpd) {
-            if (!this.isLabelled) {
-                this.label()
-                this.axis()
-                if (this.$store.drawBrush) {
-                    // this.navAxis()
-                }
-            }
+        initMainView() {
+            this.mainSvg = this.svg.append('g')
+                .attrs({
+                    height: this.mainHeight,
+                    width: this.mainWidth,
+                    id: 'mainSVG',
+                    transform: `translate(${this.padding.left}, ${this.padding.top})`
+                })
 
-            if (cpd == 1) {
-                let current_cpd_idx = this.$parent.stream_count
-                let current_cpd = this.actualTime[current_cpd_idx]
-                EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
-                this.prev_cpd = current_cpd
-                this.cpds.push(this.$parent.stream_count)
-            }
+            this.mainPathG = this.mainSvg.append('g')
+                .attrs({
+                    transform: `translate(${this.padding.left}, ${this.padding.top})`
+                })
 
-            this.drawCPDs()
-            this.drawDragLine()
+            this.mainSvg.append('defs')
+                .append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attrs({
+                    "x": 0,
+                    "y": 0,
+                    "width": this.width - this.padding.left - this.padding.right,
+                    "height": this.height - this.padding.top - this.padding.bottom
+                })
 
-            this.clearLines()
-            this.drawLines(ts)
-
-            this.clearNavLines()
-            this.drawNavLines(cpd)
-
-            this.showLabels()
         },
 
-        clearLines() {
+        // Clear Timeline view.
+        clearMainView() {
             d3.selectAll('.line' + this.id).remove()
         },
 
-        clearNavLines() {
-            d3.selectAll('.avgLine' + this.$parent.plotMetric).remove()
-        },
-
-        drawLines(data) {
+        // Draw Main timeline view.
+        drawMainView(data) {
             // Reset the clusterMap every time we visualize. 
             this.clusterMap = {}
             // Assign the number of processors. 
@@ -664,7 +582,40 @@ export default {
             }
         },
 
-        drawNavLines() {
+        // Clear Navigation timeline view.
+        clearNavView() {
+            d3.selectAll('.avgLine' + this.$parent.plotMetric).remove()
+        },
+
+        // Init navigation timeline view.
+        initNavView() {
+            this.navSvg = this.svg.append('g')
+                .attrs({
+                    height: this.navHeight,
+                    width: this.navWidth - this.padding.right,
+                    id: 'navSVG',
+                    transform: `translate(${this.padding.left}, ${this.padding.top + this.mainHeight})`
+                })
+
+            // add nav background
+            this.navSvg.append("rect")
+                .attrs({
+                    "x": 0,
+                    "y": 0,
+                    "width": this.navWidth - this.padding.right - this.padding.left,
+                    "height": this.navHeight,
+                })
+                .style("fill", "#F5F5F5")
+                .style("shape-rendering", "crispEdges")
+
+            // add group to data items
+            this.navG = this.navSvg.append("g")
+                .attr("class", "nav");
+
+            this.initBrushes()
+        },
+
+        drawNavView() {
             this.navPath = this.navSvg.append('path')
                 .attr('class', 'avgLine')
 
@@ -690,6 +641,79 @@ export default {
                 .style('z-index', 0)
         },
 
+        // Brush interactions. 
+        initBrushes() {
+            this.brushSvg = this.navSvg.append('g')
+                .attrs({
+                    'class': 'brushes'
+                })
+
+            this.createBrush()
+            this.drawBrush();
+        },
+
+        createBrush() {
+            let id = this.brushes.length
+            this.viewport = d3.brushX(this.navX)
+                .extent([[0, 0], [this.navWidth - this.navPadding.right, this.navHeight]])
+                .on('brush', this.brushing)
+                // .on('end', this.brushEnd)
+            this.brushes.push({ 
+                'id': id,
+                'brush': this.viewport 
+            })
+        },
+
+        drawBrush() {
+            let brushSelection = this.navSvg
+                .selectAll('.brush')
+                .data(this.brushes)
+
+            brushSelection.enter()
+                .insert("g", ".brush")
+                .attr("class", "brush")
+                .attr("id", (brush) => "brush-" + brush.id)
+                // .each( (brushObj) => { brushObj.brush(d3.select('#brush' + brushObj.id)) })
+                .call(this.viewport)
+
+            brushSelection.each((brushObj) => {
+                d3.selectAll('.brush')
+                    .attr('class', 'brush')
+                    .selectAll('.overlay')
+                    .style('pointer-events', () => {
+                        let brush = brushObj.brush
+                        if (brushObj.id == brushes.length - 1 && brush !== undefined) {
+                            return 'all'
+                        }
+                        else {
+                            return 'none'
+                        }
+                    })
+            })
+
+            // brushSelection.exit()
+            // .remove()
+        },
+
+        brushing(){
+            let selection = d3.event.selection
+            if(selection == null){
+                this.x.domain(this.navX.domain())
+            }
+            else{
+                let sx = selection.map(this.navX.invert)
+                let intervalViewport = sx[1] - sx[0]
+                let offsetViewport = sx[1] - this.startTime
+
+                if(intervalViewport == 0){
+                    intervalViewport = 10000
+                    offsetViewport = 0
+                }
+
+                this.x.domain(sx)
+            }
+        },
+
         brushEnd() {
             if (!d3.event.sourceEvent) return; // Only transition after input.
             if (!d3.event.selection) return; // Ignore empty selections.
@@ -700,10 +724,10 @@ export default {
             let selection = d3.brushSelection(lastBrush)
 
             // if(selection && selection[0] !== selection[1]){
-            this.newBrush()
+            // this.createBrush()
             // }
 
-            this.drawBrushes()
+            // this.drawBrush()
 
             // There is some bug here, it does not return the correct this.x.invert
             let d0 = d3.event.selection.map(this.x.invert)
@@ -721,5 +745,23 @@ export default {
 
             //d3.select(this).transition().call(d3.event.target.move, d1.map(this.x));
         },
+
+        // Zoom interaction. Not being used though.
+        zoomed() {
+            let xz = d3.event.transform.rescaleX(this.x);
+            this.xAxisSVG.call(this.xAxis.scale(xz));
+            // this.areaPath.attr("d", this.area.x(function (d) {
+            //     console.log(d)
+            //     return xz();
+            // }));
+        },
+
+        initZoom() {
+            this.zoom = d3.zoom()
+                .scaleExtent([1 / 4, 8])
+                .translateExtent([[0, -Infinity], [this.width, Infinity]])
+                .on("zoom", this.zoomed);
+        },
+
     }
 }

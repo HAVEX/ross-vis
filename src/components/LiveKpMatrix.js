@@ -4,6 +4,11 @@ import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
 import template from '../html/LiveKpMatrix.html'
 import EventHandler from './EventHandler'
 
+// https://bl.ocks.org/Fil/6d9de24b31cb870fed2e6178a120b17d
+// https://github.com/d3/d3-brush/blob/master/src/brush.js
+// https://bl.ocks.org/mbostock/6232537
+// https://bl.ocks.org/Fil/2d43867ba1f36a05459c7113c7f6f98a
+
 export default {
     name: 'LiveKpMatrix',
     template: template,
@@ -24,9 +29,9 @@ export default {
         colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         clusterIds: [],
         scaleKpCount: 16,
-        pes:0, 
-        max_weight:0,
-        min:100,
+        pes: 0,
+        max_weight: 0,
+        min: 100,
         firstRender: true
     }),
 
@@ -34,7 +39,7 @@ export default {
     },
 
     mounted() {
-        this.id = 'live-kpmatrix-overview' 
+        this.id = 'live-kpmatrix-overview'
 
         EventHandler.$on('update_comm_min', (min) => {
             this.min = min
@@ -51,15 +56,16 @@ export default {
             let toolbarHeight = document.getElementById('toolbar').clientHeight
             this.chipContainerHeight = document.getElementById('chip-container').clientHeight
 
-            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight)/3
+            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight) / 3
 
             this.matrixLength = Math.min(this.containerHeight, this.containerWidth)
-            this.matrixWidth = this.matrixLength*this.matrixScale
-            this.matrixHeight = this.matrixLength*this.matrixScale
+            this.matrixWidth = this.matrixLength * this.matrixScale
+            this.matrixHeight = this.matrixLength * this.matrixScale
+
         },
 
         reset() {
-            if(this.firstRender){
+            if (this.firstRender) {
                 this.addDummySVG()
                 this.firstRender = false
             }
@@ -67,31 +73,45 @@ export default {
             this.visualize()
         },
 
-        addDummySVG(){
+        addDummySVG() {
             let kpMatrixHeight = document.getElementsByClassName('.KpMatrix0').clientHeight
-            console.log(this.matrixHeight, this.chipContainerHeight)
             this.svg = d3.select('#' + this.id)
                 .append('svg')
                 .attrs({
                     transform: `translate(${0}, ${0})`,
-                    width: this.matrixLength, 
-                    height: 0.5*(this.containerHeight - this.matrixHeight - this.chipContainerHeight),
+                    width: this.matrixLength,
+                    height: 0.5 * (this.containerHeight - this.matrixHeight - this.chipContainerHeight),
                 })
+        },
 
+        brush() {
+            this.x = d3.scaleLinear()
+                .domain([0, this.pes])
+                .range([0, this.matrixWidth])
+
+            this.y = d3.scaleLinear()
+                .domain([this.pes, 0])
+                .range([this.matrixHeight, 0])
+
+            this.drag = d3.brush()
+                .extent([[0, 0], [this.matrixWidth, this.matrixHeight]])
+                .on('brush', this.brushing)
+                .on('end', this.brushend)
         },
 
         visualize(idx) {
-           
             this.pes = this.matrix[idx].length
             this.nodeWidth = (this.matrixWidth / this.pes)
-            this.nodeHeight = (this.matrixHeight / this.pes) 
+            this.nodeHeight = (this.matrixHeight / this.pes)
 
-            if (this.pes < this.scaleKpCount){
-                this.clusterNodeOffset = this.nodeWidth/2
+            if (this.pes < this.scaleKpCount) {
+                this.clusterNodeOffset = this.nodeWidth / 2
             }
-            else{
-                this.clusterNodeOffset = this.nodeHeight*3
+            else {
+                this.clusterNodeOffset = this.nodeHeight * 3
             }
+
+            this.brush()
 
             let adjacencyMatrix = adjacencyMatrixLayout()
                 .size([this.matrixWidth, this.matrixHeight])
@@ -115,8 +135,8 @@ export default {
                     .append('svg')
                     .attrs({
                         transform: `translate(${5}, ${0})`,
-                        width: this.matrixWidth + this.clusterNodeOffset, 
-                        height: this.matrixHeight + this.clusterNodeOffset, 
+                        width: this.matrixWidth + this.clusterNodeOffset,
+                        height: this.matrixHeight + this.clusterNodeOffset,
                         class: 'KpMatrix' + idx,
                     })
 
@@ -132,7 +152,7 @@ export default {
                         'y': (d) => d.y + this.clusterNodeOffset,
                     })
                     .style('stroke', (d, i) => {
-                        if (d.target % this.scaleKpCount == this.scaleKpCount - 1  || d.source % this.scaleKpCount == this.scaleKpCount - 1)
+                        if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
                             return 'black'
                     })
                     .style('stroke-width', (d, i) => {
@@ -143,13 +163,15 @@ export default {
                     })
                     .style('stroke-opacity', 1)
                     .style('fill', d => "#8e0b0b")
-                    .style('fill-opacity', d => { 
+                    .style('fill-opacity', d => {
                         let opacity = (d.weight * 100) / (this.max_weight * (this.min))
                         return opacity
                     })
                     .on('click', (d) => {
                         console.log(d.id)
-                    })                   
+                    })
+                    .call(this.drag)
+
 
 
                 // Append the kp value indicators:
@@ -162,7 +184,7 @@ export default {
                         'width': (d) => this.clusterNodeOffset,
                         'height': (d) => this.nodeHeight,
                         'x': (d) => 0,
-                        'y': (d, i) =>  this.nodeHeight * (i) + this.clusterNodeOffset,
+                        'y': (d, i) => this.nodeHeight * (i) + this.clusterNodeOffset,
                     })
                     .style('stroke-opacity', .3)
                     .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
@@ -194,6 +216,14 @@ export default {
             d3.select('')
         },
 
+        brushing() {
+            let selection = d3.event.selection
+            console.log(selection)
+        },
+
+        brushend() {
+
+        },
     }
 }
 
