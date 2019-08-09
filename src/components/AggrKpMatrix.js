@@ -25,7 +25,9 @@ export default {
         weights: [],
         max_weight: 0,
         scaleKpCount: 16,
-        pes: 0
+        pes: 0,
+        matrixData: [],
+        max_weight: 0,
     }),
 
     watch: {
@@ -38,8 +40,6 @@ export default {
     methods: {
         init() {
         },
-
-
 
         reset() {
             this.visualize()
@@ -71,25 +71,18 @@ export default {
                 .style('z-index', 100)
         },
 
-        visualize(prev_cpd, cpd) {
+        initContainer() {
             let panel1Height = document.getElementById('panel1').clientHeight
             let panel2Height = document.getElementById('panel2').clientHeight
             let chipContainerHeight = document.getElementById('chip-container').clientHeight
-            this.containerHeight = window.innerHeight - panel1Height - panel2Height - 3*chipContainerHeight;
+            this.containerHeight = window.innerHeight - panel1Height - panel2Height - 3 * chipContainerHeight;
             this.containerWidth = this.containerHeight
 
             this.matrixWidth = this.containerWidth * this.matrixScale
             this.matrixHeight = this.containerHeight * this.matrixScale
+        },
 
-            // this.svg = d3.select('#' + this.id)
-            //     .append('svg')
-            //     .attrs({
-            //         transform: `translate(${this.offset * this.idx}, ${0})`,
-            //         width: this.matrixWidth + this.clusterNodeOffset,
-            //         height: this.matrixHeight + this.clusterNodeOffset,
-            //         class: 'overlay',
-            //     })
-
+        process() {
             this.pes = this.matrix.length
             this.nodeWidth = this.matrixWidth / this.pes
             this.nodeHeight = this.matrixHeight / this.pes
@@ -101,29 +94,66 @@ export default {
                 this.clusterNodeOffset = this.nodeHeight * 3
             }
 
-            let adjacencyMatrix = adjacencyMatrixLayout()
+            this.adjacencyMatrix = adjacencyMatrixLayout()
                 .size([this.matrixWidth, this.matrixHeight])
                 .useadj(true)
                 .adj(this.matrix)
             // .prev_cpd(prev_cpd)
             // .cpd(cpd)
+        },
 
-            this.matrixData = adjacencyMatrix()
-
-            this.$parent.updateMarks(this.matrixData)
-
-            d3.selectAll('.KpMatrixI' + this.idx).remove()
+        initSvg(){
+            // d3.selectAll('.KpMatrixI' + this.idx).remove()
             this.svg = d3.select('#' + this.id)
                 .append('svg')
                 .attrs({
                     transform: `translate(${this.offset * this.idx + this.offset}, ${0})`,
                     width: this.matrixWidth + this.clusterNodeOffset,
                     height: this.matrixHeight + this.clusterNodeOffset,
-                    class: 'KpMatrixI' + this.idx,
+                    class: 'KpMatrix-' + this.idx,
                 })
 
+
+            // this.overlaySvg = d3.select('#' + this.id)
+            //     .append('svg')
+            //     .attrs({
+            //         transform: `translate(${this.offset * this.idx}, ${0})`,
+            //         width: this.matrixWidth + this.clusterNodeOffset,
+            //         height: this.matrixHeight + this.clusterNodeOffset,
+            //         class: 'KpMatrixOverlay-' + this.idx,
+            //     })
+        },
+
+        visualize(prev_cpd, cpd) {
+
+            // Init the container to have the Aggregated Matrix view.
+            this.initContainer()
+
+            // Process the incoming data to a adjancency matrix. 
+            this.process()
+            
+            this.initSvg()
+
+            // Update the matrixData. 
+            this.matrixData.push(this.adjacencyMatrix())
+
+            // Update the marks on the slider.
+            this.$parent.updateMarks(this.matrixData[this.idx])
+
+            // Update the colors on the existing matrices. 
+            this.max_weight = Math.max(this.max_weight, this.$parent.max_weight)
+            for (let i = 0; i < this.idx; i += 1) {
+                this.svg.selectAll('.rect' + i)
+                    .style('fill', (d, i) => {
+                        // return "#8e0b0b";
+                        let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
+                        return d3.interpolateRdYlGn(1 - val)
+                    })
+            }
+
+            // Draw the current matrix. 
             this.svg.selectAll('.rect' + this.idx)
-                .data(this.matrixData)
+                .data(this.matrixData[this.idx])
                 .enter()
                 .append('rect')
                 .attrs({
@@ -145,10 +175,13 @@ export default {
                 })
                 .style('stroke-opacity', 1)
                 .style('fill', (d, i) => {
-                    return "#8e0b0b";
+                    // return "#8e0b0b";
+                    let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
+                    return d3.interpolateRdYlGn(1 - val)
                 })
                 .style('fill-opacity', d => {
-                    return (d.weight * 100) / (this.$parent.max_weight * (this.$parent.min))
+                    // return 1
+                    return (d.weight * 100) / (this.max_weight * (this.$parent.min))
                 })
                 // .on('click', (d) => {
                 //     d3.selectAll('.line')
@@ -191,10 +224,10 @@ export default {
                 // })
                 .on('dblclick', (d) => {
                     d3.selectAll('circle')
-                    .attrs({
-                        opacity: 1.0,
-                        // stroke: 'rgba(0, 0, 0, 0.3)',
-                    })
+                        .attrs({
+                            opacity: 1.0,
+                            // stroke: 'rgba(0, 0, 0, 0.3)',
+                        })
 
                     this.currentClustersIds = d.clusters
                     for (let i = 0; i < this.currentClustersIds.length; i += 1) {
@@ -206,7 +239,7 @@ export default {
 
                         d3.selectAll('.dot' + i)
                             .attr({
-                                opacity:1.0, 
+                                opacity: 1.0,
                                 'fill': this.colorSet[this.currentClustersIds[i]]
                             })
                     }
@@ -249,10 +282,10 @@ export default {
                 .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
 
             d3.select('.KpMatrixI')
-                .call(adjacencyMatrix.xAxis);
+                .call(this.adjacencyMatrix.xAxis);
 
             d3.select('.KpMatrixI')
-                .call(adjacencyMatrix.yAxis);
+                .call(this.adjacencyMatrix.yAxis);
 
             this.idx += 1
         },

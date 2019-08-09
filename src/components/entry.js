@@ -29,7 +29,7 @@ export default {
 		GranID: ['Peid', 'KpGid', 'Lpid'],
 		selectedGranID: null,
 		plotMetric1: 'RbSec',
-		plotMetric2: 'RbPrim',
+		plotMetric2: 'NeventProcessed',
 		similarity: ['euclidean'],
 		selectedSimilarity: 'euclidean',
 		clustering: ['evostream', 'dbstream'],
@@ -53,7 +53,7 @@ export default {
 		request: 0,
 		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
 		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
-		selectedClusterMetric: 'RbPrim',
+		selectedClusterMetric: 'RbSec',
 		numberOfClusters: 3,
 		selectedNumberOfClusters: 3,
 		commThreshold: 0,
@@ -166,15 +166,15 @@ export default {
 			this.fetchTsData()
 		},
 
-		updateGran() {
+		updateGranularity() {
 			Vue.nextTick(() => {
 				this.clear()
 				console.log("Change in granularity detected : [", this.selectedGranularity, "]")
 				this.selectedGranID = this.correctGranID()
 				this.count = 0
+				// TODO: Need to do offline-computation and get the corresponding time series. 
 				this.fetchTsData()
 			})
-
 		},
 
 		updateTimeDomain() {
@@ -182,6 +182,7 @@ export default {
 				this.clear()
 				console.log("Change in domain detected : [", this.selectedTimeDomain, "]")
 				this.count = 0
+				// TODO: Need to do offline-computation and get the corresponding time series. 
 				this.fetchTsData()
 			})
 		},
@@ -205,7 +206,7 @@ export default {
 		},
 
 		updateNumberOfClusters(){
-
+			
 		},
 
 		updateClusterMetric() {

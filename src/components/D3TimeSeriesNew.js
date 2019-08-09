@@ -62,7 +62,7 @@ export default {
             navChart: 70
         },
         currentMovingAvg: 0,
-        movingAvgTs: [],
+        movingAvgTs: {},
     }),
     watch: {
         selectedIds: function (val) {
@@ -527,12 +527,7 @@ export default {
                 // Set the X domain for Line and navLine
                 if (this.actualTime.length > this.timepointMoveThreshold) {
                     this.x.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
-
-                    this.navX.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
                 }
-                // else if(this.actualTime.length < ) {
-                //     this.x.domain([-this.actualTime[3] + this.actualTime[this.actualTime.length - 3], this.actualTime[this.actualTime.length - 1] ])
-                // }
                 else {
                     this.x.domain([this.startTime, this.actualTime[this.actualTime.length - 1]])
                 }
@@ -553,6 +548,8 @@ export default {
                 this.path = this.mainSvg
                     .append('path')
                     .attr('class', 'line line' + this.id)
+
+                // console.log("Current Data: ", ts)
                 this.path
                     .datum(ts)
                     .attrs({
@@ -568,16 +565,16 @@ export default {
                     .style('z-index', 0)
 
                 // Calculate the avg out of the data (ts).
-                if (this.movingAvgTs.length == 0) {
-                    this.movingAvgTs.push(0)
+                if (this.movingAvgTs[this.plotMetric] == undefined) {
+                    this.movingAvgTs[this.plotMetric] = [0]
                 }
-                this.currentMovingAvg += ts[this.movingAvgTs.length - 1] / this.numberOfProcs
+                this.currentMovingAvg += ts[this.movingAvgTs[this.plotMetric].length - 1] / this.numberOfProcs
                 if (id == 0) {
                     this.currentMovingAvg = 0
                 }
                 if (id == this.numberOfProcs - 1) {
-                    console.log(this.currentMovingAvg, this.numberOfProcs)
-                    this.movingAvgTs.push(this.currentMovingAvg)
+                    console.log(this.currentMovingAvg)
+                    this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg)
                 }
             }
         },
@@ -621,13 +618,15 @@ export default {
 
             this.navX.domain([this.startTime, this.actualTime[this.actualTime.length - 1] * 1.5])
 
-            let yNavDomTemp = d3.extent(this.movingAvgTs)
+            let yNavDomTemp = d3.extent(this.movingAvgTs[this.plotMetric])
             if (yNavDomTemp[1] > this.yNavDom[1])
                 this.yNavDom[1] = yNavDomTemp[1]
             this.navY.domain(this.yNavDom)
 
+
+            let data  = this.movingAvgTs[this.plotMetric].slice(1)
             this.navPath
-                .datum(this.movingAvgTs)
+                .datum(this.movingAvgTs[this.plotMetric])
                 .attrs({
                     d: this.navLine,
                     class: 'avgLine' + this.$parent.plotMetric,

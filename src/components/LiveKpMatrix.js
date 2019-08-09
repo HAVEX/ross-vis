@@ -111,7 +111,7 @@ export default {
                 this.clusterNodeOffset = this.nodeHeight * 3
             }
 
-            this.brush()
+            // this.brush()
 
             let adjacencyMatrix = adjacencyMatrixLayout()
                 .size([this.matrixWidth, this.matrixHeight])
@@ -170,9 +170,6 @@ export default {
                     .on('click', (d) => {
                         console.log(d.id)
                     })
-                    .call(this.drag)
-
-
 
                 // Append the kp value indicators:
                 this.svg.selectAll('.clusterrectY' + idx)
