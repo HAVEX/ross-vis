@@ -15,11 +15,16 @@ export default {
 #toolbar {
 }
 
+.chip {
+  left:10px;
+}
+
 .chip > span{
   background: #637B8A !important;
   color: #fff !important;
   font-size: 16px !important;
   height: 32px !important;
+  left:5px;
 }
 
 #fromToMetric{
@@ -55,11 +60,11 @@ export default {
 }
 
 .axis-labels{
-  font: 13px sans-serif;
+  font: 15px sans-serif;
 }
 
 .vue-slider-mark-label{
-  font: 13px sans-serif
+  font: 15px sans-serif
 }
 
 

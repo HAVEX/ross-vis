@@ -3,6 +3,7 @@ import "d3-selection-multi";
 import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
 import template from '../html/LiveKpMatrix.html'
 import EventHandler from './EventHandler'
+import ColorMapLiveMatrix from './colormapLiveMatrix'
 
 // https://bl.ocks.org/Fil/6d9de24b31cb870fed2e6178a120b17d
 // https://github.com/d3/d3-brush/blob/master/src/brush.js
@@ -13,7 +14,9 @@ export default {
     name: 'LiveKpMatrix',
     template: template,
     props: [],
-
+    components: {
+        ColorMapLiveMatrix
+    },
     data: () => ({
         id: null,
         data: null,
@@ -55,13 +58,13 @@ export default {
             let dashboardHeight = document.getElementById('dashboard').clientHeight
             let toolbarHeight = document.getElementById('toolbar').clientHeight
             this.chipContainerHeight = document.getElementById('chip-container').clientHeight
-
-            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight) / 3
+            this.colormapHeight = 40
+            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight) / 3 - this.colormapHeight
 
             this.matrixLength = Math.min(this.containerHeight, this.containerWidth)
             this.matrixWidth = this.matrixLength * this.matrixScale
             this.matrixHeight = this.matrixLength * this.matrixScale
-
+            this.$refs.ColorMapLiveMatrix.init('live-kpmatrix-overview')
         },
 
         reset() {
@@ -126,9 +129,15 @@ export default {
 
             if (!Number.isNaN(matrixData[0].x)) {
                 this.max_weight = 0
+                this.min_weight = 0
                 for (let i = 0; i < matrixData.length; i += 1) {
                     this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
-                }
+                    this.min_weight = Math.min(this.min_weight, matrixData[i].weight)
+                } 
+
+                this.$refs.ColorMapLiveMatrix.clear()
+                this.$refs.ColorMapLiveMatrix.render(this.min_weight, this.max_weight)
+
 
                 d3.selectAll('.KpMatrix' + idx).remove()
                 this.svg = d3.select('#' + this.id)
@@ -162,9 +171,13 @@ export default {
                             return '0.1px'
                     })
                     .style('stroke-opacity', 1)
-                    .style('fill', d => "#8e0b0b")
+                    .style('fill', d => {
+                        let val = (d.weight) / (this.max_weight)
+                        return d3.interpolateGreys(val)
+                    })
                     .style('fill-opacity', d => {
-                        let opacity = (d.weight * 100) / (this.max_weight * (this.min))
+                        // let opacity = (d.weight * 100) / (this.max_weight * (this.min))
+                        let opacity = 1
                         return opacity
                     })
                     .on('click', (d) => {
@@ -211,15 +224,6 @@ export default {
 
         clear() {
             d3.select('')
-        },
-
-        brushing() {
-            let selection = d3.event.selection
-            console.log(selection)
-        },
-
-        brushend() {
-
         },
     }
 }

@@ -40,10 +40,10 @@ export default {
         cluster: [],
         showCircleLabels: true,
         padding: {
-            top: 20,
+            top: 30,
             bottom: 20,
             left: 100,
-            right: 30,
+            right: 20,
             topNav: 10,
             bottomNav: 20
         },
@@ -51,7 +51,7 @@ export default {
             top: 0,
             bottom: 10,
             left: 100,
-            right: 30,
+            right: 20,
         },
         dimension: {
             chartTitle: 20,
@@ -129,7 +129,7 @@ export default {
 
             this.padding = { left: 40, top: 0, right: 20, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.mainWidth - this.padding.right - this.padding.left * 1.5]);
-            this.y = d3.scaleLinear().range([this.mainHeight - this.padding.bottom - this.padding.top, 0]);
+            this.y = d3.scaleLinear().range([this.mainHeight - this.padding.bottom - this.padding.top, this.padding.top + this.padding.bottom]);
 
         },
 
@@ -199,7 +199,7 @@ export default {
             }
 
             this.drawCPDs()
-            this.drawDragLine()
+            // this.drawDragLine()
 
             this.clearMainView()
             this.drawMainView(ts)
@@ -261,7 +261,7 @@ export default {
 
         initLine() {
             this.line = d3.line()
-                .x((d, i) => this.x(this.actualTime[i]))
+                .x((d, i) => this.x(this.windowActualTime[i]))
                 .y((d) => this.y(d));
 
             this.navLine = d3.line()
@@ -465,12 +465,12 @@ export default {
                     height: this.mainHeight,
                     width: this.mainWidth,
                     id: 'mainSVG',
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`
+                    transform: `translate(${this.padding.left*1.5}, ${this.padding.top})`
                 })
 
             this.mainPathG = this.mainSvg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left}, ${this.padding.top})`
+                    transform: `translate(${this.padding.left*1.5}, ${this.padding.top})`
                 })
 
             this.mainSvg.append('defs')
@@ -525,15 +525,20 @@ export default {
                 this.cluster[id] = res['cluster'][0]
 
                 // Set the X domain for Line and navLine
+                let windowTs = []
                 if (this.actualTime.length > this.timepointMoveThreshold) {
+                    windowTs = ts.slice(this.actualTime.length - this.timepointMoveThreshold, this.actualTime.length)
+                    this.windowActualTime = this.actualTime.slice(this.actualTime.length - this.timepointMoveThreshold, this.actualTime.length)
                     this.x.domain([this.actualTime[this.actualTime.length - this.timepointMoveThreshold], this.actualTime[this.actualTime.length - 1]])
                 }
                 else {
+                    windowTs = ts
+                    this.windowActualTime = this.actualTime
                     this.x.domain([this.startTime, this.actualTime[this.actualTime.length - 1]])
                 }
 
                 // Set the Y domain for line. 
-                let yDomTemp = d3.extent(ts)
+                let yDomTemp = d3.extent(windowTs)
                 if (yDomTemp[1] > this.yDom[1])
                     this.yDom[1] = yDomTemp[1]
                 this.y.domain(this.yDom)
@@ -551,7 +556,7 @@ export default {
 
                 // console.log("Current Data: ", ts)
                 this.path
-                    .datum(ts)
+                    .datum(windowTs)
                     .attrs({
                         'id': 'line' + id,
                         d: this.line,
@@ -566,14 +571,18 @@ export default {
 
                 // Calculate the avg out of the data (ts).
                 if (this.movingAvgTs[this.plotMetric] == undefined) {
-                    this.movingAvgTs[this.plotMetric] = [0]
+                    this.movingAvgTs[this.plotMetric] = []
+                    for(let i = 0; i < ts.length; i += 1){
+                        this.currentMovingAvg += ts[i]/this.numberOfProcs
+                        this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg)
+                    }
                 }
                 this.currentMovingAvg += ts[this.movingAvgTs[this.plotMetric].length - 1] / this.numberOfProcs
                 if (id == 0) {
                     this.currentMovingAvg = 0
                 }
                 if (id == this.numberOfProcs - 1) {
-                    console.log(this.currentMovingAvg)
+                    console.log("Time series [Moving average] = ",this.currentMovingAvg)
                     this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg)
                 }
             }
@@ -625,8 +634,9 @@ export default {
 
 
             let data  = this.movingAvgTs[this.plotMetric].slice(1)
+            console.log(data)
             this.navPath
-                .datum(this.movingAvgTs[this.plotMetric])
+                .datum(data)
                 .attrs({
                     d: this.navLine,
                     class: 'avgLine' + this.$parent.plotMetric,

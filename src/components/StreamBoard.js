@@ -106,8 +106,8 @@ export default {
 			return ret
 		},
 
-		createKpMatrix(data){
-			this.$refs.comm
-		}
+		// createKpMatrix(data){
+		// 	this.$refs.comm
+		// }
 	}
 }

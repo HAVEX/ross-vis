@@ -17,7 +17,7 @@ export default {
 		streamData: null,
 		commData: null,
 		hocData: null,
-		appName: 'Progressive-ROSS Analytics',
+		appName: 'Progressive-ROSS Visual Analytics',
 		socketError: false,
 		server: 'localhost:8899',
 		modes: ['Post Hoc', 'In Situ'],
@@ -83,18 +83,23 @@ export default {
 			console.log('Fetching comm data for interval', interval)
 			let obj = {
 				metric: this.calcMetrics,
-				method: 'comm-data-interval',
+				socket_request: 'comm-data-interval',
 				granularity: this.granularity,
 				interval: interval
 			}
+			self.prev_cpd = prev_cpd
+			self.cpd = cpd
 			self.socket.send(JSON.stringify(obj))
-			self.socket.onmessage = (event) => {
-				let data = JSON.parse(event.data)
-				EventHandler.$emit('fetch_kpmatrix_on_cpd_results', prev_cpd, cpd, data)
-				self.request = 1
-				self.fetchTsData()
-				self.request = 0
-			}
+			console.log("Request: ", obj)
+			// self.$store.play = 0
+			// self.socket.onmessage = (event) => {
+			// 	let data = JSON.parse(event.data)
+			// 	EventHandler.$emit('fetch_kpmatrix_on_cpd_results', prev_cpd, cpd, data)
+			// 	self.request = 1
+			// 	self.fetchTsData()
+			// 	self.request = 0
+			// 	self.$store.play = 1
+			// }
 		})
 
 		EventHandler.$on('fetch_kpmatrix_on_click', function (prev_cpd, cpd) {
@@ -336,6 +341,9 @@ export default {
 
 				if (this.$store.play == 1) {
 					this.fetchTsData()
+				}
+				if('aggr_comm' in this.streamData){
+					EventHandler.$emit('fetch_kpmatrix_on_cpd_results', this.prev_cpd, this.cpd, data)
 				}
 			}
 		},

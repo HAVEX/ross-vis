@@ -1,6 +1,7 @@
 import template from '../html/CommKpMatrixPanel.html'
 import Communication from './Communication'
 import AggrKpMatrix from './AggrKpMatrix'
+import ColorMapAggrMatrix from './colormapAggrMatrix'
 import EventHandler from './EventHandler'
 import * as d3 from 'd3'
 
@@ -22,6 +23,7 @@ export default {
         Communication,
         VueSlider,
         AggrKpMatrix,
+        ColorMapAggrMatrix
     },
     data: () => ({
         id: null,
@@ -74,10 +76,11 @@ export default {
 
         EventHandler.$on('fetch_kpmatrix_on_cpd_results', function (prev_cpd, cpd, matrix) {
             if (!self.track_cpds.includes(cpd)) {
-                self.data = matrix['comm']['incoming_df']
+                self.data = matrix['aggr_comm']['incoming_df']
                 self.track_cpds.push(cpd)
                 self.visualize()
             }
+            self.$store.play = 1
         })
 
         EventHandler.$on('draw_kpmatrix_on_click', function (prev_cpd, cpd, Peid) {
@@ -106,6 +109,8 @@ export default {
     methods: {
         init() {
             this.$refs.AggrKpMatrix.init()
+            this.$refs.ColorMapAggrMatrix.init('AggrMatrix')
+            this.showSliderText()
         },
 
         showSliderText() {
@@ -202,10 +207,14 @@ export default {
                             changePoint: this.track_cpds[i],
                             changeIdx: this.track_cpds.length - 1
                         }
-                        this.minComm = Math.min(this.minComm, this.data[id]['CommData'])
-                        this.maxComm = Math.max(this.maxComm, this.data[id]['CommData'])
+                        this.minComm = Math.min(this.minComm, this.data[id]['CommData'][i])
+                        this.maxComm = Math.max(this.maxComm, this.data[id]['CommData'][i])
                     }
+                    console.log(this.data[id]['CommData'])
                 }
+                console.log(this.minComm, this.maxComm)
+                this.$refs.ColorMapAggrMatrix.clear()
+                this.$refs.ColorMapAggrMatrix.render(this.minComm, this.maxComm)
                 this.$refs.AggrKpMatrix.matrix = this.kpMatrix
                 this.$refs.AggrKpMatrix.clusterIds = this.clusterIds;
                 this.$refs.AggrKpMatrix.visualize()
@@ -213,7 +222,7 @@ export default {
         },
 
         clear() {
-
+			this.$refs.ColorMapAggrMatrix.clear()
         },
 
         updateMetrics() {

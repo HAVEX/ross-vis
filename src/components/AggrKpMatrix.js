@@ -141,13 +141,14 @@ export default {
             this.$parent.updateMarks(this.matrixData[this.idx])
 
             // Update the colors on the existing matrices. 
-            this.max_weight = Math.max(this.max_weight, this.$parent.max_weight)
+            this.max_weight = Math.max(this.max_weight, this.$parent.maxComm)
             for (let i = 0; i < this.idx; i += 1) {
                 this.svg.selectAll('.rect' + i)
                     .style('fill', (d, i) => {
                         // return "#8e0b0b";
-                        let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
-                        return d3.interpolateRdYlGn(1 - val)
+                        // let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
+                        let val = d.weight/this.max_weight
+                        return d3.interpolateReds(val)
                     })
             }
 
@@ -175,13 +176,14 @@ export default {
                 })
                 .style('stroke-opacity', 1)
                 .style('fill', (d, i) => {
-                    // return "#8e0b0b";
-                    let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
-                    return d3.interpolateRdYlGn(1 - val)
+                    // let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
+                    // return d3.interpolateReds(1 - val)
+                    let val = d.weight/this.max_weight
+                    return d3.interpolateReds(val)
                 })
                 .style('fill-opacity', d => {
-                    // return 1
-                    return (d.weight * 100) / (this.max_weight * (this.$parent.min))
+                    return 1
+                    // return (d.weight * 100) / (this.max_weight * (this.$parent.min))
                 })
                 // .on('click', (d) => {
                 //     d3.selectAll('.line')

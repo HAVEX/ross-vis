@@ -47,8 +47,6 @@ export default {
         container: this.id,
         viewport: [this.width, this.height]
       }
-<<<<<<< HEAD
-<<<<<<< HEAD
       this.views = [{
         id: 'view-right',
         width: this.width / 2,
@@ -64,14 +62,9 @@ export default {
 
     initVis(ts) {
       this.vis = p4(this.config).data(ts).view(this.views)
-=======
+      this.timeValues = this.data.uniqueValues;
       this.vis = p4(config).data(this.data)
       this.timeValues = this.data.uniqueValues;
->>>>>>> a38f97c89666189f635f81746dac3fe9fc30bc9c
-=======
-      this.vis = p4(config).data(this.data)
-      this.timeValues = this.data.uniqueValues;
->>>>>>> b662bf7080e94fa812723df33f088a4a6bd5e34e
     },
 
     removeVis(elms) {
@@ -89,15 +82,6 @@ export default {
       //this.vis.head().updateData(ts)
     },
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    visualize(metrics, callback, cpd, clusters) {
-      this.metrics = metrics
-      if (cpd == 1) {
-        this.cpds.push(this.$parent.stream_count - 1)
-=======
-=======
->>>>>>> b662bf7080e94fa812723df33f088a4a6bd5e34e
     forward() {
       this.timeRange[1] += 5;
       this.$emit('update', [this.timeValues[this.selectedTimeDomain][0], this.timeValues[this.selectedTimeDomain][this.timeRange[1]]])
@@ -113,10 +97,6 @@ export default {
     visualize (callback) {
       if(typeof(callback) === 'function') {
         this.callback = callback
-<<<<<<< HEAD
->>>>>>> a38f97c89666189f635f81746dac3fe9fc30bc9c
-=======
->>>>>>> b662bf7080e94fa812723df33f088a4a6bd5e34e
       }
 
       let viewSetting = {
@@ -175,8 +155,6 @@ export default {
         collection[this.colorEncoding] = { $max: this.colorEncoding }
       }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
       let aggregation = [this.timeAttribute]
 
       if (!this.isAggregated) {
@@ -189,9 +167,6 @@ export default {
       }
 
       collection['cluster'] = { $max: 'cluster' }
-=======
-=======
->>>>>>> b662bf7080e94fa812723df33f088a4a6bd5e34e
       let t = this.vis.view([]).head()
       .aggregate({
         $group: aggregation,
@@ -203,12 +178,6 @@ export default {
       }
 
       t.visualize(vmap)
-<<<<<<< HEAD
->>>>>>> a38f97c89666189f635f81746dac3fe9fc30bc9c
-=======
->>>>>>> b662bf7080e94fa812723df33f088a4a6bd5e34e
-
-
       this.vis.view(this.current_views).head()
         .aggregate({
           $group: aggregation,

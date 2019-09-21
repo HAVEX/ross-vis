@@ -21,16 +21,6 @@
 			<v-switch v-model="drawBrush" :label="`Brush`"
 			  ></v-switch>
 		</v-flex> -->
-		<v-flex xs2 class="ma-2">
-			<v-select label="TimeMode" :items="timeDomains" v-model="selectedTimeDomain" :menu-props="{ maxHeight: '400' }"
-				box v-on:change="updateTimeDomain()">
-			</v-select>
-		</v-flex>
-		<v-flex xs2 class="ma-2">
-			<v-select label="Granularity" :items="granularity" v-model="selectedGranularity"
-				:menu-props="{ maxHeight: '400' }" box v-on:change="updateGranularity()">
-			</v-select>
-		</v-flex>
 		
 		<v-spacer></v-spacer>
 		<v-flex xs2>
@@ -44,8 +34,8 @@
 		<v-btn slot="activator" color="primary" dark>Open Dialog</v-btn>
 		<v-card flex id="control-panel">
 			<v-layout row wrap>
-				<v-switch :label="`Aggr`" v-model="isAggregated" v-on:change="visualize()"></v-switch>
-				<v-switch label="Intra-Comm" v-model="showIntraComm" v-on:change="visualize()"></v-switch>
+				<!-- <v-switch :label="`Aggr`" v-model="isAggregated" v-on:change="visualize()"></v-switch> -->
+				<!-- <v-switch label="Intra-Comm" v-model="showIntraComm" v-on:change="visualize()"></v-switch> -->
 				<v-btn icon>
 					<v-icon v-on:click="reset()">refresh</v-icon>
 				</v-btn>
@@ -72,6 +62,16 @@
 				<v-flex xs12 class="ma-1">
 					<v-select label="Metric (to/from)" :items="causality" v-model="selectedCausality"
 						:menu-props="{ maxHeight: '200' }" persistent-hint>
+					</v-select>
+				</v-flex>
+				<v-flex xs12 class="ma-1">
+					<v-select label="TimeMode" :items="timeDomains" v-model="selectedTimeDomain" 
+					:menu-props="{ maxHeight: '400' }" v-on:change="updateTimeDomain()">
+					</v-select>
+				</v-flex>
+				<v-flex xs12 class="ma-1">
+					<v-select label="Granularity" :items="granularity" v-model="selectedGranularity"
+						:menu-props="{ maxHeight: '400' }" v-on:change="updateGranularity()">
 					</v-select>
 				</v-flex>
 				<!-- <v-flex xs12 class="ma-1">
