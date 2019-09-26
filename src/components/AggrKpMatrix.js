@@ -164,7 +164,7 @@ export default {
                     'width': (d) => this.nodeWidth,
                     'height': (d) => this.nodeHeight,
                     'x': (d) => d.x + this.clusterNodeOffset,
-                    'y': (d) => d.y + this.clusterNodeOffset,
+                    'y': (d) => d.yAggr + this.clusterNodeOffset,
                 })
                 .style('fill', (d, i) => {
                     let val = d.weight / this.max_weight

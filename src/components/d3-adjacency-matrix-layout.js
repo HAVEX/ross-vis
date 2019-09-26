@@ -40,6 +40,7 @@ export default function adjacencyMatrixLayout() {
                     yid: adj[i][j].peid * 16 + adj[i][j].kpid,
                     x: xScale(j),
                     y: yScale(adj[i][j].peid * 16 + adj[i][j].kpid),
+                    yAggr: yScale(i),
                     weight: adj[i][j].z,
                     height: nodeHeight,
                     width: nodeWidth,

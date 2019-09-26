@@ -191,7 +191,6 @@ export default {
             }
 
 
-            // EventHandler.$emit('draw_kpmatrix_on_cpd', 10000, 20000 )
 
             if (cpd == 1) {
                 let current_cpd_idx = this.$parent.stream_count + 1
