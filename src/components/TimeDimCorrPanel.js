@@ -301,11 +301,12 @@ export default {
 						kpMatrix[kp] = []
 					}
 					kpMatrix[kp][i] = {
-						x: kp,
-						j: i,
 						z: comm_data[i],
 						id: this.processIds[i],
 						cluster: this.clusterIds[i],
+						kpid: data['Kpid'],
+						kpgid: data['KpGid'],
+						peid: data['Peid'],
 					}
 					mat[kp][i] = comm_data[i]
 				}

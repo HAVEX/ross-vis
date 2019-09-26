@@ -20,110 +20,40 @@ export default function adjacencyMatrixLayout() {
     function matrix() {
         var width = size[0];
         var height = size[1];
-        
+
         // const constructedMatrix = [];
         var matrix = [];
         var edgeHash = {};
-        
-        if (useadj == false) {
-            var nodeWidth = width / nodes.length;
-            var nodeHeight = height / nodes.length;
-            var xScale = d3.scaleLinear().domain([0, nodes.length]).range([0, width]);
-            var yScale = d3.scaleLinear().domain([0, nodes.length]).range([0, height]);
 
-            nodes.forEach(function (node, i) {
-                node.sortedIndex = i;
-            });
+        let nodeWidth = width / adj.length
+        let nodeHeight = height / adj.length
+        var xScale = d3.scaleLinear().domain([0, adj.length]).range([0, width]);
+        var yScale = d3.scaleLinear().domain([0, adj.length]).range([0, height]);
 
-            edges.forEach(function (edge) {
-                var constructedEdge = {
-                    source: edge.source,
-                    target: edge.target,
-                    weight: edgeWeight(edge)
-                };
-                if (typeof edge.source === 'number') {
-                    constructedEdge.source = nodes[edge.source];
+        for (let i = 0; i < adj.length; i += 1) {
+            for (let j = 0; j < adj[i].length; j += 1) {
+                var grid = {
+                    id: adj[i][j].peid + '-' + adj[i][j].kpid,
+                    source: i,
+                    target: j,
+                    xid: j,
+                    yid: adj[i][j].peid * 16 + adj[i][j].kpid,
+                    x: xScale(j),
+                    y: yScale(adj[i][j].peid * 16 + adj[i][j].kpid),
+                    weight: adj[i][j].z,
+                    height: nodeHeight,
+                    width: nodeWidth,
+                    changePoint: adj[i][j].changePoint,
+                    changeIdx: adj[i][j].changeIdx,
+                    cluster: adj[i][j].cluster,
+                    clusters: adj[i][j].clusters,
+                    kpid: adj[i][j].kpid,
+                    kpgid: adj[i][j].kpgid,
+                    peid: adj[i][j].peid,
                 }
-                if (typeof edge.target === 'number') {
-                    constructedEdge.target = nodes[edge.target];
-                }
-                var id = nodeID(constructedEdge.source) + '-' + nodeID(constructedEdge.target);
-
-                if (directed === false && constructedEdge.source.sortedIndex < constructedEdge.target.sortedIndex) {
-                    id = nodeID(constructedEdge.target) + '-' + nodeID(constructedEdge.source);
-                }
-                if (!edgeHash[id]) {
-                    edgeHash[id] = constructedEdge;
-                } else {
-                    edgeHash[id].weight = edgeHash[id].weight + constructedEdge.weight;
-                }
-            });
-
-
-            nodes.forEach(function (sourceNode, a) {
-                nodes.forEach(function (targetNode, b) {
-                    var grid = {
-                        id: nodeID(sourceNode) + '-' + nodeID(targetNode),
-                        source: sourceNode,
-                        target: targetNode,
-                        x: xScale(b),
-                        y: yScale(a),
-                        weight: 0,
-                        height: nodeHeight,
-                        width: nodeWidth
-                    };
-                    var edgeWeight = 0;
-                    if (edgeHash[grid.id]) {
-                        edgeWeight = edgeHash[grid.id].weight;
-                        grid.weight = edgeWeight;
-                    }
-                    if (directed === true || b < a) {
-                        matrix.push(grid);
-                        if (directed === false) {
-                            var mirrorGrid = {
-                                id: nodeID(sourceNode) + '-' + nodeID(targetNode),
-                                source: sourceNode,
-                                target: targetNode,
-                                x: xScale(a),
-                                y: yScale(b),
-                                weight: 0,
-                                height: nodeHeight,
-                                width: nodeWidth
-                            };
-                            mirrorGrid.weight = edgeWeight;
-                            matrix.push(mirrorGrid);
-                        }
-                    }
-                });
-            });
-        }
-        else {
-            let nodeWidth = width / adj.length
-            let nodeHeight = height / adj.length
-            var xScale = d3.scaleLinear().domain([0, adj.length]).range([0, width]);
-            var yScale = d3.scaleLinear().domain([0, adj.length]).range([0, height]);
-
-            for(let i = 0; i < adj.length; i += 1){
-                for(let j = 0; j < adj[i].length; j += 1){
-                    var grid = {
-                        id: i + '-' + j,
-                        source: i,
-                        target: j,
-                        x: xScale(i),
-                        y: yScale(j),
-                        weight: adj[i][j].z,
-                        height: nodeHeight,
-                        width: nodeWidth,
-                        changePoint: adj[i][j].changePoint,
-                        changeIdx: adj[i][j].changeIdx,
-                        cluster: adj[i][j].cluster,
-                        clusters: adj[i][j].clusters,
-                    }
-                    matrix.push(grid);
-                }
+                matrix.push(grid);
             }
         }
-
         return matrix;
     }
 

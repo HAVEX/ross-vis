@@ -3,7 +3,7 @@ import "d3-selection-multi";
 import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
 import template from '../html/LiveKpMatrix.html'
 import EventHandler from './EventHandler'
-import ColorMapLiveMatrix from './colormapLiveMatrix'
+import LiveMatrixColormap from './LiveMatrixColormap'
 
 // https://bl.ocks.org/Fil/6d9de24b31cb870fed2e6178a120b17d
 // https://github.com/d3/d3-brush/blob/master/src/brush.js
@@ -15,7 +15,7 @@ export default {
     template: template,
     props: [],
     components: {
-        ColorMapLiveMatrix
+        LiveMatrixColormap
     },
     data: () => ({
         id: null,
@@ -64,7 +64,7 @@ export default {
             this.matrixLength = Math.min(this.containerHeight, this.containerWidth)
             this.matrixWidth = this.matrixLength * this.matrixScale
             this.matrixHeight = this.matrixLength * this.matrixScale
-            this.$refs.ColorMapLiveMatrix.init('live-kpmatrix-overview')
+            this.$refs.LiveMatrixColormap.init('live-kpmatrix-overview')
         },
 
         reset() {
@@ -73,7 +73,7 @@ export default {
                 this.firstRender = false
             }
 
-            this.visualize()
+            // this.visualize()
         },
 
         addDummySVG() {
@@ -133,10 +133,10 @@ export default {
                 for (let i = 0; i < matrixData.length; i += 1) {
                     this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
                     this.min_weight = Math.min(this.min_weight, matrixData[i].weight)
-                } 
+                }
 
-                this.$refs.ColorMapLiveMatrix.clear()
-                this.$refs.ColorMapLiveMatrix.render(this.min_weight, this.max_weight)
+                this.$refs.LiveMatrixColormap.clear()
+                this.$refs.LiveMatrixColormap.render(this.min_weight, this.max_weight)
 
 
                 d3.selectAll('.KpMatrix' + idx).remove()
@@ -149,6 +149,8 @@ export default {
                         class: 'KpMatrix' + idx,
                     })
 
+                console.log("Maximum communication in the GVT", this.max_weight)
+                let count = 0 
                 this.svg.selectAll('.rect' + idx)
                     .data(matrixData)
                     .enter()
@@ -162,28 +164,31 @@ export default {
                     })
                     .style('stroke', (d, i) => {
                         if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
-                            return 'black'
+                           return 'black'
+                        // return '#eee'
                     })
                     .style('stroke-width', (d, i) => {
                         if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
-                            return '0.5px'
+                            return '0.2px'
                         else
-                            return '0.1px'
+                            return '0px'
                     })
-                    .style('stroke-opacity', 1)
+                    .style('stroke-opacity', 0.5)
                     .style('fill', d => {
                         let val = (d.weight) / (this.max_weight)
+                        if(d.weight > 0.5*this.max_weight){
+                            count += 1
+                        }
                         return d3.interpolateGreys(val)
                     })
                     .style('fill-opacity', d => {
                         // let opacity = (d.weight * 100) / (this.max_weight * (this.min))
-                        let opacity = 1
-                        return opacity
+                        return 1
                     })
                     .on('click', (d) => {
-                        console.log(d.id)
+                        console.log(d.peid, d.kpid)
                     })
-
+                console.log("Number of processes more than half value: ", count)
                 // Append the kp value indicators:
                 this.svg.selectAll('.clusterrectY' + idx)
                     .data(this.clusterIds)

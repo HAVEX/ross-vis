@@ -102,7 +102,7 @@ export default {
             // .cpd(cpd)
         },
 
-        initSvg(){
+        initSvg() {
             // d3.selectAll('.KpMatrixI' + this.idx).remove()
             this.svg = d3.select('#' + this.id)
                 .append('svg')
@@ -110,9 +110,8 @@ export default {
                     transform: `translate(${this.offset * this.idx + this.offset}, ${0})`,
                     width: this.matrixWidth + this.clusterNodeOffset,
                     height: this.matrixHeight + this.clusterNodeOffset,
-                    class: 'KpMatrix-' + this.idx,
+                    id: 'aggrMatrix-' + this.idx,
                 })
-
 
             // this.overlaySvg = d3.select('#' + this.id)
             //     .append('svg')
@@ -122,71 +121,73 @@ export default {
             //         height: this.matrixHeight + this.clusterNodeOffset,
             //         class: 'KpMatrixOverlay-' + this.idx,
             //     })
+
+            // Update the matrixData. 
+            this.matrixData.push(this.adjacencyMatrix())
+            console.log("Done")
         },
 
-        visualize(prev_cpd, cpd) {
+        visualize() {
 
             // Init the container to have the Aggregated Matrix view.
             this.initContainer()
 
             // Process the incoming data to a adjancency matrix. 
             this.process()
-            
+
+            console.log(this.idx, this.offset, this.matrixHeight, this.matrixWidth, this.clusterNodeOffset)
+
             this.initSvg()
 
-            // Update the matrixData. 
-            this.matrixData.push(this.adjacencyMatrix())
-
+            console.log("Here")
             // Update the marks on the slider.
-            this.$parent.updateMarks(this.matrixData[this.idx])
+            // this.$parent.updateMarks(this.matrixData[this.idx])
 
             // Update the colors on the existing matrices. 
             this.max_weight = Math.max(this.max_weight, this.$parent.maxComm)
             for (let i = 0; i < this.idx; i += 1) {
-                this.svg.selectAll('.rect' + i)
+                d3.selectAll('.aggrRect' + i)
                     .style('fill', (d, i) => {
-                        // return "#8e0b0b";
-                        // let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
-                        let val = d.weight/this.max_weight
+                        let val = d.weight / this.max_weight
+                        // console.log("Values are :", val)
                         return d3.interpolateReds(val)
                     })
             }
 
             // Draw the current matrix. 
-            this.svg.selectAll('.rect' + this.idx)
+            this.svg.selectAll('.aggrRect' + this.idx)
                 .data(this.matrixData[this.idx])
                 .enter()
                 .append('rect')
                 .attrs({
-                    class: 'rect rect' + this.idx,
+                    class: 'aggrRect aggrRect' + this.idx,
                     'width': (d) => this.nodeWidth,
                     'height': (d) => this.nodeHeight,
                     'x': (d) => d.x + this.clusterNodeOffset,
                     'y': (d) => d.y + this.clusterNodeOffset,
                 })
-                .style('stroke', (d, i) => {
-                    if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
-                        return 'black'
-                })
-                .style('stroke-width', (d, i) => {
-                    if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
-                        return '0.5px'
-                    else
-                        return '0.1px'
-                })
-                .style('stroke-opacity', 1)
                 .style('fill', (d, i) => {
-                    // let val = (d.weight * 100) / (this.max_weight * (this.$parent.min))
-                    // return d3.interpolateReds(1 - val)
-                    let val = d.weight/this.max_weight
+                    let val = d.weight / this.max_weight
                     return d3.interpolateReds(val)
                 })
                 .style('fill-opacity', d => {
                     return 1
-                    // return (d.weight * 100) / (this.max_weight * (this.$parent.min))
                 })
-                // .on('click', (d) => {
-                //     d3.selectAll('.line')
+                .style('stroke', (d, i) => {
+                    if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
+                       return 'black'
+                    // return '#eee'
+                })
+                .style('stroke-width', (d, i) => {
+                    if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
+                        return '0.2px'
+                    else
+                        return '0px'
+                })
+                .style('stroke-opacity', 0.5)
+                .on('click', (d) => {
+                    console.log(d.peid, d.kpid)
+                    //     d3.selectAll('.line')
                 //         .attrs({
                 //             opacity: 1.0,
                 //             stroke: 'rgba(0, 0, 0, 0.3)',
@@ -223,30 +224,30 @@ export default {
                 //             'stroke-width': 5.0,
                 //             fill: this.colorSet[this.currentClustersIds[d.target]]
                 //         })
-                // })
-                .on('dblclick', (d) => {
-                    d3.selectAll('circle')
-                        .attrs({
-                            opacity: 1.0,
-                            // stroke: 'rgba(0, 0, 0, 0.3)',
-                        })
-
-                    this.currentClustersIds = d.clusters
-                    for (let i = 0; i < this.currentClustersIds.length; i += 1) {
-                        d3.selectAll('#line' + i)
-                            .attrs({
-                                'stroke-width': 1.0,
-                                'stroke': this.colorSet[this.currentClustersIds[i]]
-                            })
-
-                        d3.selectAll('.dot' + i)
-                            .attr({
-                                opacity: 1.0,
-                                'fill': this.colorSet[this.currentClustersIds[i]]
-                            })
-                    }
                 })
+                .on('dblclick', (d) => {
+                //     // d3.selectAll('circle')
+                //     //     .attrs({
+                //     //         opacity: 1.0,
+                //     //         // stroke: 'rgba(0, 0, 0, 0.3)',
+                //     //     })
 
+                //     // this.currentClustersIds = d.clusters
+                //     // for (let i = 0; i < this.currentClustersIds.length; i += 1) {
+                //     //     d3.selectAll('#line' + i)
+                //     //         .attrs({
+                //     //             'stroke-width': 1.0,
+                //     //             'stroke': this.colorSet[this.currentClustersIds[i]]
+                //     //         })
+
+                //     //     d3.selectAll('.dot' + i)
+                //     //         .attr({
+                //     //             opacity: 1.0,
+                //     //             'fill': this.colorSet[this.currentClustersIds[i]]
+                //     //         })
+                //     // }
+                })
+                console.log('aaaaa')
             // this.svg.selectAll(".cell")
             //     .data(cross(traits, traits))
             //     .enter().append("g")
@@ -289,8 +290,23 @@ export default {
             d3.select('.KpMatrixI')
                 .call(this.adjacencyMatrix.yAxis);
 
+            console.log('vvvvvvvvvvv')
             this.idx += 1
         },
+
+        update(max_weight) {
+            // Update the colors on the existing matrices. 
+            max_weight = Math.max(max_weight, this.$parent.maxComm)
+            for (let i = 0; i < this.idx; i += 1) {
+                // console.log("Updating matrix: ", i, this.svg.selectAll('.rect0'))
+                d3.selectAll('.aggrRect' + i)
+                    .style('fill', (d, i) => {
+                        let val = d.weight / max_weight
+                        // console.log("Values are :", val)
+                        return d3.interpolateReds(val)
+                    })
+            }
+        }
     }
 }
 

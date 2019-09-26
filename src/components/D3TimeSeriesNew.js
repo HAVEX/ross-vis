@@ -190,15 +190,20 @@ export default {
                 }
             }
 
+
+            // EventHandler.$emit('draw_kpmatrix_on_cpd', 10000, 20000 )
+
             if (cpd == 1) {
-                let current_cpd_idx = this.$parent.stream_count
-                let current_cpd = this.actualTime[current_cpd_idx]
+                let current_cpd_idx = this.$parent.stream_count + 1
+                let current_cpd = this.actualTime[this.actualTime.length - 1]
+                console.log(this.actualTime, current_cpd_idx, current_cpd)
+                console.log('=================================================')
+                console.log("Getting the communication matrix: ", this.prev_cpd, current_cpd )
                 EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
                 this.prev_cpd = current_cpd
-                this.cpds.push(this.$parent.stream_count)
+                this.cpds.push(current_cpd_idx)
             }
 
-            this.drawCPDs()
             // this.drawDragLine()
 
             this.clearMainView()
@@ -208,6 +213,8 @@ export default {
             this.drawNavView(cpd)
 
             this.drawClusterLabels()
+
+            this.drawCPDs()
         },
 
         // Visualize cluster labels.
@@ -399,13 +406,28 @@ export default {
             d3.selectAll('.cpdline' + this.id).remove()
             d3.selectAll('.cpdnavline' + this.$parent.plotMetric).remove()
 
-            let xPoints = [];
+            let cpdPoints = [];
+            let cpdNavPoints = []
             for (let i = 0; i < this.cpds.length; i += 1) {
-                xPoints.push(this.actualTime[this.cpds[i]])
+                cpdNavPoints.push(this.actualTime[this.cpds[i]])
+                let cpdTime = this.actualTime[this.cpds[i]]
+                let windowStartTime = this.actualTime[this.actualTime.length - this.timepointMoveThreshold]
+                let windowEndTime = this.actualTime[this.actualTime.length - 1]
+                if(cpdTime >= windowStartTime && cpdTime < windowEndTime){
+                    cpdPoints.push(this.actualTime[this.cpds[i]])
+                }
             }
 
+            // There is undefined element in the array
+            cpdNavPoints = cpdNavPoints.filter(function (el) {
+                return el != undefined;
+            });
+
+            console.log("Change points in Main View", cpdPoints)
+            console.log("Change points in Nav view", cpdNavPoints)
+
             this.mainSvg.selectAll('cpdline')
-                .data(xPoints)
+                .data(cpdPoints)
                 .enter()
                 .append('line')
                 .attrs({
@@ -421,7 +443,7 @@ export default {
 
 
             this.navSvg.selectAll('cpdnavline')
-                .data(xPoints)
+                .data(cpdNavPoints)
                 .enter()
                 .append('line')
                 .attrs({
@@ -465,12 +487,12 @@ export default {
                     height: this.mainHeight,
                     width: this.mainWidth,
                     id: 'mainSVG',
-                    transform: `translate(${this.padding.left*1.5}, ${this.padding.top})`
+                    transform: `translate(${this.padding.left * 1.5}, ${this.padding.top})`
                 })
 
             this.mainPathG = this.mainSvg.append('g')
                 .attrs({
-                    transform: `translate(${this.padding.left*1.5}, ${this.padding.top})`
+                    transform: `translate(${this.padding.left * 1.5}, ${this.padding.top})`
                 })
 
             this.mainSvg.append('defs')
@@ -497,6 +519,7 @@ export default {
             this.clusterMap = {}
             // Assign the number of processors. 
             this.numberOfProcs = Object.entries(data).length
+            console.log("Number of processes", this.numberOfProcs)
 
             for (let [id, res] of Object.entries(data)) {
                 this.startTime = 0
@@ -554,7 +577,7 @@ export default {
                     .append('path')
                     .attr('class', 'line line' + this.id)
 
-                // console.log("Current Data: ", ts)
+                // console.log("Current Data: ", windowTs)
                 this.path
                     .datum(windowTs)
                     .attrs({
@@ -571,20 +594,35 @@ export default {
 
                 // Calculate the avg out of the data (ts).
                 if (this.movingAvgTs[this.plotMetric] == undefined) {
-                    this.movingAvgTs[this.plotMetric] = []
-                    for(let i = 0; i < ts.length; i += 1){
-                        this.currentMovingAvg += ts[i]/this.numberOfProcs
-                        this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg)
+                    if(id == 0){
+                    this.currentMovingAvg = []
+                        // this.currentMovingAvg[id] = 0
+                    }
+                    for (let i = 0; i < ts.length; i += 1) {
+                        if(this.currentMovingAvg[i] == undefined){
+                            this.currentMovingAvg[i] = 0
+                        }
+                        this.currentMovingAvg[i] += ts[i] / this.numberOfProcs
                     }
                 }
-                this.currentMovingAvg += ts[this.movingAvgTs[this.plotMetric].length - 1] / this.numberOfProcs
-                if (id == 0) {
-                    this.currentMovingAvg = 0
+                else{
+                    if(id == 0){
+                        this.currentMovingAvg = 0
+                    }
+                    this.currentMovingAvg += ts[this.movingAvgTs[this.plotMetric].length - 1] / this.numberOfProcs
                 }
-                if (id == this.numberOfProcs - 1) {
-                    console.log("Time series [Moving average] = ",this.currentMovingAvg)
-                    this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg)
+                
+            }
+            // Push the average values into the array. 
+            if (this.movingAvgTs[this.plotMetric] == undefined) {
+                this.movingAvgTs[this.plotMetric] = []
+                for(let i = 0; i < this.currentMovingAvg.length; i += 1){
+                    this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg[i])
                 }
+            }
+            else {
+                console.log("Time series [Moving average] = ", this.currentMovingAvg)
+                this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg)
             }
         },
 
@@ -607,7 +645,7 @@ export default {
             this.navSvg.append("rect")
                 .attrs({
                     "x": 0,
-                    "y": 0,
+                        "y": 0,
                     "width": this.navWidth - this.padding.right - this.padding.left,
                     "height": this.navHeight,
                 })
@@ -633,8 +671,7 @@ export default {
             this.navY.domain(this.yNavDom)
 
 
-            let data  = this.movingAvgTs[this.plotMetric].slice(1)
-            console.log(data)
+            let data = this.movingAvgTs[this.plotMetric]
             this.navPath
                 .datum(data)
                 .attrs({
@@ -642,8 +679,7 @@ export default {
                     class: 'avgLine' + this.$parent.plotMetric,
                     stroke: "#000",
                     'stroke-width': (d) => {
-                        if (this.numberOfProcs < 16) return 2.0
-                        else return 1.0
+                        return 1.5
                     },
                     fill: 'transparent',
                 })
@@ -666,10 +702,10 @@ export default {
             this.viewport = d3.brushX(this.navX)
                 .extent([[0, 0], [this.navWidth - this.navPadding.right, this.navHeight]])
                 .on('brush', this.brushing)
-                // .on('end', this.brushEnd)
-            this.brushes.push({ 
+            // .on('end', this.brushEnd)
+            this.brushes.push({
                 'id': id,
-                'brush': this.viewport 
+                'brush': this.viewport
             })
         },
 
@@ -704,17 +740,17 @@ export default {
             // .remove()
         },
 
-        brushing(){
+        brushing() {
             let selection = d3.event.selection
-            if(selection == null){
+            if (selection == null) {
                 this.x.domain(this.navX.domain())
             }
-            else{
+            else {
                 let sx = selection.map(this.navX.invert)
                 let intervalViewport = sx[1] - sx[0]
                 let offsetViewport = sx[1] - this.startTime
 
-                if(intervalViewport == 0){
+                if (intervalViewport == 0) {
                     intervalViewport = 10000
                     offsetViewport = 0
                 }

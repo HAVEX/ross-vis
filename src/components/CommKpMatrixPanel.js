@@ -1,7 +1,7 @@
 import template from '../html/CommKpMatrixPanel.html'
 import Communication from './Communication'
 import AggrKpMatrix from './AggrKpMatrix'
-import ColorMapAggrMatrix from './colormapAggrMatrix'
+import AggrMatrixColormap from './AggrMatrixColormap'
 import EventHandler from './EventHandler'
 import * as d3 from 'd3'
 
@@ -23,7 +23,7 @@ export default {
         Communication,
         VueSlider,
         AggrKpMatrix,
-        ColorMapAggrMatrix
+        AggrMatrixColormap
     },
     data: () => ({
         id: null,
@@ -109,7 +109,8 @@ export default {
     methods: {
         init() {
             this.$refs.AggrKpMatrix.init()
-            this.$refs.ColorMapAggrMatrix.init('AggrMatrix')
+            this.$refs.AggrMatrixColormap.init()
+
             this.showSliderText()
         },
 
@@ -129,7 +130,7 @@ export default {
                     "height": height,
                     "class": "sliderTextSVG"
                 })
-                
+
             let min = [0, 2000]
             let text = svg.selectAll("text")
                 .enter()
@@ -156,18 +157,18 @@ export default {
             //     })
         },
 
-        change(type, msg){
+        change(type, msg) {
             this.min = type
 
             d3.selectAll('.rect')
                 .style('fill-opacity', d => {
-                    return (d.weight * 100) / (this.max_weight*(this.min))
+                    return (d.weight * 100) / (this.max_weight * (this.min))
                 })
-            
+
             EventHandler.$emit('update_comm_min', this.min)
         },
 
-        updateMarks(matrixData){
+        updateMarks(matrixData) {
             let weights = []
             let mark_points = []
 
@@ -175,14 +176,14 @@ export default {
                 this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
             }
 
-            if(!this.weights.includes(this.max_weight)){
-                this.weights.push(this.max_weight) 
+            if (!this.weights.includes(this.max_weight)) {
+                this.weights.push(this.max_weight)
             }
 
             weights = JSON.parse(JSON.stringify(this.weights))
 
-            for(let i = 0; i < weights.length; i += 1){
-                let mark = (weights[i]/this.max_weight)*100
+            for (let i = 0; i < weights.length; i += 1) {
+                let mark = (weights[i] / this.max_weight) * 100
                 mark_points.push(mark.toFixed(1))
             }
             this.mark_points = mark_points
@@ -200,8 +201,11 @@ export default {
                         this.kpMatrix[id][i] = {
                             x: id,
                             j: i,
-                            z: this.data[id]['CommData'][i],
+                            z: this.data[id]['AggrCommData'][i],
                             id: this.processIds[i],
+                            kpid: this.data[id]['Kpid'],
+                            kpgid: this.data[id]['KpGid'],
+                            peid: this.data[id]['Peid'],
                             cluster: this.clusterIds[i],
                             clusters: this.clusterIds,
                             changePoint: this.track_cpds[i],
@@ -210,19 +214,19 @@ export default {
                         this.minComm = Math.min(this.minComm, this.data[id]['CommData'][i])
                         this.maxComm = Math.max(this.maxComm, this.data[id]['CommData'][i])
                     }
-                    console.log(this.data[id]['CommData'])
                 }
-                console.log(this.minComm, this.maxComm)
-                this.$refs.ColorMapAggrMatrix.clear()
-                this.$refs.ColorMapAggrMatrix.render(this.minComm, this.maxComm)
+                this.clear()
+                this.$refs.AggrMatrixColormap.render(this.minComm, this.maxComm)
                 this.$refs.AggrKpMatrix.matrix = this.kpMatrix
                 this.$refs.AggrKpMatrix.clusterIds = this.clusterIds;
                 this.$refs.AggrKpMatrix.visualize()
+                this.$refs.AggrKpMatrix.update(this.max_weight)
+
             }
         },
 
         clear() {
-			this.$refs.ColorMapAggrMatrix.clear()
+            this.$refs.AggrMatrixColormap.clear()
         },
 
         updateMetrics() {
