@@ -19,14 +19,14 @@ export default {
 			{ key: 'VD', sortable: true },
 		],
 		to_items: [],
+		message: '',
 		from_items: [],
 		causality: ['from', 'to'],
-		selectedCausality: 'to',
-		message: 'Causality view',
+		selectedCausality: 'from',
 		nameMapper : {
-			"NetworkRecv": "Recv",
-			"NetworkSend": "Send",
-			"NeventProcessed": "n_events",
+			"NetworkRecv": "Net. Recv.",
+			"NetworkSend": "Net. Send.",
+			"NeventProcessed": "Num. Events",
 			"NeventRb": "Prm. Rb.",
 			"RbSec": "Sec. Rb."
 		},
@@ -40,25 +40,26 @@ export default {
 	},
 
 	mounted: function () {
+		this.message = 'Causality view (' + this.selectedCausality.charAt(0).toUpperCase() + this.selectedCausality.slice(1) + ')'
 	},
 
 	methods: {
 		init() {
-	
 		},
 
 		preprocess(data) {
 			for (let i = 0; i < data['from'].length; i++) {
-				if (data['from'][i]['causality'] == "true") {
+				if (data['from'][i]['causality'] == 1 && data['from'][i]['metric'] != this.$store.selectedClusterMetric) {
 					data['from'][i]['_rowVariant'] = 'success'
-					data['from']['metric'][i] = this.nameMapper[data['from']['metric']] + "*"
+					data['from'][i]['metric'] = this.nameMapper[data['from'][i]['metric']]
 				}
 				else {
-					data['from'][i]['_rowVariant'] = 'success'
+					data['from'][i]['_rowVariant'] = 'dangere'
+					data['from'][i]['metric'] = this.nameMapper[data['from'][i]['metric']]
 				}
 			}
 			for (let i = 0; i < data['to'].length; i++) {
-				if (data['to'][i]['causality'] == 1) {
+				if (data['to'][i]['causality'] == 1 && data['to'][i]['metric'] != this.$store.selectedClusterMetric) {
 					data['to'][i]['_rowVariant'] = 'success'
 				}
 				else {
@@ -77,6 +78,7 @@ export default {
 			
 			document.getElementById('correlation-table').style.height = this.height
 			data = this.preprocess(data)
+			console.log(data['from'])
 			this.from_items = data['from'].slice(0, this.topParameters)
 			this.to_items = data['to'].slice(0, this.topParameters)
 		},

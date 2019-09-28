@@ -167,7 +167,8 @@ export default {
                     'y': (d) => d.yAggr + this.clusterNodeOffset,
                 })
                 .style('fill', (d, i) => {
-                    let val = d.weight / this.max_weight
+                    let val = d.weight * 100 / (this.max_weight * this.min)
+                    console.log(val)
                     return d3.interpolateReds(val)
                 })
                 .style('fill-opacity', d => {

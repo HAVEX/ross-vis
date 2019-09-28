@@ -1,6 +1,18 @@
 <v-card :id="id">
     <v-layout class="chip-container">
         <v-chip class="chip"> {{ message }} </v-chip>
-        <LiveMatrixColormap ref="LiveMatrixColormap"/>
     </v-layout>
+    <!-- <vue-slider
+    width="200px"
+    :order="false"
+    :marks="mark_points"
+    :process="true"
+    @change="change"
+    style="display: inline-block; margin: 10px 0px 10px 70px;" 
+    v-model="value">
+    <template v-slot:label="{ label, active }">
+        <div :class="['vue-slider-mark-label', 'custom-label', { active }]">{{ label }}</div>
+    </template> -->
+    <LiveMatrixColormap ref="LiveMatrixColormap"/>
+</vue-slider>
 </v-card>

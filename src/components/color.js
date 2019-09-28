@@ -1,5 +1,7 @@
 import * as chroma from 'chroma-js'
 
+// Colors. But I dont think I am using this except for colormap.
+
 export default class Color {
     constructor(option, scale) {
         this.option = option

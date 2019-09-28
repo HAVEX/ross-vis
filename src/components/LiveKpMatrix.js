@@ -25,7 +25,7 @@ export default {
         container: null,
         height: 0,
         width: 0,
-        message: "Live communication view",
+        message: "Live Communication view",
         matrix: null,
         matrixScale: 0.85,
         offset: 10,
@@ -35,7 +35,8 @@ export default {
         pes: 0,
         max_weight: 0,
         min: 100,
-        firstRender: true
+        firstRender: true,
+        granularity_level: ['pe', 'pe', 'pe', 'pe', 'pe', 'pe', 'pe', 'pe']
     }),
 
     watch: {
@@ -74,6 +75,10 @@ export default {
             }
 
             // this.visualize()
+        },
+
+        change(){
+
         },
 
         addDummySVG() {
@@ -123,7 +128,7 @@ export default {
 
             let matrixData = adjacencyMatrix()
             for (let i = 0; i < matrixData.length; i += 1) {
-                this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
+                this.max_weight = Math.max(this.max_weight, matrixData[i].weightAggr)
                 EventHandler.$emit('update_comm_max_weight', this.max_weight)
             }
 
@@ -131,8 +136,8 @@ export default {
                 this.max_weight = 0
                 this.min_weight = 0
                 for (let i = 0; i < matrixData.length; i += 1) {
-                    this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
-                    this.min_weight = Math.min(this.min_weight, matrixData[i].weight)
+                    this.max_weight = Math.max(this.max_weight, matrixData[i].weightAggr)
+                    this.min_weight = Math.min(this.min_weight, matrixData[i].weightAggr)
                 }
 
                 this.$refs.LiveMatrixColormap.clear()
@@ -165,7 +170,6 @@ export default {
                     .style('stroke', (d, i) => {
                         if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
                            return 'black'
-                        // return '#eee'
                     })
                     .style('stroke-width', (d, i) => {
                         if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
@@ -175,19 +179,26 @@ export default {
                     })
                     .style('stroke-opacity', 0.5)
                     .style('fill', d => {
-                        let val = (d.weight) / (this.max_weight)
+                        // let val = (d.weight) / (this.max_weight)
+                        let peid = d.peid
+
+                        let val = d.weightAggr / this.max_weight
                         if(d.weight > 0.5*this.max_weight){
                             count += 1
                         }
                         return d3.interpolateGreys(val)
                     })
                     .style('fill-opacity', d => {
-                        // let opacity = (d.weight * 100) / (this.max_weight * (this.min))
                         return 1
                     })
                     .on('click', (d) => {
                         console.log(d.peid, d.kpid)
-                    })
+                        this.granularity_level[d.peid] = 'kp'
+                        d3.selectAll('.aggrRect')
+                        .style('fill', (d, i) => {
+                            let val = d.weight * 100 / this.max_weight * (100 - this.min)
+                            return d3.interpolateReds(val)
+                        })                    })
                 console.log("Number of processes more than half value: ", count)
                 // Append the kp value indicators:
                 this.svg.selectAll('.clusterrectY' + idx)

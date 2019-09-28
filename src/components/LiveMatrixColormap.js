@@ -13,7 +13,7 @@ export default {
     ],
 
     data: () => ({
-        width: 200,
+        colorMapWidth: 200,
         height: 20,
         colorScaleHeight: 30,
         colorMin: 0,
@@ -21,7 +21,7 @@ export default {
         padding: {
             bottom: 30,
             right: 5,
-            left: 25,
+            left: 25
         },
         color: null,
         colorMap: null,
@@ -46,7 +46,8 @@ export default {
             this.chipContainerHeight = document.getElementById('chip-container').clientHeight
             this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight) / 3
             this.containerWidth = this.containerHeight
-            this.paddingLeft = (this.containerWidth - this.width)/4
+            this.paddingLeft = (this.containerWidth - this.colorMapWidth)/4
+            // this.padding.left = this.containerWidth - 2 * 10 - this.width
             
             this.scaleG = d3.select('#' + this.parentID)
                 .append('svg')
@@ -73,9 +74,9 @@ export default {
                 let splitColor = this.colorMin + ((i * this.colorMax) / (splits))
                 this.scaleG.append('rect')
                     .attrs({
-                        'width': this.width / (splits + 1),
+                        'width': this.colorMapWidth / (splits + 1),
                         'height': this.height,
-                        'x': i * (this.width / (splits + 1)),
+                        'x': i * (this.colorMapWidth / (splits + 1)),
                         'class': 'colormap-rect',
                         'transform': `translate(${this.paddingLeft}, ${0})`,
                         'fill': d3.interpolateGreys(splitColor/this.colorMax)
@@ -102,7 +103,7 @@ export default {
                     "dy": ".35em",
                     "text-anchor": "middle",
                     "class": "colormap-text",
-                    'transform': `translate(${this.width - this.padding.left + this.paddingLeft}, ${this.padding.bottom})`,
+                    'transform': `translate(${this.colorMapWidth - this.padding.left + this.paddingLeft}, ${this.padding.bottom})`,
                 })
                 .text(this.colorMax);
         },

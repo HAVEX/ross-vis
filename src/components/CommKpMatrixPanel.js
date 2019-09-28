@@ -44,7 +44,7 @@ export default {
         kpMatrix_count: 1,
         message: "Aggregated Communication view",
         track_cpds: [],
-        value: 100,
+        value: 1,
         min: 100,
         mark_points: [0],
         weights: [],
@@ -160,9 +160,13 @@ export default {
         change(type, msg) {
             this.min = type
 
-            d3.selectAll('.rect')
-                .style('fill-opacity', d => {
-                    return (d.weight * 100) / (this.max_weight * (this.min))
+            d3.selectAll('.aggrRect')
+                // .style('fill-opacity', d => {
+                //     return (d.weight * 100) / (this.max_weight * (this.min))
+                // })
+                .style('fill', (d, i) => {
+                    let val = d.weight * 100 / this.max_weight * (100 - this.min)
+                    return d3.interpolateReds(val)
                 })
 
             EventHandler.$emit('update_comm_min', this.min)
@@ -199,8 +203,6 @@ export default {
                             this.kpMatrix[id] = []
                         }
                         this.kpMatrix[id][i] = {
-                            x: id,
-                            j: i,
                             z: this.data[id]['AggrCommData'][i],
                             id: this.processIds[i],
                             kpid: this.data[id]['Kpid'],

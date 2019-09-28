@@ -51,8 +51,10 @@ export default {
 		play: 1,
 		update: 1,
 		request: 0,
-		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
-		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventRb', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
+		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbTime', 'NeventRb', 'RbTotal'],
+		// calcMetrics: ['RbSec'],
+		causalityMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'NeventRb', 'RbSec', 'RbTime', 'RbTotal'],
+		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
 		selectedClusterMetric: 'RbSec',
 		numberOfClusters: 3,
 		selectedNumberOfClusters: 3,
@@ -133,6 +135,7 @@ export default {
 			this.socket = new WebSocket('ws://' + this.server + '/websocket')
 			this.method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
 			this.selectedGranID = this.correctGranID()
+			this.$store.selectedClusterMetric = this.selectedClusterMetric
 			this.fetchTsData()
 			this.$store.play = 1
 		},
@@ -211,7 +214,7 @@ export default {
 		},
 
 		updateNumberOfClusters(){
-			
+
 		},
 
 		updateClusterMetric() {
@@ -221,10 +224,6 @@ export default {
 				this.$refs.StreamBoard.updateLabels = true;
 				this.$refs.StreamBoard.update()
 			})
-		},
-
-		updateLink() {
-
 		},
 
 		updateAnalysis() {
@@ -251,7 +250,7 @@ export default {
 			this.$refs.StreamBoard.clear()
 		},
 
-		getJSONrequest(count) {
+		createJSONrequest(count) {
 			if (!count) {
 				count = this.count
 			}
@@ -266,10 +265,12 @@ export default {
 			let obj = {
 				data: this.selectedGranularity + 'Data',
 				granularity: this.selectedGranID,
-				metric: this.calcMetrics,
+				clusterMetric: this.selectedClusterMetric,
+				calcMetrics: this.calcMetrics,
+				causalityMetrics: this.causalityMetrics,
 				timeDomain: this.selectedTimeDomain,
 				method: this.method,
-				stream_count: this.count,
+				streamCount: this.count,
 				play: this.$store.play,
 				update: this.update,
 				request: this.request,
@@ -280,7 +281,7 @@ export default {
 
 		fetchAllData(count) {
 			console.log("Fetching all data till", count)
-			let json = this.getJSONrequest(count)
+			let json = this.createJSONrequest(count)
 			this.socket.send(json)
 
 			this.socket.onmessage = (event) => {
@@ -304,12 +305,12 @@ export default {
 				this.socket.onopen = () => {
 					this.socketError = false
 					console.log('Requesting ', this.count, ' stream.')
-					this.socket.send(this.getJSONrequest())
+					this.socket.send(this.createJSONrequest())
 				}
 			}
 
 			else {
-				this.socket.send(this.getJSONrequest())
+				this.socket.send(this.createJSONrequest())
 			}
 
 			this.socket.onerror = (error) => {

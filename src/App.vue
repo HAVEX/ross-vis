@@ -164,7 +164,7 @@ export default {
   user-select: none;
 }
 .table-container table tbody td {
-  padding: 16px;
+  padding: 12px;
   cursor: pointer;
   font-size: 0.7vw;
 }

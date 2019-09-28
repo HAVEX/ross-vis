@@ -1,7 +1,6 @@
+// Has nothing to do with Streaming vis client. 
+
 import tpl from '../html/CommPanels.html'
-
-import p4 from 'p4'
-
 import Communication from './Communication'
 
 export default {

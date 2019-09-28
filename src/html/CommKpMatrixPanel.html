@@ -1,7 +1,7 @@
 <v-layout row wrap>
     <v-flex xs12>
         <v-layout row wrap class='panel'>
-            <v-flex xs2>
+            <v-flex class="chip-container">
                 <v-chip id="communication-chip" class="chip"> {{ message }} </v-chip>
             </v-flex>
             <v-flex xs5>
@@ -26,3 +26,10 @@
         <AggrKpMatrix ref="AggrKpMatrix" />
     </v-flex>
 </v-layout> 
+<!-- 
+<v-card :id="id">
+    <v-layout class="chip-container">
+        <v-chip class="chip"> {{ message }} </v-chip>
+        <LiveMatrixColormap ref="LiveMatrixColormap"/>
+    </v-layout>
+</v-card> -->

@@ -4,7 +4,7 @@ import template from '../html/TimeDimCorrPanel.html'
 import Dimensionality from './Dimensionality'
 import TimeSeries from './TimeSeries'
 // import D3TimeSeries from './D3TimeSeries'
-import D3TimeSeries from './D3TimeSeriesNew'
+import D3TimeSeries from './D3TimeSeriesWithSummary'
 import D3Dimensionality from './D3Dimensionality'
 import LiveKpMatrix from './LiveKpMatrix'
 import Causality from './Causality'
@@ -288,25 +288,35 @@ export default {
 			}
 
 			// Parsing code for the KpGrid view.
-			let input_data = this.commData['incoming_df']
+			let kp_comm = this.commData['kp_comm']
+			let pe_comm = this.commData['pe_comm']
+			let kp_count = this.commData['kp_count']
+			let pe_count = this.commData['pe_count']
+
+			// console.log(pe_comm, pe_comm.length, pe_comm[0].length)
+			
 			let kpMatrix = []
 			let mat = []
-			input_data.map((data, kp) => {
+			kp_comm.map((comm, kp) => {
 				if (mat[kp] == undefined) {
-					mat[kp] = []
+					mat[kp] = []	
 				}
-				let comm_data = data['CommData']
+				let comm_data = comm['CommData']
+				
 				for (let i = 0; i < comm_data.length; i += 1) {
 					if (kpMatrix[kp] == undefined) {
 						kpMatrix[kp] = []
 					}
+					let pe_z = pe_comm[comm['Peid']][Math.floor(i/kp_count)]
+					// console.log(pe_z, pe_comm[comm['Peid']], comm['Peid'], Math.floor(i/kp_count))
 					kpMatrix[kp][i] = {
 						z: comm_data[i],
 						id: this.processIds[i],
 						cluster: this.clusterIds[i],
-						kpid: data['Kpid'],
-						kpgid: data['KpGid'],
-						peid: data['Peid'],
+						kpid: comm['Kpid'],
+						kpgid: comm['KpGid'],
+						peid: comm['Peid'],
+						pe_z: pe_z, 
 					}
 					mat[kp][i] = comm_data[i]
 				}
@@ -349,6 +359,8 @@ export default {
 						let macro_result = this.processClusterData(result, 'macro')
 						// let micro_result = this.processClusterData(result, 'micro')
 						this.causality_result = this.processCausalityData(data['result'])
+
+						console.log(result)
 
 						this.cpd = result[0]['cpd']
 

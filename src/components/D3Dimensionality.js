@@ -18,7 +18,7 @@ export default {
         xMax: 0,
         yMin: 0,
         yMax: 0,
-        message: 'Dimensionality view',
+        message: 'Behavior Similarity view',
         showMessage: false,
     }),
     mounted() {
