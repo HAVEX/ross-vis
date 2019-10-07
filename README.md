@@ -3,7 +3,8 @@
 A visual analytics application for exploring and analyzing performance data from the ROSS PDES engine.
 
 ## Requirement
-Server backend requires Python version >= 3.5
+Server backend requires Python version >= 3.6
+(Might fail for latest Node 12.6.0. Not sure why exactly. Need to figure out. )
 
 ## Installation (Server and Client App)
 ``` bash
@@ -13,12 +14,13 @@ git clone https://github.com/HAVEX/ross-vis
 
 ### setup and run server
 
+(Follow the instructions provided in https://github.com/HAVEX/ross-vis-server/blob/master/README.md)
+
 Virtualenv is recommended for running the server backend: 
 ```
 virtualenv -p python3 venv
 source venv/bin/activate
 ```
-
 
 ``` bash
 cd ross-vis-server
@@ -33,12 +35,8 @@ python server.py --http=8888 --datafile=<path-to-file> --appdir=../ross-vis/dist
 ```
 
 ### To build
- ``` npm run build
- ```
-  
-### To enable automatic re-build
-  ``` npm run nodemon-build
-  ```
+``` npm run dev
+```
 
 ## Access the Client App
 After the server is started with HTTP port = 8888, use a web browser to access the ROSS-Vis app at:
@@ -46,6 +44,3 @@ After the server is started with HTTP port = 8888, use a web browser to access t
 ```
 http://localhost:8888
 ```
-
-## Real-time and Streaming Data
-(coming soon)
