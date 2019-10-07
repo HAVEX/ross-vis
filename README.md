@@ -35,7 +35,8 @@ python server.py --http=8888 --datafile=<path-to-file> --appdir=../ross-vis/dist
 ```
 
 ### To build
-``` npm run dev
+```
+ npm run dev
 ```
 
 ## Access the Client App
