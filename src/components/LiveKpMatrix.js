@@ -28,8 +28,7 @@ export default {
         message: "Live Communication view",
         matrix: null,
         matrixScale: 0.85,
-        offset: 10,
-        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
+        offset: 30,
         clusterIds: [],
         scaleKpCount: 16,
         pes: 0,
@@ -60,7 +59,7 @@ export default {
             let toolbarHeight = document.getElementById('toolbar').clientHeight
             this.chipContainerHeight = document.getElementById('chip-container').clientHeight
             this.colormapHeight = 40
-            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight) / 3 - this.colormapHeight
+            this.containerHeight = (dashboardHeight - toolbarHeight - this.chipContainerHeight) / 3 - this.colormapHeight + 13
 
             this.matrixLength = Math.min(this.containerHeight, this.containerWidth)
             this.matrixWidth = this.matrixLength * this.matrixScale
@@ -70,18 +69,17 @@ export default {
 
         reset() {
             if (this.firstRender) {
-                this.addDummySVG()
+                this.initSVG()
                 this.firstRender = false
             }
-
             // this.visualize()
         },
 
-        change(){
+        change() {
 
         },
 
-        addDummySVG() {
+        initSVG() {
             let kpMatrixHeight = document.getElementsByClassName('.KpMatrix0').clientHeight
             this.svg = d3.select('#' + this.id)
                 .append('svg')
@@ -92,25 +90,11 @@ export default {
                 })
         },
 
-        brush() {
-            this.x = d3.scaleLinear()
-                .domain([0, this.pes])
-                .range([0, this.matrixWidth])
-
-            this.y = d3.scaleLinear()
-                .domain([this.pes, 0])
-                .range([this.matrixHeight, 0])
-
-            this.drag = d3.brush()
-                .extent([[0, 0], [this.matrixWidth, this.matrixHeight]])
-                .on('brush', this.brushing)
-                .on('end', this.brushend)
-        },
-
         visualize(idx) {
-            this.pes = this.matrix[idx].length
-            this.nodeWidth = (this.matrixWidth / this.pes)
-            this.nodeHeight = (this.matrixHeight / this.pes)
+            idx = 'live'
+            this.pes = this.matrix.length
+            this.nodeWidth = Math.ceil(this.matrixWidth / this.pes) + 0.5
+            this.nodeHeight = Math.ceil(this.matrixHeight / this.pes) + 0.5
 
             if (this.pes < this.scaleKpCount) {
                 this.clusterNodeOffset = this.nodeWidth / 2
@@ -119,29 +103,22 @@ export default {
                 this.clusterNodeOffset = this.nodeHeight * 3
             }
 
-            // this.brush()
-
             let adjacencyMatrix = adjacencyMatrixLayout()
                 .size([this.matrixWidth, this.matrixHeight])
                 .useadj(true)
-                .adj(this.matrix[idx])
+                .adj(this.matrix)
 
-            let matrixData = adjacencyMatrix()
-            for (let i = 0; i < matrixData.length; i += 1) {
-                this.max_weight = Math.max(this.max_weight, matrixData[i].weightAggr)
-                EventHandler.$emit('update_comm_max_weight', this.max_weight)
-            }
+            this.$store.liveMatrix = adjacencyMatrix()
+            let matrixData = this.$store.liveMatrix
+
 
             if (!Number.isNaN(matrixData[0].x)) {
-                this.max_weight = 0
-                this.min_weight = 0
-                for (let i = 0; i < matrixData.length; i += 1) {
-                    this.max_weight = Math.max(this.max_weight, matrixData[i].weightAggr)
-                    this.min_weight = Math.min(this.min_weight, matrixData[i].weightAggr)
-                }
+                this.max_weight = matrixData[0]['maxComm']
+                this.min_weight = matrixData[0]['minComm']
 
                 this.$refs.LiveMatrixColormap.clear()
-                this.$refs.LiveMatrixColormap.render(this.min_weight, this.max_weight)
+                this.min_weight = 0
+                this.$refs.LiveMatrixColormap.render(this.min_weight, 2048)
 
 
                 d3.selectAll('.KpMatrix' + idx).remove()
@@ -154,14 +131,15 @@ export default {
                         class: 'KpMatrix' + idx,
                     })
 
-                console.log("Maximum communication in the GVT", this.max_weight)
-                let count = 0 
-                this.svg.selectAll('.rect' + idx)
+                // console.log("Maximum communication in the GVT", this.max_weight)
+                this.$store.liveMax = this.max_weight
+                this.svg.selectAll('.live-rect-' + idx)
                     .data(matrixData)
                     .enter()
                     .append('rect')
                     .attrs({
-                        class: (d, i) => 'rect rect' + idx,
+                        class: (d, i) => 'live-rect live-rect-' + idx + ' live-rect-kp-' + d.kpid,
+                        'id': (d, i) => 'live-rect-pe-' + d.peid,
                         'width': (d) => this.nodeWidth,
                         'height': (d) => this.nodeHeight,
                         'x': (d) => d.x + this.clusterNodeOffset,
@@ -169,65 +147,70 @@ export default {
                     })
                     .style('stroke', (d, i) => {
                         if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
-                           return 'black'
+                            return '#black'
+                        else
+                            return '#white'
                     })
                     .style('stroke-width', (d, i) => {
                         if (d.target % this.scaleKpCount == this.scaleKpCount - 1 || d.source % this.scaleKpCount == this.scaleKpCount - 1)
-                            return '0.2px'
+                            return '0.1px'
                         else
                             return '0px'
                     })
-                    .style('stroke-opacity', 0.5)
+                    .style('stroke-opacity', 1)
                     .style('fill', d => {
-                        // let val = (d.weight) / (this.max_weight)
-                        let peid = d.peid
-
-                        let val = d.weightAggr / this.max_weight
-                        if(d.weight > 0.5*this.max_weight){
-                            count += 1
-                        }
+                        let val = Math.pow((d.weightAggr / this.max_weight), 0.33)
                         return d3.interpolateGreys(val)
                     })
-                    .style('fill-opacity', d => {
-                        return 1
-                    })
                     .on('click', (d) => {
-                        console.log(d.peid, d.kpid)
+                        let peid = d.peid
                         this.granularity_level[d.peid] = 'kp'
-                        d3.selectAll('.aggrRect')
-                        .style('fill', (d, i) => {
-                            let val = d.weight * 100 / this.max_weight * (100 - this.min)
-                            return d3.interpolateReds(val)
-                        })                    })
-                console.log("Number of processes more than half value: ", count)
+                        let max_kp_in_pe = 0
+                        let top_perc = 0.75
+                        d3.selectAll('#live-rect-pe-' + peid)
+                            .style('fill', d => {
+                                max_kp_in_pe = Math.max(d.weight, max_kp_in_pe)
+                                d.max_kp_in_pe = max_kp_in_pe
+                                return d3.interpolateGreys(Math.pow((d.weight) / (this.max_weight), 0.33)) 
+                            })                       
+                        this.$refs.LiveMatrixColormap.render(this.min_weight, 100)
+                    })
+
+                    this.clusterNodeWidth = this.matrixWidth / this.pes
+                    this.clusterNodeHeight = this.matrixHeight / this.pes
+
                 // Append the kp value indicators:
                 this.svg.selectAll('.clusterrectY' + idx)
                     .data(this.clusterIds)
                     .enter()
                     .append('rect')
                     .attrs({
-                        class: 'clusterrectY' + idx,
+                        class: 'clusterrectY' + idx + ' liveMatrix',
+                        "id": (d, i) => 'clusterrect-' + i,
                         'width': (d) => this.clusterNodeOffset,
-                        'height': (d) => this.nodeHeight,
+                        'height': (d) => this.clusterNodeHeight ,
                         'x': (d) => 0,
-                        'y': (d, i) => this.nodeHeight * (i) + this.clusterNodeOffset,
+                        'y': (d, i) => this.clusterNodeHeight * (i) + this.clusterNodeOffset,
                     })
                     .style('stroke-opacity', .3)
-                    .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
+                    .style('fill', (d, i) => this.$store.colorset[this.clusterIds[i]])
+                    .on('click', (d, i) => {
+                    })
 
                 this.svg.selectAll('.clusterrectX' + idx)
                     .data(this.clusterIds)
                     .enter()
                     .append('rect')
                     .attrs({
-                        class: 'clusterrectX' + idx,
-                        'width': (d) => this.nodeWidth,
+                        class: 'clusterrectY' + idx + ' liveMatrix',
+                        "id": (d, i) => 'clusterrect-' + i,
+                        'width': (d) => this.clusterNodeWidth,
                         'height': (d) => this.clusterNodeOffset,
-                        'x': (d, i) => this.nodeWidth * (i) + this.clusterNodeOffset,
+                        'x': (d, i) => this.clusterNodeWidth * (i) + this.clusterNodeOffset,
                         'y': (d, i) => 0,
                     })
                     .style('stroke-opacity', .3)
-                    .style('fill', (d, i) => this.colorSet[this.clusterIds[i]])
+                    .style('fill', (d, i) => this.$store.colorset[this.clusterIds[i]])
 
                 d3.select('.KpMatrix')
                     .call(adjacencyMatrix.xAxis);

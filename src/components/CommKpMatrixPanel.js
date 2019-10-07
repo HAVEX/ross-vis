@@ -1,6 +1,8 @@
 import template from '../html/CommKpMatrixPanel.html'
 import Communication from './Communication'
 import AggrKpMatrix from './AggrKpMatrix'
+import BaseKpMatrix from './BaseKpMatrix'
+import DiffKpMatrix from './DiffKpMatrix'
 import AggrMatrixColormap from './AggrMatrixColormap'
 import EventHandler from './EventHandler'
 import * as d3 from 'd3'
@@ -22,7 +24,9 @@ export default {
     components: {
         Communication,
         VueSlider,
-        AggrKpMatrix,
+        // AggrKpMatrix,
+        DiffKpMatrix,
+        BaseKpMatrix,
         AggrMatrixColormap
     },
     data: () => ({
@@ -70,35 +74,48 @@ export default {
             if (!self.track_cpds.includes(cpd) && cpd != undefined) {
                 console.log("New CPD: ", prev_cpd, cpd)
                 self.processForCommunication('interval')
-                EventHandler.$emit('fetch_kpmatrix_on_cpd', prev_cpd, cpd)
+                EventHandler.$emit('fetch_kpmatrix_on_interval_request', prev_cpd, cpd)
             }
         })
 
-        EventHandler.$on('fetch_kpmatrix_on_cpd_results', function (prev_cpd, cpd, matrix) {
+        EventHandler.$on('fetch_kpmatrix_on_interval', function (prev_cpd, cpd, data) {
             if (!self.track_cpds.includes(cpd)) {
-                self.data = matrix['aggr_comm']['incoming_df']
+                self.data = data['data']
+                self.kpData = data['aggr_kp_comm']
+                self.peData = data['aggr_pe_comm']
+                self.kpCount = data['kp_count']
+                self.peCount = data['pe_count']
+                self.maxComm = data['max_comm']
+                self.minComm = data['min_comm']
                 self.track_cpds.push(cpd)
                 self.visualize()
             }
             self.$store.play = 1
         })
 
-        EventHandler.$on('draw_kpmatrix_on_click', function (prev_cpd, cpd, Peid) {
-            if (!self.track_cpds.includes(cpd) && cpd != undefined) {
-                console.log("New CPD: ", prev_cpd, cpd)
-                self.processForCommunication('interval')
-                EventHandler.$emit('fetch_kpmatrix_on_click', prev_cpd, cpd, Peid)
-            }
+        EventHandler.$on('fetch_kpmatrix_on_base', function (data) {
+            self.data = data['data']
+            self.kpData = data['kp_comm']
+            self.peData = data['pe_comm']
+            self.kpCount = data['kp_count']
+            self.peCount = data['pe_count']
+            self.maxComm = data['max_comm']
+            self.minComm = data['min_comm']
+            self.visualize_base()
+            self.$store.play = 1
         })
 
-        EventHandler.$on('fetch_kpmatrix_on_click_results', function (cpd, matrix) {
-            if (!self.track_cpds.includes(cpd)) {
-                self.data = matrix['comm']['incoming_df']
-                self.track_cpds.push(cpd)
-                self.visualize()
-            }
+        EventHandler.$on('fetch_kpmatrix_on_cpd', function (data) {
+            self.data = data['data']
+            self.kpData = data['kp_comm']
+            self.peData = data['pe_comm']
+            self.kpCount = data['kp_count']
+            self.peCount = data['pe_count']
+            self.maxComm = data['max_comm']
+            self.minComm = data['min_comm']
+            self.visualize_cpd()
         })
-
+        
         EventHandler.$on('update_comm_max_weight', (max_weight) => {
             this.max_weight = max_weight
         })
@@ -108,102 +125,37 @@ export default {
     },
     methods: {
         init() {
-            this.$refs.AggrKpMatrix.init()
+            // this.$refs.AggrKpMatrix.init()
+            this.$refs.DiffKpMatrix.init()
+            this.$refs.BaseKpMatrix.init()
             this.$refs.AggrMatrixColormap.init()
 
-            this.showSliderText()
-        },
-
-        showSliderText() {
-            let width = 50;
-            let x_offset = 10
-            let y_offset = 10
-            let radius = 5
-            let padding = 10
-            let height = 20
-            d3.select('.sliderTextSVG').remove()
-            let svg = d3.select("#sliderText")
-                .append('svg')
-                .attrs({
-                    transform: `translate(${x_offset}, ${y_offset})`,
-                    "width": width,
-                    "height": height,
-                    "class": "sliderTextSVG"
-                })
-
-            let min = [0, 2000]
-            let text = svg.selectAll("text")
-                .enter()
-                .append("text")
-                .text(this.minComm)
-                .attrs({
-                    // "x": (d, i) => { return i * gap + 2 * radius + padding },
-                    // "y": (d, i) => { return radius + padding; },
-                    "font-family": "sans-serif",
-                    "font-size": 2 * radius + "px",
-                    "fill": "black"
-                })
-
-            // let text = svg.selectAll("text")
-            //     .enter()
-            //     .append("text")
-            //     .text(this.minComm)
-            //     .attrs({
-            //         // "x": (d, i) => { return i * gap + 2 * radius + padding },
-            //         // "y": (d, i) => { return radius + padding; },
-            //         "font-family": "sans-serif",
-            //         "font-size": 2 * radius + "px",
-            //         "fill": "black"
-            //     })
+            // this.showSliderText()
         },
 
         change(type, msg) {
             this.min = type
 
             d3.selectAll('.aggrRect')
-                // .style('fill-opacity', d => {
-                //     return (d.weight * 100) / (this.max_weight * (this.min))
-                // })
                 .style('fill', (d, i) => {
                     let val = d.weight * 100 / this.max_weight * (100 - this.min)
                     return d3.interpolateReds(val)
                 })
-
-            EventHandler.$emit('update_comm_min', this.min)
-        },
-
-        updateMarks(matrixData) {
-            let weights = []
-            let mark_points = []
-
-            for (let i = 0; i < matrixData.length; i += 1) {
-                this.max_weight = Math.max(this.max_weight, matrixData[i].weight)
-            }
-
-            if (!this.weights.includes(this.max_weight)) {
-                this.weights.push(this.max_weight)
-            }
-
-            weights = JSON.parse(JSON.stringify(this.weights))
-
-            for (let i = 0; i < weights.length; i += 1) {
-                let mark = (weights[i] / this.max_weight) * 100
-                mark_points.push(mark.toFixed(1))
-            }
-            this.mark_points = mark_points
         },
 
         visualize() {
-            if (this.data != null) {
+            if (this.kpData != null && this.peData != null) {
                 console.log('Communication Panel [init]', this.data)
-                let number_of_ids = this.data.length
+                let number_of_ids = this.kpData.length
                 for (let id = 0; id < number_of_ids; id += 1) {
                     for (let i = 0; i < number_of_ids; i += 1) {
                         if (this.kpMatrix[id] == undefined) {
                             this.kpMatrix[id] = []
                         }
+                        let pe_z = this.peData[Math.floor(id / this.kpCount)][Math.floor(i / this.kpCount)]
                         this.kpMatrix[id][i] = {
-                            z: this.data[id]['AggrCommData'][i],
+                            z: this.kpData[id][i],
+                            pe_z: pe_z,
                             id: this.processIds[i],
                             kpid: this.data[id]['Kpid'],
                             kpgid: this.data[id]['KpGid'],
@@ -211,10 +163,10 @@ export default {
                             cluster: this.clusterIds[i],
                             clusters: this.clusterIds,
                             changePoint: this.track_cpds[i],
-                            changeIdx: this.track_cpds.length - 1
+                            changeIdx: this.track_cpds.length - 1,
+                            max_comm: this.maxComm,
+                            min_comm: this.minComm
                         }
-                        this.minComm = Math.min(this.minComm, this.data[id]['CommData'][i])
-                        this.maxComm = Math.max(this.maxComm, this.data[id]['CommData'][i])
                     }
                 }
                 this.clear()
@@ -222,10 +174,99 @@ export default {
                 this.$refs.AggrKpMatrix.matrix = this.kpMatrix
                 this.$refs.AggrKpMatrix.clusterIds = this.clusterIds;
                 this.$refs.AggrKpMatrix.visualize()
-                this.$refs.AggrKpMatrix.update(this.max_weight)
+                this.$refs.AggrKpMatrix.update(this.maxComm)
 
             }
         },
+
+        visualize_base() {
+            if (this.kpData != null && this.peData != null) {
+                console.log(this.$store)
+                let number_of_ids = this.kpData.length
+                for (let id = 0; id < number_of_ids; id += 1) {
+                    for (let i = 0; i < number_of_ids; i += 1) {
+                        if (this.kpMatrix[id] == undefined) {
+                            this.kpMatrix[id] = []
+                        }
+                        let pe_x_index = Math.floor(id/this.kpCount)
+                        let pe_y_index = Math.floor(i/this.kpCount)
+                        // console.log(pe_x_index, pe_y_index)
+                        let pe_z = this.peData[pe_x_index][pe_y_index]
+                        
+                        let kpCommData = this.data[id]['CommData']
+                        // let index = id * this.kp_count + i
+                        let index = i
+                        this.kpMatrix[id][i] = {
+                            z: kpCommData[i],
+                            pe_z: pe_z,
+                            id: this.$store.result[this.$store.selectedDragTimeRound].processIds[i],
+                            kpid: this.data[index]['Kpid'],
+                            kpgid: this.data[index]['KpGid'],
+                            peid: this.data[index]['Peid'],
+                            cluster: this.$store.result[this.$store.selectedDragTimeRound].clusterIds[i],
+                            clusters: this.$store.result[this.$store.selectedDragTimeRound].clusterIds,
+                            maxComm: this.maxComm,
+                            minComm: this.minComm
+                        }
+                    }
+                }
+                this.clear()
+                // this.$refs.AggrMatrixColormap.render(this.minComm, this.maxComm)
+                this.$refs.BaseKpMatrix.matrix = this.kpMatrix
+                this.$refs.BaseKpMatrix.clusterIds = this.clusterIds;
+                this.$refs.BaseKpMatrix.visualize()
+                // this.$refs.BaseKpMatrix.update(this.maxComm)
+            }
+        },
+
+        visualize_cpd() {
+            if (this.kpData != null && this.peData != null) {
+                console.log(this.$store.currentCPDRound, this.$store.result)
+                if(this.$store.currentCPDRound in this.$store.result){
+                    this.$store.currentCPDRound = this.$store.currentCPDRound
+                }
+                else{
+                    this.$store.currentCPDRound = this.$store.currentCPDRound + 0.01
+                }
+                console.log(this.$store.currentCPDRound)
+                let number_of_ids = this.kpData.length
+                for (let id = 0; id < number_of_ids; id += 1) {
+                    for (let i = 0; i < number_of_ids; i += 1) {
+                        if (this.kpMatrix[id] == undefined) {
+                            this.kpMatrix[id] = []
+                        }
+                        let pe_x_index = Math.floor(id/this.kpCount)
+                        let pe_y_index = Math.floor(i/this.kpCount)
+                        // console.log(pe_x_index, pe_y_index)
+                        let pe_z = this.peData[pe_x_index][pe_y_index]
+                        
+                        let kpCommData = this.data[id]['CommData']
+                        // let index = id * this.kp_count + i
+                        let index = i
+                        this.kpMatrix[id][i] = {
+                            z: kpCommData[i],
+                            pe_z: pe_z,
+                            id: this.$store.result[this.$store.currentCPDRound].processIds[i],
+                            kpid: this.data[index]['Kpid'],
+                            kpgid: this.data[index]['KpGid'],
+                            peid: this.data[index]['Peid'],
+                            cluster: this.$store.result[this.$store.currentCPDRound].clusterIds[i],
+                            clusters: this.$store.result[this.$store.currentCPDRound].clusterIds,
+                            maxComm: this.maxComm,
+                            minComm: this.minComm
+                        }
+                    }
+                }
+                this.clear()
+                console.log(this.$refs)
+                this.$refs.DiffKpMatrix.matrix = this.kpMatrix
+                this.$refs.DiffKpMatrix.visualize()
+                this.$refs.AggrMatrixColormap.render(this.$refs.DiffKpMatrix.minPE, this.$refs.DiffKpMatrix.maxPE)
+                // this.$refs.BaseKpMatrix.update(this.maxComm)
+            }
+            // this.$store.play = 1
+        },
+
 
         clear() {
             this.$refs.AggrMatrixColormap.clear()

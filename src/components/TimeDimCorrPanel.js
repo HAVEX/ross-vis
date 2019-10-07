@@ -8,6 +8,8 @@ import D3TimeSeries from './D3TimeSeriesWithSummary'
 import D3Dimensionality from './D3Dimensionality'
 import LiveKpMatrix from './LiveKpMatrix'
 import Causality from './Causality'
+import adjacencyMatrixLayout from './d3-adjacency-matrix-layout'
+
 
 import EventHandler from './EventHandler.js'
 
@@ -235,7 +237,7 @@ export default {
 						this.clusterIds.push(parseInt(this.clusterMap[id]))
 					}
 				}
-				// console.log("Cluster IDs", this.clusterIds)
+				// this.$store.clusterIDs[time]
 			}
 		},
 
@@ -280,60 +282,54 @@ export default {
 		},
 
 		processLiveKpMatrix() {
-			for (let id in this.clusterMap) {
-				if (this.clusterMap.hasOwnProperty(id)) {
-					this.processIds.push(parseInt(id))
-					this.clusterIds.push(parseInt(this.clusterIds[id]))
+
+			// Parsing code for the KpGrid view.
+			this.data = this.commData['data']
+			this.kpData = this.commData['kp_comm']
+			this.peData = this.commData['pe_comm']
+			this.kpCount = this.commData['kp_count']
+			this.peCount = this.commData['pe_count']
+			this.maxComm = this.commData['max_comm']
+			this.minComm = this.commData['min_comm']
+
+			this.kpMatrix = []
+			if (this.kpData != null && this.peData != null) {
+				let number_of_ids = this.kpData.length
+				for (let id = 0; id < number_of_ids; id += 1) {
+					for (let i = 0; i < number_of_ids; i += 1) {
+						if (this.kpMatrix[id] == undefined) {
+							this.kpMatrix[id] = []
+						}
+						let pe_x_index = Math.floor(id / this.kpCount)
+						let pe_y_index = Math.floor(i / this.kpCount)
+						// console.log(pe_x_index, pe_y_index)
+						let pe_z = this.peData[pe_x_index][pe_y_index]
+
+						let kpCommData = this.data[id]['CommData']
+						// let index = id * this.kp_count + i
+						let index = i
+						this.kpMatrix[id][i] = {
+							z: kpCommData[i],
+							pe_z: pe_z,
+							// id: this.$store.result[this.$store.selectedDragTimeRound].processIds[i],
+							kpid: this.data[index]['Kpid'],
+							kpgid: this.data[index]['KpGid'],
+							peid: this.data[index]['Peid'],
+							// cluster: this.$store.result[this.$store.selectedDragTimeRound].clusterIds[i],
+							// clusters: this.$store.result[this.$store.selectedDragTimeRound].clusterIds,
+							maxComm: this.maxComm,
+							minComm: this.minComm
+						}
+					}
 				}
 			}
 
-			// Parsing code for the KpGrid view.
-			let kp_comm = this.commData['kp_comm']
-			let pe_comm = this.commData['pe_comm']
-			let kp_count = this.commData['kp_count']
-			let pe_count = this.commData['pe_count']
-
-			// console.log(pe_comm, pe_comm.length, pe_comm[0].length)
-			
-			let kpMatrix = []
-			let mat = []
-			kp_comm.map((comm, kp) => {
-				if (mat[kp] == undefined) {
-					mat[kp] = []	
-				}
-				let comm_data = comm['CommData']
+			this.adjacencyMatrix = adjacencyMatrixLayout()
+                .size([this.$store.matrixWidth, this.$store.matrixHeight])
+                .useadj(true)
+				.adj(this.kpMatrix)		
 				
-				for (let i = 0; i < comm_data.length; i += 1) {
-					if (kpMatrix[kp] == undefined) {
-						kpMatrix[kp] = []
-					}
-					let pe_z = pe_comm[comm['Peid']][Math.floor(i/kp_count)]
-					// console.log(pe_z, pe_comm[comm['Peid']], comm['Peid'], Math.floor(i/kp_count))
-					kpMatrix[kp][i] = {
-						z: comm_data[i],
-						id: this.processIds[i],
-						cluster: this.clusterIds[i],
-						kpid: comm['Kpid'],
-						kpgid: comm['KpGid'],
-						peid: comm['Peid'],
-						pe_z: pe_z, 
-					}
-					mat[kp][i] = comm_data[i]
-				}
-			})
-
-			this.kpMatrix[0] = kpMatrix
-
-			// let x = reorder.order()
-			// 	.distance(reorder.distance.jaccard)
-			// 	.limits(1, 7)(mat);
-
-			// let new_kpMatrix = []
-			// for(let i = 0; i < x.length; i += 1){
-			// 	new_kpMatrix[i] = kpMatrix[x[i]]
-			// }
-			
-			// this.kpMatrix[0] = new_kpMatrix
+			this.adjMatrix = this.adjacencyMatrix()
 		},
 
 		tick() {
@@ -360,7 +356,7 @@ export default {
 						// let micro_result = this.processClusterData(result, 'micro')
 						this.causality_result = this.processCausalityData(data['result'])
 
-						console.log(result)
+						// console.log(result)
 
 						this.cpd = result[0]['cpd']
 
@@ -375,10 +371,31 @@ export default {
 							// this.micro_result = this.processD3TimeSeries(this.micro_result, 'id')
 							// this.macro_result = this.processD3TimeSeries(this.macro_result, 'id')
 						}
+
 						this.processLiveKpMatrix()
 						this.processClusterIDs()
 						this.reset()
 						// this.checkClustering()
+					}
+					let currentSample = result[0]['normal_times'][result[0]['normal_times'].length - 1]
+					let currentSample_round = Math.floor(currentSample)
+
+					this.$store.result[currentSample_round] = {
+						'PC0': result[0]['PC0'],
+						'PC1': result[0]['PC1'],
+						'cpd': result[0]['cpd'],
+						'from_IR_1': result[0]['from_IR_1'],
+						'from_VD_1': result[0]['from_VD_1'],
+						'from_causality': result[0]['from_causality'],
+						'from_metrics': result[0]['from_metrics'],
+						'clusterIds': this.clusterIds,
+						'processIds': this.processIds,
+						'to_IR_1': result[0]['to_IR_1'],
+						'to_VD_1': result[0]['to_VD_1'],
+						'to_causality': result[0]['to_causality'],
+						'to_metrics': result[0]['to_metrics'],
+						'to_causality': result[0]['to_causality'],
+						'communication': this.adjMatrix,
 					}
 				}
 				else {
@@ -450,9 +467,7 @@ export default {
 						this.$refs.TimeSeries.initVis(this.normal_result)
 						this.$refs.Dimensionality.initVis(this.pca_result)
 					}
-					this.$refs.LiveKpMatrix.matrix = this.kpMatrix
-					this.$refs.LiveKpMatrix.clusterIds = this.clusterIds
-					// this.$refs.LiveKpMatrix.visualize(0)
+
 				}
 				this.initVis = true
 			}
@@ -496,7 +511,7 @@ export default {
 			}
 			else {
 				this.$refs.Dimensionality.selectedMetrics = this.plotMetric
-				this.$refs.Dimensionality.colorSet = this.colorSet
+				this.$refs.Dimensionality.colorSet = this.$store.colorset
 				this.$refs.Dimensionality.colorBy = 'cluster'
 				this.$refs.Dimensionality.visualize()
 			}

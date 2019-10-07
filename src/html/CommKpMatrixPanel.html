@@ -1,35 +1,17 @@
 <v-layout row wrap>
-    <v-flex xs12>
+    <v-flex xs2>
+        <BaseKpMatrix ref="BaseKpMatrix"/>
+    </v-flex>
+    <v-flex xs10>
         <v-layout row wrap class='panel'>
             <v-flex class="chip-container">
-                <v-chip id="communication-chip" class="chip"> {{ message }} </v-chip>
-            </v-flex>
-            <v-flex xs5>
-                    <div id="sliderLabels"></div>
-                    <vue-slider
-                        width="200px"
-                        :order="false"
-                        :marks="mark_points"
-                        :process="true"
-                        @change="change"
-                        style="display: inline-block; margin: 10px 0px 10px 70px;" 
-                        v-model="value">
-                        <template v-slot:label="{ label, active }">
-                            <div :class="['vue-slider-mark-label', 'custom-label', { active }]">{{ label }}</div>
-                        </template>
-                    </vue-slider>
+                <v-chip id="communication-chip" class="chip"> Diff Communication View </v-chip>
             </v-flex>
             <v-flex xs5>
                 <AggrMatrixColormap ref="AggrMatrixColormap"/>
-            </v-flex>            
+            </v-flex>          
         </v-layout>
-        <AggrKpMatrix ref="AggrKpMatrix" />
+        <DiffKpMatrix ref="DiffKpMatrix"/>
+        <!-- <AggrKpMatrix ref="AggrKpMatrix" /> -->
     </v-flex>
 </v-layout> 
-<!-- 
-<v-card :id="id">
-    <v-layout class="chip-container">
-        <v-chip class="chip"> {{ message }} </v-chip>
-        <LiveMatrixColormap ref="LiveMatrixColormap"/>
-    </v-layout>
-</v-card> -->

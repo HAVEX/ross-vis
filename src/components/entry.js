@@ -17,7 +17,7 @@ export default {
 		streamData: null,
 		commData: null,
 		hocData: null,
-		appName: 'Streaming ROSS Visual Analytics',
+		appName: 'Streaming ROSS Visual Analytic Framework',
 		socketError: false,
 		server: 'localhost:8899',
 		modes: ['Post Hoc', 'In Situ'],
@@ -28,8 +28,11 @@ export default {
 		selectedGranularity: 'Kp',
 		GranID: ['Peid', 'KpGid', 'Lpid'],
 		selectedGranID: null,
+		selectedGranID: null,
+		plotMetricAlias1: 'Sec. Rb.',
 		plotMetric1: 'RbSec',
-		plotMetric2: 'NetworkSend',
+		plotMetricAlias2: 'Prim. Rb.',
+		plotMetric2: 'RbPrim',
 		similarity: ['euclidean'],
 		selectedSimilarity: 'euclidean',
 		clustering: ['evostream', 'dbstream'],
@@ -51,10 +54,12 @@ export default {
 		play: 1,
 		update: 1,
 		request: 0,
-		calcMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbTime', 'NeventRb', 'RbTotal'],
-		// calcMetrics: ['RbSec'],
-		causalityMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'NeventRb', 'RbSec', 'RbTime', 'RbTotal'],
-		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbTotal', 'RbPrim'],
+		calcMetrics:['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbPrim'],
+		calcMetricsAlias: ['Net. Recv.', 'Net. Send.', 'Num. Events.', 'Sec. Rb.', 'Prim. Rb.'],
+		// causalityMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbTime', 'RbTotal'],
+		causalityMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'NeventRb', 'RbTotal', 'RbPrim'],
+		clusterMetrics: ['NetworkRecv', 'NetworkSend', 'NeventProcessed', 'RbSec', 'RbPrim'],
+		selectedClusterMetricAlias: 'Sec. Rb.',
 		selectedClusterMetric: 'RbSec',
 		numberOfClusters: 3,
 		selectedNumberOfClusters: 3,
@@ -62,8 +67,20 @@ export default {
 		thresholdValue: 0,
 		showIntraComm: false,
 		causality: ['from', 'to'],
-		selectedCausality: 'to',
+		selectedCausality: 'from',
 		drawBrush: true,
+		dialog: true,
+		config: ['8-16-100', '8-16-500', '8-16-1000'],
+		selectedConfig: '8-16-100',
+		topology: ['DragonFly', 'Slim-Fly', 'Fat-Tree'],
+		selectedTopology: 'DragonFly',
+		nameRevMapper: {
+			"Net. Recv.": "NetworkRecv",
+			"Net. Send.": "NetworkSend",
+			"Num. Events": "NeventProcessed",
+			"Prim. Rb.": "RbPrim",
+			"Sec. Rb.": "RbSec",
+		},
 	}),
 
 	watch: {
@@ -78,7 +95,7 @@ export default {
 	mounted: function () {
 		let self = this
 
-		EventHandler.$on('fetch_kpmatrix_on_cpd', function (prev_cpd, cpd) {
+		EventHandler.$on('fetch_kpmatrix_on_interval_request', function (prev_cpd, cpd) {
 			let interval = []
 			interval.push(prev_cpd)
 			interval.push(cpd)
@@ -104,6 +121,44 @@ export default {
 			// }
 		})
 
+
+		EventHandler.$on('fetch_kpmatrix_on_live_request', function (current_time) {
+			console.log('Fetching comm data for live', current_time)
+			let obj = {
+				metric: this.calcMetrics,
+				socket_request: 'comm-data-live',
+				granularity: this.granularity,
+				current_time: current_time
+			}
+			self.socket.send(JSON.stringify(obj))
+			console.log("Request: ", obj)
+		})
+		
+
+		EventHandler.$on('fetch_kpmatrix_on_base_request', function (base_time) {
+			console.log('Fetching comm data for base', base_time)
+			let obj = {
+				metric: this.calcMetrics,
+				socket_request: 'comm-data-base',
+				granularity: this.granularity,
+				base_time: base_time
+			}
+			self.socket.send(JSON.stringify(obj))
+			console.log("Request: ", obj)
+		})
+
+		EventHandler.$on('fetch_kpmatrix_on_cpd_request', function (cpd) {
+			console.log('Fetching comm data for diff', cpd)
+			let obj = {
+				metric: this.calcMetrics,
+				socket_request: 'comm-data-cpd',
+				granularity: this.granularity,
+				cpd: cpd,
+			}
+			self.socket.send(JSON.stringify(obj))
+			console.log("Request: ", obj)
+		})
+
 		EventHandler.$on('fetch_kpmatrix_on_click', function (prev_cpd, cpd) {
 			let interval = []
 			interval.push(prev_cpd)
@@ -125,19 +180,31 @@ export default {
 				self.request = 0
 			}
 		})
-
-		this.init()
 	},
 
 	methods: {
 		init() {
 			//set initial variables.
+			this.dialog = false
+			this.plotMetric1 = this.nameRevMapper[this.plotMetricAlias1]
+			this.plotMetric2 = this.nameRevMapper[this.plotMetricAlias2]
+			this.$store.plotMetric1 = this.plotMetric1
+			this.$store.plotMetric2 = this.plotMetric2
+			this.selectedClusterMetric = this.nameRevMapper[this.selectedClusterMetricAlias]
 			this.socket = new WebSocket('ws://' + this.server + '/websocket')
 			this.method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
 			this.selectedGranID = this.correctGranID()
 			this.$store.selectedClusterMetric = this.selectedClusterMetric
 			this.fetchTsData()
 			this.$store.play = 1
+			this.$store.result = {}
+			this.$store.selectedDragTime = 0
+			this.$store.selectedDragTimeRound = Math.floor(this.$store.selectedDragTime)
+			this.$store.cpdMatrix = []
+			this.$store.colorset = ['#59A14E', '#AF7AA1', '#F18F2C']
+			this.$store.cpdLineColor = '#00D8E2'
+			this.$store.dragLineColor = '#17BECF'
+			
 		},
 
 		// Take incorrect id and add correct post-id
@@ -157,10 +224,14 @@ export default {
 			this.play = 1
 			this.update = 1
 			this.request = 0
+			EventHandler.$emit('init', this.$store.selectedDragTime)
+			EventHandler.$emit('clear_dragger', this.$store.selectedDragTime)
+
 			this.fetchTsData()
 		},
 
 		updatePause() {
+			EventHandler.$emit('init_dragger', this.$store.selectedDragTime)
 			this.$store.play = 0
 			this.play = 0
 		},
@@ -197,19 +268,23 @@ export default {
 
 		updatePlotMetric1() {
 			Vue.nextTick(() => {
+				this.plotMetric1 = this.nameRevMapper[this.plotMetricAlias1]
+				this.$store.plotMetric1 = this.plotMetric1
 				console.log("Change in metric detected : [", this.plotMetric1, "]")
 				this.clear()
+				this.$refs.StreamBoard.updatePlotMetric1()
 				EventHandler.$emit('change_label')
-				this.$refs.StreamBoard.update()
 			})
 		},
 
 		updatePlotMetric2() {
 			Vue.nextTick(() => {
+				this.plotMetric2 = this.nameRevMapper[this.plotMetricAlias2]
+				this.$store.plotMetric2 = this.plotMetric2
 				console.log("Change in metric detected : [", this.plotMetric2, "]")
 				this.clear()
+				this.$refs.StreamBoard.updatePlotMetric2()
 				EventHandler.$emit('change_label')
-				this.$refs.StreamBoard.update()
 			})
 		},
 
@@ -222,7 +297,7 @@ export default {
 				console.log("Change in metric detected : [", this.selectedClusterMetric, "]")
 				this.clear()
 				this.$refs.StreamBoard.updateLabels = true;
-				this.$refs.StreamBoard.update()
+				this.$refs.StreamBoard.updateClusterMetric()
 			})
 		},
 
@@ -255,12 +330,12 @@ export default {
 				count = this.count
 			}
 
-			// Toggle off the request mode explicitly if it is on.
-			if(this.request == 1){
-				this.request = 0
-				this.$store.play = 1
-				this.play = 1
-			}
+			// // Toggle off the request mode explicitly if it is on.
+			// if(this.request == 1){
+			// 	this.request = 0
+			// 	this.$store.play = 1
+			// 	this.play = 1
+			// }
 			
 			let obj = {
 				data: this.selectedGranularity + 'Data',
@@ -319,32 +394,64 @@ export default {
 
 			this.socket.onmessage = (event) => {
 				let data = JSON.parse(event.data)
-				let d = data
-				this.metrics = Object.keys(d['RbSec'].schema)
-				this.commData = d.comm
-				console.log("Incoming data: ", this.count, d)
-				this.streamData = data
-				if (this.count == 1) {
-					this.$refs.StreamBoard.init()
-				}
-				else if (this.count > 2) {
-					this.$refs.StreamBoard.update()
-				}
-				if (this.update == -1) {
-					this.update = 1
-					this.count -= 1
-					this.$store.play = 0
-					this.play = 0
-				}
-				else {
-					this.count += 1
+				console.log("Incoming data: ", this.count, data)
+
+
+				// Get updates data.
+				if('views' in data){
+					this.streamData = null
+					if('aggr_comm' in data){
+						console.log("Aggr comm data", data['aggr_comm'])
+						EventHandler.$emit('fetch_kpmatrix_on_interval', this.prev_cpd, this.cpd, data['aggr_comm'])
+					}
+	
+					if('base_comm' in data){
+						console.log("Base comm data", data['base_comm'])
+						EventHandler.$emit('fetch_kpmatrix_on_base', data['base_comm'])
+					}
+	
+					if('cpd_comm' in data){
+						console.log("Diff comm data", data['cpd_comm'])
+						EventHandler.$emit('fetch_kpmatrix_on_cpd', data['cpd_comm'])
+					}	
+
+					if('current_comm' in data){
+						console.log("Current comm data", data['current_comm'])
+						EventHandler.$emit('fetch_kpmatrix_on_current', data['current_comm'])	
+					}
 				}
 
-				if (this.$store.play == 1) {
-					this.fetchTsData()
-				}
-				if('aggr_comm' in this.streamData){
-					EventHandler.$emit('fetch_kpmatrix_on_cpd_results', this.prev_cpd, this.cpd, data)
+				// Get streaming high dimensional data. 
+				else{
+					this.streamData = data
+					this.commData = data.comm
+					if (this.count == 1) {
+						this.$refs.StreamBoard.init()
+					}
+					else if (this.count > 2) {
+						this.$refs.StreamBoard.update()
+					}
+
+					if (this.count == 4){
+						this.$store.selectedDragTime = data.RbSec['result'][0]['normal_times'][2]
+						this.$store.selectedDragTimeRound = Math.floor(this.$store.selectedDragTime)
+						console.log('Base time:', this.$store.selectedDragTime)
+						EventHandler.$emit('init_base_communication')
+					}
+					
+					if (this.update == -1) {
+						this.update = 1
+						this.count -= 1
+						this.$store.play = 0
+						this.play = 0
+					}
+					else {
+						this.count += 1
+					}
+	
+					if (this.$store.play == 1) {
+						this.fetchTsData()
+					}	
 				}
 			}
 		},

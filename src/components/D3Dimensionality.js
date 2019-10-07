@@ -12,7 +12,6 @@ export default {
         config: null,
         vis: null,
         colorBy: null,
-        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         zoomed: false,
         xMin: 0,
         xMax: 0,
@@ -32,7 +31,7 @@ export default {
             let chipContainerHeight = document.getElementById('chip-container').clientHeight
 
             this.width = visContainer.clientWidth
-            this.height = (dashboardHeight - toolbarHeight - chipContainerHeight)/ 3 
+            this.height = (dashboardHeight - toolbarHeight - chipContainerHeight) / 3
             this.padding = { left: 50, top: 0, right: 50, bottom: 30 }
             this.x = d3.scaleLinear().range([0, this.width]);
             this.y = d3.scaleLinear().range([this.height, 0]);
@@ -141,14 +140,15 @@ export default {
                 .enter()
                 .append('circle')
                 .attrs({
-                    class: (d) => { return 'dot' + d[3] + ' circle' + this.id },
-                    stroke: (d) => { return self.colorSet[d[2]] },
+                    class: (d) => { return 'dot' + ' circle' + this.id },
+                    id: (d) => { return 'dot' + d[3] },
+                    stroke: (d) => { return this.$store.colorset[d[2]] },
                     r: (d) => {
-                        if(Object.entries(ts).length < 16) return 6.0
-                        else return 3.0
+                        if (Object.entries(ts).length < 16) return 6.0
+                        else return 4.5
                     },
                     'stroke-width': 1.0,
-                    fill: (d) => { return self.colorSet[d[2]] },
+                    fill: (d) => { return this.$store.colorset[d[2]] },
                     id: (d) => { return 'dot' + d[3] },
                     cx: (d, i) => { return self.x(d[0]) },
                     cy: (d) => { return self.y(d[1]) },
@@ -172,10 +172,15 @@ export default {
         // Interaction functions
         // ====================================
         lassoStart() {
+            d3.selectAll('.dot')
+                .attrs({
+                    opacity: 1,
+                })
+
             this.lasso.items()
                 .attr("r", (d) => {
-                    if(Object.entries(this.ts).length < 16) return 6.0
-                    else return 3.0
+                    if (Object.entries(this.ts).length < 16) return 6.0
+                    else return 4.5
                 }) // reset size
                 .classed("not_possible", true)
                 .classed("selected", false);
@@ -194,9 +199,19 @@ export default {
         },
 
         lassoEnd() {
-            d3.selectAll('circle')
+            d3.selectAll('.dot')
                 .attrs({
-                    opacity: 0.5,
+                    opacity: 0.3,
+                })
+
+            d3.selectAll('.liveMatrix')
+                .attrs({
+                    opacity: 0.5
+                })
+
+            d3.selectAll('.live-rect')
+                .style('fill-opacity', d => {
+                    return (d.weightAggr) / (this.$store.liveMax)
                 })
 
             this.selectedIds = []
@@ -209,26 +224,49 @@ export default {
             this.lasso.selectedItems()
                 .classed("selected", true)
                 .attr("r", (d) => {
-                    if(Object.entries(this.ts).length < 16) return 6.0
-                    else return 3.0
+                    if (Object.entries(this.ts).length < 16) return 6.0
+                    else return 6.0
                 })
                 .attr("id", (d) => { this.selectedIds.push(d[3]) })
                 .attr("opacity", 1)
 
             // Reset the style of the not selected dots
             this.lasso.notSelectedItems()
-                .attr("r", 3)
+                .attr("r", 4.5)
                 .attr("opacity", 0.5);
-
+            
             this.$parent.selectedIds = this.selectedIds
-
+            this.$store.selectedIds = this.selectedIds
+            console.log(this.selectedIds)
             for (let i = 0; i < this.selectedIds.length - 1; i += 1) {
-                d3.selectAll('[class="dot' + this.selectedIds[i] + '"]')
+                d3.selectAll('#dot' + this.selectedIds[i])
                     .classed('selected', true)
                     .attrs({
                         opacity: 1,
+                        r: 6.0
+                    })
+
+                d3.selectAll('#clusterrect-' + this.selectedIds[i])
+                    .attrs({
+                        opacity: 1
+                    })
+                let peid = Math.floor(this.selectedIds[i]/16)
+                // d3.selectAll('#live-rect-pe-' + peid)
+                //     .style('fill-opacity', d => {
+                //         return Math.pow(d.weight/this.$store.liveMax, 0.33)
+                //     })
+                //     // .style('fill', 'red')
+
+                d3.selectAll('.live-rect-kp-' + this.selectedIds[i])
+                    .attr('fill', (d, i)  => {
+                        if(d.peid == peid){
+                            return d3.interpolateGreys(Math.pow(d.weight/this.$store.liveMax, 0.33))
+                        }
+                        else
+                            return d3.interpolateGreys(0)
                     })
             }
+
         },
 
         zoom() {

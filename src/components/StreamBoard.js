@@ -69,16 +69,36 @@ export default {
 			// this.$refs.CommKpMatrixPanel.clear()
 		},
 
-		update() {
-			let stream_obj = this.streamData
-			if (stream_obj != null && Object.keys(stream_obj).length !== 1) {
-				this.plotData1 = stream_obj[this.plotMetric1]
-				this.plotData2 = stream_obj[this.plotMetric2]
+		update(){
+			if (this.streamData != null && Object.keys(this.streamData).length !== 1) {
+				this.plotData1 = this.streamData[this.plotMetric1]
+				this.plotData2 = this.streamData[this.plotMetric2]
 				this.metrics = [this.plotMetric1, this.plotMetric2]
 				// Create this.processIds, this.clusterIds for Communication panel
-				this.clusterMap = this.calculateClusterMap(stream_obj, this.clusterMetric)
+				this.clusterMap = this.calculateClusterMap(this.streamData, this.clusterMetric)
 			}
 			// this.$refs.CommKpMatrixPanel.update()
+		},
+
+		updatePlotMetric1() {
+			if (this.streamData != null && Object.keys(this.streamData).length !== 1) {
+				this.plotData1 = this.streamData[this.plotMetric1]
+				// this.plotData2 = this.streamData[this.plotMetric2]
+				this.metrics = [this.plotMetric1, this.plotMetric2]
+				// Create this.processIds, this.clusterIds for Communication panel
+				this.clusterMap = this.calculateClusterMap(this.streamData, this.clusterMetric)
+				this.$refs.TimeDimCorrPanel1.plotMetric = this.plotMetric1
+			}
+			// this.$refs.CommKpMatrixPanel.update()
+		},
+
+		updatePlotMetric2() {
+			if (this.streamData != null && Object.keys(this.streamData).length !== 1) {
+				this.plotData2 = this.streamData[this.plotMetric2]
+				this.clusterMap = this.calculateClusterMap(this.streamData, this.clusterMetric)
+				this.metrics = [this.plotMetric1, this.plotMetric2]
+				this.$refs.TimeDimCorrPanel2.plotMetric = this.plotMetric2
+			}
 		},
 
 		updateMetrics(metrics) {
@@ -86,12 +106,16 @@ export default {
 			this.update()
 		},
 
+		updateClusterMetric(metric){
+			
+		},
+
 		// Because most results are being dumped to [0] th element of array.
 		calculateClusterMap(data, clusterMetric) {
 			let ret = {}
 			let clusterType = 'normal'
 			let zero_index_data = data[clusterMetric]['result'][0]
-			if (zero_index_data[clusterType] != undefined){
+			if (zero_index_data[clusterType] != undefined) {
 				for (let i = 0; i < zero_index_data[clusterType].length; i += 1) {
 					let _data = zero_index_data[clusterType][i]
 					let _cluster = zero_index_data[clusterType + '_clusters'][i]
@@ -102,12 +126,7 @@ export default {
 					}
 				}
 			}
-			
 			return ret
 		},
-
-		// createKpMatrix(data){
-		// 	this.$refs.comm
-		// }
 	}
 }

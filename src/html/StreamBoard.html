@@ -25,6 +25,7 @@
     
     <CommKpMatrixPanel ref="CommKpMatrixPanel"
     id="panel3"
+    v-show="isTsDataLoaded"
     v-bind:metrics="metrics"
     v-bind:time-domain="timeDomain"
     v-bind:measure="measure" 

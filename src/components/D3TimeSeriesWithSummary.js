@@ -28,13 +28,12 @@ export default {
         yMin: 0,
         yMax: 0,
         isLabelled: false,
-        colorSet: ["#5576A5", "#E8CA4F", "#AB769F"],
         brushes: [],
         cpds: [],
         prev_cpd: 0,
         message: "Performance Behavior view",
         showMessage: true,
-        timepointMoveThreshold: 15,
+        timepointMoveThreshold: 75,
         actualTime: [],
         clusterMap: {},
         cluster: [],
@@ -61,8 +60,19 @@ export default {
             yTitle: 20,
             navChart: 70
         },
+        nameMapper: {
+            "NetworkRecv": "Net. Recv.",
+            "NetworkSend": "Net. Send.",
+            "NeventProcessed": "Num. Events",
+            "RbSec": "Sec. Rb.",
+            "RbPrim": "Prim. Rb.",
+            "LastGvt": "Last GVT",
+            "RealTs": "Real Time",
+            "VirtualTs": "Virtual Time"
+        },
         currentMovingAvg: 0,
         movingAvgTs: {},
+        navDrag: false,
     }),
     watch: {
         selectedIds: function (val) {
@@ -92,13 +102,25 @@ export default {
                     .attrs({
                         opacity: 1,
                         'stroke-width': 1.5,
-                        stroke: this.colorSet[this.cluster[val[i]]],
+                        stroke: this.$store.colorset[this.cluster[val[i]]],
                     })
             }
         },
     },
     mounted() {
         this.id = 'time-overview' + this._uid
+
+        let self = this
+        EventHandler.$on('init_dragger', function () {
+            // if(self.$parent.plotMetric == 'RbSec'){
+            if(self.$store.selectedClusterMetric == self.$parent.plotMetric){
+                self.initNavDrag()
+            }
+        })
+
+        EventHandler.$on('clear_dragger', function () {
+            self.clearNavDrag()
+        })
     },
     methods: {
         init() {
@@ -190,18 +212,24 @@ export default {
                 }
             }
 
-            if (cpd == 1 && this.selectedMetrics) {
-                let current_cpd_idx = this.$parent.stream_count + 1
+            // if(cpd == 1 && this.$parent.plotMetric == 'RbSec'){
+            if (cpd == 1 && this.$store.selectedClusterMetric == this.$parent.plotMetric) {
+                let current_cpd_idx = this.$parent.stream_count - 1
                 let current_cpd = this.actualTime[this.actualTime.length - 1]
-                console.log(this.actualTime, current_cpd_idx, current_cpd)
-                console.log('=================================================')
-                console.log("Getting the communication matrix: ", this.prev_cpd, current_cpd )
-                EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
+                // Toggle this for 
+                // console.log('=================================================')
+                // console.log("Getting the communication matrix: ", this.prev_cpd, current_cpd )
+                // EventHandler.$emit('draw_kpmatrix_on_cpd', this.prev_cpd, current_cpd)
+                EventHandler.$emit('fetch_kpmatrix_on_cpd_request', current_cpd)
+                this.$store.currentCPD = current_cpd
+                this.$store.currentCPDRound = Math.floor(current_cpd)
+                console.log("Change point in store is:", this.$store.currentCPD)
                 this.prev_cpd = current_cpd
                 this.cpds.push(current_cpd_idx)
             }
 
-            // this.drawDragLine()
+            this.drawCPDs()
+            this.drawCPDLabels()
 
             this.clearMainView()
             this.drawMainView(ts)
@@ -210,8 +238,9 @@ export default {
             this.drawNavView(cpd)
 
             this.drawClusterLabels()
-
-            this.drawCPDs()
+            
+            this.clearCPDLabels()
+            // this.drawCPDLabels()
         },
 
         // Visualize cluster labels.
@@ -236,11 +265,11 @@ export default {
                 .append("g");
 
             let circles = svg.selectAll("circle")
-                .data(this.colorSet)
+                .data(this.$store.colorset)
                 .enter().append("circle")
                 .style("stroke", "gray")
                 .style("fill", (d, i) => {
-                    return this.colorSet[i]
+                    return this.$store.colorset[i]
                 })
                 .attrs({
                     "r": (d, i) => { return radius },
@@ -249,7 +278,7 @@ export default {
                 })
 
             let text = svg.selectAll("text")
-                .data(this.colorSet)
+                .data(this.$store.colorset)
                 .enter()
                 .append("text")
                 .text((d, i) => { return "Cluster-" + i + ' (' + this.clusterMap[i] + ')' })
@@ -265,7 +294,11 @@ export default {
 
         initLine() {
             this.line = d3.line()
-                .x((d, i) => this.x(this.windowActualTime[i]))
+                .x((d, i) => {
+                    // let windowActualTime = this.windowActualTime.splice(this.windowActualTime.length -1 , 1)
+                    // console.log(windowActualTime)
+                    return this.x(this.windowActualTime[i])
+                })
                 .y((d) => this.y(d));
 
             this.navLine = d3.line()
@@ -287,11 +320,12 @@ export default {
                 .tickPadding(10)
                 .tickFormat((d, i) => {
                     let temp = d;
-                    if (i % 2 == 0) {
-                        let value = temp / 1000
-                        return `${xFormat(value)}k`
-                    }
-                    return '';
+                    // if (i % 2 == 0) {
+                    let value = Math.round(temp)
+                    // return `${xFormat(value)}k`
+                    // }
+                    // return '';
+                    return value
                 })
 
             const yFormat = d3.format('0.1s')
@@ -387,15 +421,38 @@ export default {
                     transform: `translate(${(this.width / 2)}, ${this.height - this.padding.top})`
                 })
                 .style("text-anchor", "middle")
-                .text(this.selectedTimeDomain);
-
+                .text((d, i) => {
+                    if (this.selectedTimeDomain in this.nameMapper) {
+                        return this.nameMapper[this.selectedTimeDomain]
+                    }
+                    else {
+                        return this.selectedTimeDomain
+                    }
+                })
             this.svg.append("text")
                 .attrs({
                     "class": "axis-labels",
                     transform: `translate(${0}, ${this.height / 2}) rotate(${90})`,
                 })
                 .style("text-anchor", "middle")
-                .text(this.$parent.plotMetric)
+                .text((d, i) => {
+                    if(this.$parent.panelId == '2'){
+                        if (this.$store.plotMetric2 in this.nameMapper) {
+                            return this.nameMapper[this.$store.plotMetric2]
+                        }
+                        else {
+                            return this.$store.plotMetric2
+                        }
+                    }
+                    if(this.$parent.panelId == '1'){
+                        if (this.$store.plotMetric1 in this.nameMapper) {
+                            return this.nameMapper[this.$store.plotMetric1]
+                        }
+                        else {
+                            return this.$store.plotMetric1
+                        }
+                    }                    
+                })
         },
 
         // Draw change point detection lines. 
@@ -408,9 +465,22 @@ export default {
             for (let i = 0; i < this.cpds.length; i += 1) {
                 cpdNavPoints.push(this.actualTime[this.cpds[i]])
                 let cpdTime = this.actualTime[this.cpds[i]]
-                let windowStartTime = this.actualTime[this.actualTime.length - this.timepointMoveThreshold]
+                
+                // Move threshold can make the index negative. 
+                let moveThreshold = 0
+                if(this.actualTime.length < this.timepointMoveThreshold){
+                    moveThreshold = this.actualTime.length
+                }
+                else{
+                    moveThreshold = this.timepointMoveThreshold
+                }
+ 
+                // Windowing lets the cpds behind vanish off. 
+                let windowStartTime = this.actualTime[this.actualTime.length - moveThreshold]
                 let windowEndTime = this.actualTime[this.actualTime.length - 1]
-                if(cpdTime >= windowStartTime && cpdTime < windowEndTime){
+
+                // Push the cpd into cpdPoints only if it is inside the window. 
+                if (cpdTime >= windowStartTime && cpdTime < windowEndTime) {
                     cpdPoints.push(this.actualTime[this.cpds[i]])
                 }
             }
@@ -420,8 +490,8 @@ export default {
                 return el != undefined;
             });
 
-            console.log("Change points in Main View", cpdPoints)
-            console.log("Change points in Nav view", cpdNavPoints)
+            // console.log("Change points in Main View", cpdPoints)
+            // console.log("Change points in Nav view", cpdNavPoints)
 
             this.mainSvg.selectAll('cpdline')
                 .data(cpdPoints)
@@ -434,8 +504,10 @@ export default {
                     'x2': (d) => { return this.x(d) },
                     'y2': this.mainHeight - this.padding.bottom,
                 })
-                .style('stroke', '#DA535B')
+                .style('stroke', this.$store.cpdLineColor)
                 .style('stroke-width', '3.5px')
+                .style('border-style', 'dashed')
+                .style('border', '1px solid #f7f7f7')
                 .style('z-index', 100)
 
 
@@ -450,32 +522,63 @@ export default {
                     'x2': (d) => { return this.navX(d) },
                     'y2': this.navHeight - this.navPadding.bottom,
                 })
-                .style('stroke', '#DA535B')
+                .style('stroke', this.$store.cpdLineColor)
                 .style('stroke-width', '3.5px')
                 .style('z-index', 100)
         },
 
-        // Draw a drag line to travel in the past.
-        // Use case is to be able to see what clustering was there previously.
-        drawDragLine() {
-            d3.selectAll('.dragline' + this.id).remove()
+        clearCPDLabels() {
+            this.navSvg.selectAll('.cpdnavlabel').remove()
+            this.navSvg.selectAll('.cpdNavLabelText').remove()
+        },
 
-            let xPoints = [0];
+        drawCPDLabels() {
+            let cpdLabelPoints = []
+            for (let i = 0; i < this.cpds.length; i += 1) {
+                if (i == 0) {
+                    cpdLabelPoints.push([0, this.cpds[i]])
+                }
+                else {
+                    cpdLabelPoints.push([this.cpds[i - 1], this.cpds[i]])
+                }
+            }
 
-            this.svg.selectAll('dragline')
-                .data(xPoints)
+            this.navLabelContainer = this.navSvg.selectAll('cpdnavlabel')
+                .data(cpdLabelPoints)
                 .enter()
-                .append('line')
+                .append('g')
+
+            this.navLabelContainer
+                .append('circle')
                 .attrs({
-                    'class': 'dragline dragline' + this.id,
-                    'x1': (d) => { return this.x(d) },
-                    'y1': 0,
-                    'x2': (d) => { return this.x(d) },
-                    'y2': this.height - this.padding.bottom,
+                    'class': 'cpdnavlabel',
+                    'id': 'cpdNavLabel-' + this.comm_count,
+                    'r': 10,
+                    'stroke': 'black',
+                    'fill': 'white',
+                    'cx': (d, i) => {
+                        // let midPoint = (this.actualTime[d[0]] + this.actualTime[d[1]]) / 2
+                        // return this.navX(midPoint)
+                        let endPoint = this.actualTime[d[1]]
+                        return this.navX(endPoint)
+                    },
+                    'cy': 10
                 })
-                .style('stroke', '#FFF')
-                .style('stroke-width', '3.5px')
-                .style('z-index', 100)
+
+            this.navLabelContainer.append("text")
+                .attrs({
+                    "x": (d, i) => {
+                        // let midPoint = (this.actualTime[d[0]] + this.actualTime[d[1]]) / 2
+                        // return this.navX(midPoint)
+                        let endPoint = this.actualTime[d[1]]
+                        return this.navX(endPoint)
+                    },
+                    "dx": (d) => -5,
+                    "y": 15,
+                    "class": 'cpdNavLabelText'
+                })
+                .text((d, i) => i + 1)
+            this.comm_count += 1
         },
 
         initMainView() {
@@ -507,6 +610,7 @@ export default {
 
         // Clear Timeline view.
         clearMainView() {
+            console.log("Clearing all lines")
             d3.selectAll('.line' + this.id).remove()
         },
 
@@ -516,7 +620,6 @@ export default {
             this.clusterMap = {}
             // Assign the number of processors. 
             this.numberOfProcs = Object.entries(data).length
-            console.log("Number of processes", this.numberOfProcs)
 
             for (let [id, res] of Object.entries(data)) {
                 this.startTime = 0
@@ -580,7 +683,7 @@ export default {
                     .attrs({
                         'id': 'line' + id,
                         d: this.line,
-                        stroke: this.colorSet[cluster],
+                        stroke: this.$store.colorset[cluster],
                         'stroke-width': (d) => {
                             if (this.numberOfProcs < 16) return 2.0
                             else return 1.0
@@ -591,29 +694,29 @@ export default {
 
                 // Calculate the avg out of the data (ts).
                 if (this.movingAvgTs[this.plotMetric] == undefined) {
-                    if(id == 0){
-                    this.currentMovingAvg = []
+                    if (id == 0) {
+                        this.currentMovingAvg = []
                         // this.currentMovingAvg[id] = 0
                     }
                     for (let i = 0; i < ts.length; i += 1) {
-                        if(this.currentMovingAvg[i] == undefined){
+                        if (this.currentMovingAvg[i] == undefined) {
                             this.currentMovingAvg[i] = 0
                         }
                         this.currentMovingAvg[i] += ts[i] / this.numberOfProcs
                     }
                 }
-                else{
-                    if(id == 0){
+                else {
+                    if (id == 0) {
                         this.currentMovingAvg = 0
                     }
                     this.currentMovingAvg += ts[this.movingAvgTs[this.plotMetric].length - 1] / this.numberOfProcs
                 }
-                
+
             }
             // Push the average values into the array. 
             if (this.movingAvgTs[this.plotMetric] == undefined) {
                 this.movingAvgTs[this.plotMetric] = []
-                for(let i = 0; i < this.currentMovingAvg.length; i += 1){
+                for (let i = 0; i < this.currentMovingAvg.length; i += 1) {
                     this.movingAvgTs[this.plotMetric].push(this.currentMovingAvg[i])
                 }
             }
@@ -625,7 +728,7 @@ export default {
 
         // Clear Navigation timeline view.
         clearNavView() {
-            d3.selectAll('.avgLine' + this.$parent.plotMetric).remove()
+            d3.selectAll('#avgLine' + this.$parent.panelId).remove()
         },
 
         // Init navigation timeline view.
@@ -637,28 +740,28 @@ export default {
                     id: 'navSVG',
                     transform: `translate(${this.padding.left}, ${this.padding.top + this.mainHeight})`
                 })
+                .style('z-index', 1)
 
             // add nav background
             this.navSvg.append("rect")
                 .attrs({
                     "x": 0,
-                        "y": 0,
+                    "y": 0,
                     "width": this.navWidth - this.padding.right - this.padding.left,
                     "height": this.navHeight,
                 })
                 .style("fill", "#F5F5F5")
                 .style("shape-rendering", "crispEdges")
 
-            // add group to data items
-            this.navG = this.navSvg.append("g")
-                .attr("class", "nav");
-
-            this.initBrushes()
+            // this.initBrushes()
         },
 
         drawNavView() {
             this.navPath = this.navSvg.append('path')
-                .attr('class', 'avgLine')
+                .attrs({
+                    'class': 'avgLine',
+                    'id': 'avgLine' + this.$parent.panelId
+                })
 
             this.navX.domain([this.startTime, this.actualTime[this.actualTime.length - 1] * 1.5])
 
@@ -673,7 +776,7 @@ export default {
                 .datum(data)
                 .attrs({
                     d: this.navLine,
-                    class: 'avgLine' + this.$parent.plotMetric,
+                    class: 'avgLine avgLine' + this.$parent.plotMetric,
                     stroke: "#000",
                     'stroke-width': (d) => {
                         return 1.5
@@ -681,111 +784,6 @@ export default {
                     fill: 'transparent',
                 })
                 .style('z-index', 0)
-        },
-
-        // Brush interactions. 
-        initBrushes() {
-            this.brushSvg = this.navSvg.append('g')
-                .attrs({
-                    'class': 'brushes'
-                })
-
-            this.createBrush()
-            this.drawBrush();
-        },
-
-        createBrush() {
-            let id = this.brushes.length
-            this.viewport = d3.brushX(this.navX)
-                .extent([[0, 0], [this.navWidth - this.navPadding.right, this.navHeight]])
-                .on('brush', this.brushing)
-            // .on('end', this.brushEnd)
-            this.brushes.push({
-                'id': id,
-                'brush': this.viewport
-            })
-        },
-
-        drawBrush() {
-            let brushSelection = this.navSvg
-                .selectAll('.brush')
-                .data(this.brushes)
-
-            brushSelection.enter()
-                .insert("g", ".brush")
-                .attr("class", "brush")
-                .attr("id", (brush) => "brush-" + brush.id)
-                // .each( (brushObj) => { brushObj.brush(d3.select('#brush' + brushObj.id)) })
-                .call(this.viewport)
-
-            brushSelection.each((brushObj) => {
-                d3.selectAll('.brush')
-                    .attr('class', 'brush')
-                    .selectAll('.overlay')
-                    .style('pointer-events', () => {
-                        let brush = brushObj.brush
-                        if (brushObj.id == brushes.length - 1 && brush !== undefined) {
-                            return 'all'
-                        }
-                        else {
-                            return 'none'
-                        }
-                    })
-            })
-
-            // brushSelection.exit()
-            // .remove()
-        },
-
-        brushing() {
-            let selection = d3.event.selection
-            if (selection == null) {
-                this.x.domain(this.navX.domain())
-            }
-            else {
-                let sx = selection.map(this.navX.invert)
-                let intervalViewport = sx[1] - sx[0]
-                let offsetViewport = sx[1] - this.startTime
-
-                if (intervalViewport == 0) {
-                    intervalViewport = 10000
-                    offsetViewport = 0
-                }
-
-                this.x.domain(sx)
-            }
-        },
-
-        brushEnd() {
-            if (!d3.event.sourceEvent) return; // Only transition after input.
-            if (!d3.event.selection) return; // Ignore empty selections.
-
-            // check if the latest brush has a selection.
-            let lastBrushID = this.brushes[this.brushes.length - 1].id
-            let lastBrush = document.getElementById('brush-' + lastBrushID)
-            let selection = d3.brushSelection(lastBrush)
-
-            // if(selection && selection[0] !== selection[1]){
-            // this.createBrush()
-            // }
-
-            // this.drawBrush()
-
-            // There is some bug here, it does not return the correct this.x.invert
-            let d0 = d3.event.selection.map(this.x.invert)
-            let correction = 4824.0
-
-            d0[0] = d0[0] - correction
-            d0[1] = d0[1] - correction * 1.5
-            this.$parent.addBrushTime.push(d0)
-
-            // // If empty when rounded, use floor & ceil instead.
-            // if (d1[0] >= d1[1]) {
-            //     d1[0] = d3.timeDay.floor(d0[0]);
-            //     d1[1] = d3.timeDay.offset(d1[0]);
-            // }
-
-            //d3.select(this).transition().call(d3.event.target.move, d1.map(this.x));
         },
 
         // Zoom interaction. Not being used though.
@@ -805,5 +803,96 @@ export default {
                 .on("zoom", this.zoomed);
         },
 
+       
+        clearNavDrag(){
+            d3.select('#dragSVG').remove();
+        },
+
+        initNavDrag() {
+            this.barWidth = 0
+            this.dragBarWidth = 5
+
+            this.drag = d3.drag()
+                .on('drag', this.dragMove)
+
+            this.dragLeft = d3.drag()
+                .on("drag", this.ldragresize)
+                .on('end', this.dragrequest)
+
+            this.dragSVG = this.navSvg.append('g')
+                .data([{
+                    size: this.navWidth - this.padding.left - this.padding.right,
+                    // size: this.navX(this.actualTime[this.actualTime.length - 1]),
+                    x: this.navX(this.$store.selectedDragTime),
+                    y: 0,
+                }])
+                .attr('id', 'dragSVG')
+                .style('z-index', 0)
+
+            this.dragRect = this.dragSVG
+                .call(this.drag)
+
+            this.dragRectLeft = this.dragSVG.append('rect')
+                .attrs({
+                    "id": "dragLeft",
+                    "x": (d) => d.x - this.dragBarWidth / 2,
+                    "y": (d) => d.y + this.dragBarWidth / 2,
+                    "height": this.navHeight - this.dragBarWidth,
+                    "width": this.dragBarWidth,
+                    "fill": "brown",
+                    "fill-opacity": 0.5,
+                    "cursor": "ew-resize",
+                    "cursor": "move"
+                })
+                .call(this.dragLeft)
+        },
+
+        dragMove(d) {
+            this.dragRect
+                .attr("x", d.x = Math.max(0, Math.min(this.navWidth - this.barWidth, d3.event.x)))
+
+                this.dragRectLeft
+                .attr({
+                    "x": (d) => d.x - (this.dragBarWidth) / 2
+                })
+        },
+
+        ldragresize(d) {
+            let oldX = d.x
+            d.x = Math.max(0, Math.min(d.size + this.barWidth - this.dragBarWidth / 2, d3.event.x))
+
+            for(let i = 0; i < this.actualTime.length - 1; i ++){
+                let currentX = this.navX(this.actualTime[i])
+                let nextX = this.navX(this.actualTime[i+1])
+                if( currentX <= d3.event.x && nextX > d3.event.x){
+                    d.x = nextX
+                    this.$store.selectedDragTime = this.actualTime[i]
+                    this.$store.selectedDragTimeRound = Math.floor(this.actualTime[i])
+                }
+            }
+
+            this.dragRectLeft
+                .attr('x', (d) => d.x - this.dragBarWidth / 2)
+
+            this.dragRect
+                .attrs({
+                    'x': (d) => d.x,
+                    'width': this.barWidth
+                })
+        },
+
+        dragrequest(d){
+            this.$store.baseMatrix = this.$store.result[this.$store.selectedDragTimeRound]['communication']
+            for (let idx = 0; idx < this.$store.DiffMatrixID; idx += 1) {
+                d3.selectAll('.aggrRect' + idx)
+                    .style('fill', (d, i) => {
+                        let val = (d.weightAggr - this.$store.baseMatrix[i].weightAggr)
+                        let val_normalized = ((val) / (1292) + 1)/2
+                        return d3.interpolateRdBu(val_normalized)
+                    })
+            }
+
+            EventHandler.$emit('fetch_kpmatrix_on_base_request', this.$store.selectedDragTime)
+        }
     }
 }

@@ -24,7 +24,6 @@ export default function adjacencyMatrixLayout() {
         // const constructedMatrix = [];
         var matrix = [];
         var edgeHash = {};
-
         let nodeWidth = width / adj.length
         let nodeHeight = height / adj.length
         var xScale = d3.scaleLinear().domain([0, adj.length]).range([0, width]);
@@ -38,9 +37,9 @@ export default function adjacencyMatrixLayout() {
                     target: j,
                     xid: j,
                     yid: adj[i][j].peid * 16 + adj[i][j].kpid,
-                    x: xScale(j),
+                    x: xScale(i),
                     y: yScale(adj[i][j].peid * 16 + adj[i][j].kpid),
-                    yAggr: yScale(i),
+                    yAggr: yScale(j),
                     weight: adj[i][j].z,
                     weightAggr: adj[i][j].pe_z,
                     height: nodeHeight,
@@ -52,6 +51,8 @@ export default function adjacencyMatrixLayout() {
                     kpid: adj[i][j].kpid,
                     kpgid: adj[i][j].kpgid,
                     peid: adj[i][j].peid,
+                    maxComm: adj[i][j].maxComm,
+                    minComm: adj[i][j].minComm
                 }
                 matrix.push(grid);
             }

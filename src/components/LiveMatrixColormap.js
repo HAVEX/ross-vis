@@ -67,7 +67,7 @@ export default {
             this.colorPoint = 5
             this.color.setColorScale(this.colorMin, this.colorMax, this.selectedColorMap, this.colorPoint)
             
-            let splits = 5
+            let splits = 256
             let color = this.color.getScale()
 
             for (let i = 0; i <= splits; i += 1) {
@@ -103,7 +103,7 @@ export default {
                     "dy": ".35em",
                     "text-anchor": "middle",
                     "class": "colormap-text",
-                    'transform': `translate(${this.colorMapWidth - this.padding.left + this.paddingLeft}, ${this.padding.bottom})`,
+                    'transform': `translate(${this.colorMapWidth + this.paddingLeft}, ${this.padding.bottom})`,
                 })
                 .text(this.colorMax);
         },

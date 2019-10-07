@@ -2,7 +2,6 @@ import tpl from '../html/AggrMatrixColormap.html'
 import * as d3 from 'd3'
 import 'd3-selection-multi'
 import Color from './color'
-import { timeHours } from 'd3-time'
 
 export default {
     template: tpl,
@@ -15,7 +14,8 @@ export default {
 
     data: () => ({
         width: 200,
-        height: 20,
+        height: 25,
+        y_offset: 12.5,
         colorScaleHeight: 30,
         colorMin: 0,
         colorMax: 0,
@@ -66,20 +66,20 @@ export default {
             this.colorPoint = 5
             this.color.setColorScale(this.colorMin, this.colorMax, this.selectedColorMap, this.colorPoint)
             
-            let splits = 5
+            let splits = 256
             let color = this.color.getScale()
 
             for (let i = 0; i <= splits; i += 1) {
-                let splitColor = this.colorMin + ((i * this.colorMax) / (splits))
+                let splitColor = this.colorMin + ((2* i * this.colorMax) / (splits))
                 this.scaleG.append('rect')
                     .attrs({
                         'width': this.width / (splits + 1),
                         'height': this.height,
-                        'x': i * (this.width / (splits + 1)),
-                        'y': this.padding.bottom,
+                        'x': i * (this.width / (splits + 1)) + 2*this.padding.left,
+                        'y': this.y_offset,
                         'class': 'aggr-colormap-rect',
                         'transform': `translate(${this.paddingLeft}, ${0})`,
-                        'fill': d3.interpolateReds(splitColor/this.colorMax)
+                        'fill': d3.interpolateRdBu((splitColor/this.colorMax + 1)/2)
                     })
             }
             
@@ -91,9 +91,9 @@ export default {
                     "dy": ".35em",
                     "text-anchor": "middle",
                     'class': 'aggr-colormap-text',
-                    'transform': `translate(${this.padding.right + this.paddingLeft}, ${this.padding.bottom})`,
+                    'transform': `translate(${2*this.padding.left}, ${this.padding.bottom})`,
                 })
-                .text(this.colorMin);
+                .text(Math.floor(this.colorMin));
 
             this.scaleG.append("text")
 
@@ -103,9 +103,9 @@ export default {
                     "dy": ".35em",
                     "text-anchor": "middle",
                     "class": "aggr-colormap-text",
-                    'transform': `translate(${this.width - this.padding.left + this.paddingLeft}, ${this.padding.bottom})`,
+                    'transform': `translate(${this.width + 6 * this.padding.left}, ${this.padding.bottom})`,
                 })
-                .text(this.colorMax);
+                .text(Math.floor(this.colorMax));
         },
 
         clear() {

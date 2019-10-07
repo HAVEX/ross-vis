@@ -175,6 +175,7 @@ export default {
   padding: 10px 5px;
 }
 .table-container tr:nth-child(even) {
+  text-align: left;
   background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -195,6 +196,13 @@ export default {
 .table-container table tbody::-webkit-scrollbar-thumb {
   width: 1px;
 }
+
+
+.table tbody tr > td.success {
+  background-color: #edc948 !important;
+}
+
+
 
 table.my-table-scroll,
 table.my-table-scroll > thead,
