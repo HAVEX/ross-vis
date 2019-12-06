@@ -17,7 +17,7 @@ export default {
 		streamData: null,
 		commData: null,
 		hocData: null,
-		appName: 'Progressive-ROSS Analytics',
+		appName: 'ROSS-Vis',
 		socketError: false,
 		server: 'localhost:8899',
 		modes: ['Post Hoc', 'In Situ'],
@@ -59,9 +59,6 @@ export default {
 		commThreshold: 0,
 		thresholdValue: 0,
 		showIntraComm: false,
-		causality: ['from', 'to'],
-		selectedCausality: 'to',
-		drawBrush: true,
 	}),
 
 	watch: {
@@ -129,7 +126,6 @@ export default {
 			this.method = this.selectedMode == 'Post Hoc' ? 'get' : 'stream'
 			this.selectedGranID = this.correctGranID()
 			this.fetchTsData()
-			this.$store.play = 1
 		},
 
 		// Take incorrect id and add correct post-id
@@ -145,7 +141,6 @@ export default {
 		},
 
 		updatePlay() {
-			this.$store.play = 1
 			this.play = 1
 			this.update = 1
 			this.request = 0
@@ -153,17 +148,16 @@ export default {
 		},
 
 		updatePause() {
-			this.$store.play = 0
 			this.play = 0
 		},
 
 		updatePrevStep() {
-			this.$store.play = 1
 			this.play = 1
 			this.update = -1
 			this.request = 0
 			console.log("Removing ", this.count)
 			this.fetchTsData()
+
 		},
 
 		updateGran() {
@@ -229,7 +223,6 @@ export default {
 			if (this.selectedMode == 'Post Hoc') {
 				console.log("Changing to Post Hoc mode")
 				this.method = 'stream'
-				this.$store.play = 0
 				this.play = 0
 			}
 			else {
@@ -253,7 +246,6 @@ export default {
 			// Toggle off the request mode explicitly if it is on.
 			if(this.request == 1){
 				this.request = 0
-				this.$store.play = 1
 				this.play = 1
 			}
 			
@@ -264,7 +256,7 @@ export default {
 				timeDomain: this.selectedTimeDomain,
 				method: this.method,
 				stream_count: this.count,
-				play: this.$store.play,
+				play: this.play,
 				update: this.update,
 				request: this.request,
 			}
@@ -279,7 +271,6 @@ export default {
 
 			this.socket.onmessage = (event) => {
 				let data = JSON.parse(event.data)
-				this.metrics = Object.keys(data.schema)
 				this.metrics = Object.keys(data.schema)
 				if (data.schema.hasOwnProperty('CommData')) {
 					data.schema.CommData = 'int'
@@ -326,14 +317,13 @@ export default {
 				if (this.update == -1) {
 					this.update = 1
 					this.count -= 1
-					this.$store.play = 0
 					this.play = 0
 				}
 				else {
 					this.count += 1
 				}
 
-				if (this.$store.play == 1) {
+				if (this.play == 1) {
 					this.fetchTsData()
 				}
 			}
